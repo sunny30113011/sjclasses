@@ -404,7 +404,8 @@
 
 
 
-<!-- 5.5 Expert Instructors Carousel Section -->
+<!-- 5.5 Expert Instructors Carousel Section (Only Shown When Real Instructors Exist in Database) -->
+{% if instructors %}
 <section class="py-5 bg-white mb-5 border-top border-bottom">
     <div class="container">
         <div class="d-flex justify-content-between align-items-end mb-4">
@@ -414,6 +415,7 @@
                 <p class="text-secondary mb-0">Our instructors bring years of real-world software engineering experience from top MNCs and IT startups.</p>
             </div>
             <!-- Carousel Navigation Controls -->
+            {% if instructors|length > 3 %}
             <div class="d-flex gap-2">
                 <button class="btn btn-outline-warning rounded-circle p-2 d-flex align-items-center justify-content-center" style="width:40px; height:40px;" type="button" data-bs-target="#instructorsCarousel" data-bs-slide="prev">
                     <i class="fa-solid fa-chevron-left"></i>
@@ -422,6 +424,7 @@
                     <i class="fa-solid fa-chevron-right"></i>
                 </button>
             </div>
+            {% endif %}
         </div>
 
         <div id="instructorsCarousel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="5000">
@@ -461,13 +464,12 @@
                             </div>
                         </div>
                     {% endif %}
-                {% empty %}
-                    <div class="text-center py-4 text-muted">No instructors added yet.</div>
                 {% endfor %}
             </div>
         </div>
     </div>
 </section>
+{% endif %}
 
 <!-- 6. Contact Us Section -->
 

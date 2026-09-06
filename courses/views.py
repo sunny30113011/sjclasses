@@ -20,9 +20,14 @@ def home(request):
     total_students = Enrollment.objects.values('student').distinct().count() or 1200
     total_courses = Course.objects.filter(is_published=True).count() or 25
     
-    # Query all instructors added by Admin in Database
+    # Query only real approved instructors from Database (exclude admins and dummy accounts)
     instructors = User.objects.filter(
-        Q(role=User.ROLE_INSTRUCTOR) | Q(role=User.ROLE_ADMIN)
+        role=User.ROLE_INSTRUCTOR,
+        is_instructor_approved=True
+    ).exclude(
+        username__in=['instructor', 'test_ins_player', 'test_pending_instructor', 'test_approved_instructor']
+    ).exclude(
+        username__startswith='test_'
     ).distinct().order_by('-date_joined')
     
     # Query student feedbacks dynamically from database
