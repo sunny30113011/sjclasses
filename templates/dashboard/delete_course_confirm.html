@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 text-center">
+            <div class="card border-0 shadow-lg p-5 rounded-4 border-top border-danger border-4">
+                <i class="fa-solid fa-triangle-exclamation display-1 text-danger mb-3"></i>
+                <h3 class="fw-bold mb-2">Delete Course?</h3>
+                <p class="text-secondary mb-4">Are you sure you want to permanently delete <strong>"{{ course.title }}"</strong>? This action will remove all modules, lessons, and student progress associated with this course.</p>
+
+                <form method="POST">
+                    {% csrf_token %}
+                    <div class="d-flex justify-content-center gap-3">
+                        <a href="{% url 'dashboard:course_builder' %}" class="btn btn-secondary px-4 fw-bold">Cancel</a>
+                        <button type="submit" class="btn btn-danger px-4 fw-bold"><i class="fa-solid fa-trash me-1"></i> Yes, Delete Course</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

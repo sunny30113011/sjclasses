@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="bg-dark text-white py-4 mb-4">
+    <div class="container d-flex justify-content-between align-items-center">
+        <div>
+            <h2 class="fw-bold mb-1"><i class="fa-solid fa-chalkboard-user me-2 text-info"></i> Instructor Studio</h2>
+            <p class="text-secondary small mb-0">Create and manage your courses, view earnings, and track student enrollments.</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{% url 'dashboard:instructor_assignments' %}" class="btn btn-outline-warning">
+                <i class="fa-solid fa-file-signature me-1"></i> Assignment Grading Studio
+            </a>
+            <a href="{% url 'dashboard:course_builder' %}" class="btn btn-outline-info">
+                <i class="fa-solid fa-cubes-stacked me-1"></i> Visual Course Builder
+            </a>
+            <a href="{% url 'dashboard:create_course' %}" class="btn btn-gradient">
+                <i class="fa-solid fa-plus me-1"></i> Create New Course
+            </a>
+        </div>
+
+    </div>
+</div>
+
+<div class="container mb-5">
+    <!-- Metrics Row -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm p-4 text-center border-start border-primary border-4">
+                <span class="text-secondary small text-uppercase fw-bold">Published Courses</span>
+                <h2 class="fw-extrabold text-primary mb-0 mt-1">{{ my_courses.count }}</h2>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm p-4 text-center border-start border-info border-4">
+                <span class="text-secondary small text-uppercase fw-bold">Total Enrolled Students</span>
+                <h2 class="fw-extrabold text-info mb-0 mt-1">{{ total_students }}</h2>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm p-4 text-center border-start border-success border-4">
+                <span class="text-secondary small text-uppercase fw-bold">Total Earnings</span>
+                <h2 class="fw-extrabold text-success mb-0 mt-1">₹{{ total_earnings }}</h2>
+            </div>
+        </div>
+    </div>
+
+    <!-- My Courses Table -->
+    <div class="card border-0 shadow-sm p-4">
+        <h5 class="fw-bold mb-3">My Courses</h5>
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Course</th>
+                        <th>Category</th>
+                        <th>Price</th>
+                        <th>Students</th>
+                        <th>Rating</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for course in my_courses %}
+                        <tr>
+                            <td class="fw-bold">
+                                <a href="{% url 'courses:course_detail' slug=course.slug %}" class="text-dark text-decoration-none">{{ course.title }}</a>
+                            </td>
+                            <td><span class="badge bg-light text-dark border">{{ course.category.name|default:"General" }}</span></td>
+                            <td class="text-primary fw-bold">₹{{ course.discount_price }}</td>
+                            <td>{{ course.total_students }}</td>
+                            <td><i class="fa-solid fa-star text-warning me-1"></i>{{ course.average_rating }}</td>
+                            <td>
+                                <a href="{% url 'dashboard:manage_course_content' course_id=course.id %}" class="btn btn-sm btn-outline-primary">
+                                    <i class="fa-solid fa-layer-group me-1"></i> Manage Syllabus
+                                </a>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center text-muted py-4">You haven't created any courses yet.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

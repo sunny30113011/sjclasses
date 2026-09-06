@@ -1,0 +1,280 @@
+{% extends 'base.html' %}
+
+{% block title %}📢 Broadcast Prize Offer Notification — Admin Panel{% endblock %}
+
+{% block content %}
+<div class="bg-dark text-white py-4 mb-4 border-bottom border-warning">
+    <div class="container d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div>
+            <h2 class="fw-bold mb-1 d-flex align-items-center gap-2">
+                <i class="fa-solid fa-bullhorn text-warning"></i>
+                Broadcast Prize Offer & Announcements
+            </h2>
+            <p class="text-secondary small mb-0">
+                Instantly notify all students about prize discounts, festivals, and the All-Courses Pass.
+            </p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{% url 'dashboard:admin_dashboard' %}" class="btn btn-outline-light btn-sm">
+                <i class="fa-solid fa-arrow-left me-1"></i> Back to Dashboard
+            </a>
+            <a href="{% url 'payments:all_access_checkout' %}" target="_blank" class="btn btn-warning btn-sm fw-bold">
+                <i class="fa-solid fa-eye me-1"></i> Preview All-Access Page
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="container mb-5">
+    <div class="row g-4">
+        <!-- Broadcast Form -->
+        <div class="col-lg-7">
+            <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
+                <h5 class="fw-bold text-dark mb-3 d-flex align-items-center justify-content-between">
+                    <span><i class="fa-solid fa-paper-plane text-primary me-2"></i> Compose Offer Notification</span>
+                    <span class="badge bg-primary bg-opacity-10 text-primary small py-2 px-3 rounded-pill">
+                        <i class="fa-solid fa-users me-1"></i> {{ total_students_count }} Active Students
+                    </span>
+                </h5>
+
+                <!-- Quick Preset Buttons -->
+                <div class="mb-3">
+                    <label class="form-label small fw-bold text-muted text-uppercase mb-1">Quick Templates:</label>
+                    <div class="d-flex flex-wrap gap-2">
+                        <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill template-btn"
+                                data-title="Unlock ALL Courses For 1 Year at Just ₹{{ active_plan.offer_price|floatformat:0 }}!"
+                                data-badge="🎁 1-YEAR ALL-ACCESS"
+                                data-message="Special Prize Offer! Get unlimited 1-Year access (365 Days) to EVERY course and project file for a single payment of ₹{{ active_plan.offer_price|floatformat:0 }}. Claim your pass now before the offer ends!"
+                                data-btn="Unlock All Courses Now"
+                                data-url="/payment/all-access/">
+                            🎁 1-Year All-Courses Pass (₹{{ active_plan.offer_price|floatformat:0 }})
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill template-btn"
+                                data-title="Flat 50% Discount on Selected Courses!"
+                                data-badge="🔥 50% FLAT OFF"
+                                data-message="Limited-time price drop! Boost your full-stack coding skills with 50% discount on all premium courses. Use coupon or claim direct offer."
+                                data-btn="Explore Courses"
+                                data-url="/courses/">
+                            🔥 50% Off Flash Sale
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill template-btn"
+                                data-title="Exclusive Festival Scholarship Deal!"
+                                data-badge="🌟 FESTIVAL SPECIAL"
+                                data-message="Join thousands of successful students! Complete courses, earn verified QR-stamped certificates, and unlock top tech placement assistance."
+                                data-btn="View Offers"
+                                data-url="/payment/all-access/">
+                            🌟 Festival Special
+                        </button>
+                    </div>
+                </div>
+
+                <form method="POST" id="broadcastForm">
+                    {% csrf_token %}
+                    
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-7">
+                            <label class="form-label small fw-bold">Notification Title <span class="text-danger">*</span></label>
+                            <input type="text" name="title" id="inputTitle" class="form-control" placeholder="e.g. Mega Prize Offer: Unlock All Courses!" required>
+                        </div>
+                        <div class="col-md-5">
+                            <label class="form-label small fw-bold">Offer Badge / Tag</label>
+                            <input type="text" name="offer_badge" id="inputBadge" class="form-control" value="🎁 SPECIAL OFFER" placeholder="e.g. 🎁 50% OFF">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Offer Message & Details <span class="text-danger">*</span></label>
+                        <textarea name="message" id="inputMessage" rows="4" class="form-control" placeholder="Describe the offer, price cut, validity period, and benefits..." required></textarea>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Action Button Text</label>
+                            <input type="text" name="action_button_text" id="inputBtnText" class="form-control" value="Claim Offer Now">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Action URL / Destination</label>
+                            <div class="input-group">
+                                <input type="text" name="action_url" id="inputUrl" class="form-control" value="/payment/all-access/" placeholder="/payment/all-access/">
+                                <button type="button" class="btn btn-outline-secondary btn-sm dropdown-toggle" data-bs-toggle="dropdown">Pick</button>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li><a class="dropdown-item small pick-url" href="#" data-url="/payment/all-access/">All-Courses Pass (/payment/all-access/)</a></li>
+                                    <li><a class="dropdown-item small pick-url" href="#" data-url="/courses/">Courses Catalog (/courses/)</a></li>
+                                    <li><a class="dropdown-item small pick-url" href="#" data-url="/courses/projects/">Projects Portal (/courses/projects/)</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label small fw-bold">Target Audience <span class="text-danger">*</span></label>
+                        <select name="target_audience" id="selectAudience" class="form-select">
+                            <option value="all_students" selected>All Active Students ({{ total_students_count }} students)</option>
+                            <option value="unenrolled">Unenrolled Students Only ({{ unenrolled_count }} students without courses)</option>
+                            <option value="all_users">All Registered Users (Students + Instructors)</option>
+                        </select>
+                    </div>
+
+                    <div class="p-3 bg-light rounded-3 mb-3 border d-flex align-items-center justify-content-between">
+                        <div>
+                            <span class="small fw-bold text-dark d-block"><i class="fa-solid fa-bell text-warning me-1"></i> Delivery Channel</span>
+                            <span class="text-secondary small">Notification center + bell icon badge will instantly alert all recipients.</span>
+                        </div>
+                        <button type="submit" class="btn btn-warning px-4 py-2 fw-bold shadow-sm" onclick="return confirm('Are you sure you want to broadcast this offer notification now?');">
+                            <i class="fa-solid fa-paper-plane me-1"></i> Broadcast Now
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Live Preview Card -->
+        <div class="col-lg-5">
+            <div class="card border-0 shadow-sm rounded-4 p-4 bg-white sticky-top" style="top: 90px;">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="fw-bold mb-0 text-dark"><i class="fa-solid fa-eye text-info me-1"></i> Live Student Notification Preview</h6>
+                    <span class="badge bg-secondary small">Preview</span>
+                </div>
+                <p class="text-secondary small mb-3">This is how students will see your offer in their notification inbox and dropdown.</p>
+
+                <!-- Mock Notification Item -->
+                <div class="card border-warning border-2 rounded-3 shadow-sm p-3 bg-warning bg-opacity-10 position-relative overflow-hidden">
+                    <div class="d-flex align-items-start gap-3">
+                        <div class="rounded-circle p-2 bg-white shadow-sm text-center d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; flex-shrink: 0;">
+                            <i class="fa-solid fa-gift text-danger fs-4"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="d-flex align-items-center justify-content-between gap-2 mb-1">
+                                <span class="badge bg-danger fw-bold" id="previewBadge" style="font-size: 11px;">🎁 SPECIAL OFFER</span>
+                                <span class="badge bg-success" style="font-size: 10px;">Just Now</span>
+                            </div>
+                            <h6 class="fw-bold text-dark mb-1" id="previewTitle">Mega Prize Offer: Unlock All Courses for 1 Year!</h6>
+                            <p class="text-secondary small mb-3 lh-sm" id="previewMessage" style="font-size: 12px;">
+                                Special Prize Offer! Get unlimited 1-Year access (365 Days) to EVERY course and project file for a single payment of ₹{{ active_plan.offer_price|floatformat:0 }}.
+                            </p>
+                            <a href="#" id="previewBtn" class="btn btn-warning btn-sm fw-bold px-3 py-1 shadow-sm text-dark d-inline-flex align-items-center gap-1" style="font-size: 12px;">
+                                <span id="previewBtnText">Claim Offer Now</span> <i class="fa-solid fa-arrow-right small"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4 p-3 bg-light rounded-3 border">
+                    <div class="d-flex align-items-center gap-2 mb-1">
+                        <i class="fa-solid fa-lightbulb text-warning"></i>
+                        <strong class="small text-dark">Marketing Tip:</strong>
+                    </div>
+                    <p class="text-secondary small mb-0" style="font-size: 12px;">
+                        Promote the <strong>All-Courses Pass (₹{{ active_plan.offer_price|floatformat:0 }})</strong> to unenrolled students to dramatically increase sales and course engagement!
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Past Broadcasts History -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold text-dark mb-0"><i class="fa-solid fa-clock-rotate-left text-primary me-2"></i> Sent Offer Broadcast History</h5>
+                    <span class="text-secondary small">Total Broadcasts: <strong>{{ past_broadcasts|length }}</strong></span>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr class="small text-secondary">
+                                <th>Offer Title & Badge</th>
+                                <th>Target Audience</th>
+                                <th>Recipients</th>
+                                <th>Sent By</th>
+                                <th>Date & Time</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for b in past_broadcasts %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <span class="badge bg-danger text-white" style="font-size: 11px;">{{ b.offer_badge }}</span>
+                                            <strong class="text-dark">{{ b.title }}</strong>
+                                        </div>
+                                        <p class="text-secondary small mb-0 mt-1" style="max-width: 450px;">{{ b.message|truncatechars:100 }}</p>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-secondary bg-opacity-25 text-dark">{{ b.get_target_audience_display }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-primary">{{ b.recipient_count }} users</span>
+                                    </td>
+                                    <td>
+                                        <small class="text-muted">{{ b.sent_by.username|default:"Admin" }}</small>
+                                    </td>
+                                    <td>
+                                        <small class="text-muted">{{ b.sent_at|date:"M d, Y • H:i" }}</small>
+                                    </td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="5" class="text-center py-4 text-muted small">
+                                        <i class="fa-solid fa-bullhorn fs-3 mb-2 d-block text-secondary"></i>
+                                        No prize offers broadcasted yet. Use the form above to send your first offer!
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const inputTitle = document.getElementById('inputTitle');
+    const inputBadge = document.getElementById('inputBadge');
+    const inputMessage = document.getElementById('inputMessage');
+    const inputBtnText = document.getElementById('inputBtnText');
+    const inputUrl = document.getElementById('inputUrl');
+
+    const previewTitle = document.getElementById('previewTitle');
+    const previewBadge = document.getElementById('previewBadge');
+    const previewMessage = document.getElementById('previewMessage');
+    const previewBtnText = document.getElementById('previewBtnText');
+
+    function updatePreview() {
+        previewTitle.textContent = inputTitle.value || 'Mega Prize Offer: Unlock All Courses for 1 Year!';
+        previewBadge.textContent = inputBadge.value || '🎁 SPECIAL OFFER';
+        previewMessage.textContent = inputMessage.value || 'Special Prize Offer! Get unlimited 1-Year access (365 Days) to EVERY course...';
+        previewBtnText.textContent = inputBtnText.value || 'Claim Offer Now';
+    }
+
+    inputTitle.addEventListener('input', updatePreview);
+    inputBadge.addEventListener('input', updatePreview);
+    inputMessage.addEventListener('input', updatePreview);
+    inputBtnText.addEventListener('input', updatePreview);
+
+    // Template buttons
+    document.querySelectorAll('.template-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            inputTitle.value = this.dataset.title;
+            inputBadge.value = this.dataset.badge;
+            inputMessage.value = this.dataset.message;
+            inputBtnText.value = this.dataset.btn;
+            inputUrl.value = this.dataset.url;
+            updatePreview();
+        });
+    });
+
+    // Pick URL
+    document.querySelectorAll('.pick-url').forEach(a => {
+        a.addEventListener('click', function(e) {
+            e.preventDefault();
+            inputUrl.value = this.dataset.url;
+        });
+    });
+});
+</script>
+{% endblock %}

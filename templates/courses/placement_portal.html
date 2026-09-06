@@ -1,0 +1,135 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="bg-dark text-white py-5 mb-4 position-relative overflow-hidden">
+    <div class="container position-relative z-1 text-center">
+        <span class="badge bg-warning text-dark font-monospace mb-2 px-3 py-2 text-uppercase fw-bold"><i class="fa-solid fa-briefcase me-1"></i> Career & Hiring Portal</span>
+        <h1 class="display-4 fw-bold mb-3">Launch Your Software Career with <span class="text-warning">SJ TECH</span></h1>
+        <p class="lead text-secondary max-w-700 mx-auto mb-4">Connecting our certified students directly with top tech companies, IT MNCs, and high-growth startups.</p>
+        
+        <!-- Stats Bar -->
+        <div class="row g-3 justify-content-center max-w-900 mx-auto mt-2">
+            <div class="col-6 col-md-3">
+                <div class="bg-secondary bg-opacity-25 rounded-3 p-3 text-center border border-secondary border-opacity-25">
+                    <h3 class="fw-bold text-warning mb-0">150+</h3>
+                    <small class="text-light">Hiring Partners</small>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="bg-secondary bg-opacity-25 rounded-3 p-3 text-center border border-secondary border-opacity-25">
+                    <h3 class="fw-bold text-info mb-0">₹12 LPA</h3>
+                    <small class="text-light">Highest Package</small>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="bg-secondary bg-opacity-25 rounded-3 p-3 text-center border border-secondary border-opacity-25">
+                    <h3 class="fw-bold text-success mb-0">₹4.8 LPA</h3>
+                    <small class="text-light">Average Package</small>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="bg-secondary bg-opacity-25 rounded-3 p-3 text-center border border-secondary border-opacity-25">
+                    <h3 class="fw-bold text-primary mb-0">95%</h3>
+                    <small class="text-light">Placement Rate</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container mb-5">
+    <div class="row g-4">
+        <!-- Main Job Openings Column -->
+        <div class="col-lg-8">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3 class="fw-bold mb-0"><i class="fa-solid fa-building-user text-primary me-2"></i> Active Job Drives</h3>
+                <span class="badge bg-primary rounded-pill px-3">{{ jobs.count }} Openings</span>
+            </div>
+
+            {% for job in jobs %}
+                <div class="card border-0 shadow-sm mb-3 hover-lift transition-all">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-start justify-content-between mb-3">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="rounded-3 bg-light p-2 d-flex align-items-center justify-content-center border" style="width: 60px; height: 60px;">
+                                    {% if job.company_logo %}
+                                        <img src="{{ job.company_logo.url }}" alt="{{ job.company_name }}" class="img-fluid max-h-40">
+                                    {% else %}
+                                        <i class="fa-solid fa-building text-secondary fs-2"></i>
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    <h5 class="fw-bold text-dark mb-1">{{ job.title }}</h5>
+                                    <p class="text-secondary small mb-0"><i class="fa-solid fa-building me-1"></i> <strong>{{ job.company_name }}</strong> • <i class="fa-solid fa-location-dot me-1"></i> {{ job.location }}</p>
+                                </div>
+                            </div>
+                            <span class="badge bg-success bg-opacity-10 text-success fw-bold px-3 py-2"><i class="fa-solid fa-indian-rupee-sign me-1"></i> {{ job.salary_package }}</span>
+                        </div>
+
+                        <p class="text-secondary small mb-3 text-truncate-2">{{ job.description }}</p>
+
+                        <div class="d-flex flex-wrap gap-2 mb-3">
+                            <span class="badge bg-light text-dark border"><i class="fa-solid fa-briefcase me-1 text-primary"></i> {{ job.job_type }}</span>
+                            <span class="badge bg-light text-dark border"><i class="fa-solid fa-user-graduate me-1 text-info"></i> {{ job.experience_required }}</span>
+                            {% for skill in job.skills_required.split %}
+                                <span class="badge bg-primary bg-opacity-10 text-primary">{{ skill }}</span>
+                            {% endfor %}
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center border-top pt-3">
+                            <small class="text-muted"><i class="fa-regular fa-clock me-1"></i> Deadline: <strong>{{ job.application_deadline|date:"M d, Y" }}</strong></small>
+                            <div class="d-flex gap-2">
+                                <a href="{% url 'courses:job_detail' job_id=job.id %}" class="btn btn-outline-secondary btn-sm fw-bold">View Details</a>
+                                <a href="{{ job.official_apply_url }}" target="_blank" rel="noopener" class="btn btn-primary btn-sm fw-bold px-3">
+                                    <i class="fa-solid fa-arrow-up-right-from-square me-1"></i> Apply on Official Site
+                                </a>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            {% empty %}
+                <div class="card border-0 shadow-sm p-5 text-center">
+                    <i class="fa-solid fa-briefcase-blank display-1 text-secondary mb-3"></i>
+                    <h5>No active job drives posted currently</h5>
+                    <p class="text-secondary small">Check back soon for new hiring drives!</p>
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Sidebar: Hall of Fame & Admin Quick Link -->
+        <div class="col-lg-4">
+            <!-- Student Hall of Fame -->
+            <div class="card border-0 shadow-sm p-4 mb-4 border-top border-warning border-4">
+                <h5 class="fw-bold mb-3"><i class="fa-solid fa-trophy text-warning me-2"></i> Placement Hall of Fame</h5>
+                
+                <div class="d-flex flex-column gap-3">
+                    {% for p in recent_placements %}
+                        <div class="d-flex align-items-center gap-3 p-2 rounded-3 bg-light">
+                            <div class="rounded-circle bg-primary bg-opacity-10 text-primary d-flex align-items-center justify-content-center font-monospace fw-bold" style="width: 45px; height: 45px; flex-shrink: 0;">
+                                {{ p.student_name|slice:":2"|upper }}
+                            </div>
+                            <div class="overflow-hidden">
+                                <h6 class="fw-bold mb-0 text-truncate">{{ p.student_name }}</h6>
+                                <p class="text-secondary small mb-0 text-truncate">{{ p.designation }} @ <strong>{{ p.company_name }}</strong></p>
+                                <small class="text-success fw-bold">Package: {{ p.package_lpa }} LPA</small>
+                            </div>
+                        </div>
+                    {% empty %}
+                        <p class="text-muted small mb-0">No placement records available.</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            {% if user.is_authenticated and user.is_lms_admin or user.is_instructor %}
+                <div class="card border-0 shadow-sm p-4 bg-dark text-white">
+                    <h5 class="fw-bold mb-2"><i class="fa-solid fa-user-gear text-info me-2"></i> Recruiter & Admin Studio</h5>
+                    <p class="text-secondary small mb-3">Post new job drives, inspect applicant resumes, and manage hiring workflows.</p>
+                    <a href="{% url 'dashboard:manage_placements' %}" class="btn btn-info fw-bold w-100"><i class="fa-solid fa-plus me-1"></i> Manage Placements</a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

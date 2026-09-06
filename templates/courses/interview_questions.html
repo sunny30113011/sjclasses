@@ -1,0 +1,169 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Top Company Interview Questions & Answers | SJ TECH CLASSES{% endblock %}
+
+{% block content %}
+<!-- Header Hero -->
+<div class="bg-dark text-white py-5 position-relative overflow-hidden mb-4" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);">
+    <div class="container text-center position-relative z-1 max-w-800">
+        <span class="badge bg-warning text-dark font-monospace px-3 py-2 text-uppercase fw-bold mb-3">
+            <i class="fa-solid fa-building text-dark me-1"></i> Top IT Company Q&A Bank
+        </span>
+        <h1 class="fw-bold text-white mb-2 display-5">Company Interview Questions & Answers</h1>
+        <p class="text-secondary fs-5 mb-4">Master technical, coding, system design, and HR interview questions frequently asked at TCS, Infosys, Wipro, Amazon, Google, Accenture & MNCs.</p>
+
+        <!-- Search Bar -->
+        <form action="{% url 'courses:interview_questions_list' %}" method="GET" class="max-w-600 mx-auto">
+            <div class="input-group input-group-lg shadow-lg rounded-pill overflow-hidden bg-white p-1">
+                <span class="input-group-text bg-transparent border-0 ps-3">
+                    <i class="fa-solid fa-magnifying-glass text-warning"></i>
+                </span>
+                <input type="search" name="q" class="form-control border-0 shadow-none fs-6" placeholder="Search Python, Django, React, SQL, TCS, Amazon..." value="{{ query }}">
+                <button type="submit" class="btn btn-warning fw-bold px-4 rounded-pill">Search Q&A</button>
+            </div>
+        </form>
+
+        {% if user.is_authenticated and user.is_lms_admin or user.is_authenticated and user.is_instructor %}
+            <div class="mt-4">
+                <a href="{% url 'courses:manage_interview_questions' %}" class="btn btn-outline-warning btn-sm fw-bold">
+                    <i class="fa-solid fa-plus-circle me-1"></i> Admin Upload Studio
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="container mb-5">
+    <div class="row g-4">
+        <!-- Sidebar Filters -->
+        <div class="col-lg-3">
+            <div class="card border-0 shadow-sm p-4 rounded-4 sticky-top" style="top: 90px;">
+                <h5 class="fw-bold mb-3 text-dark"><i class="fa-solid fa-filter me-2 text-warning"></i> Filters</h5>
+                
+                <form action="{% url 'courses:interview_questions_list' %}" method="GET">
+                    {% if query %}
+                        <input type="hidden" name="q" value="{{ query }}">
+                    {% endif %}
+
+                    <!-- Company Filter -->
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-secondary text-uppercase font-monospace">Target Company</label>
+                        <select name="company" class="form-select form-select-sm" onchange="this.form.submit()">
+                            <option value="">All Companies (MNCs)</option>
+                            {% for comp in all_companies %}
+                                <option value="{{ comp }}" {% if company == comp %}selected{% endif %}>{{ comp }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Category Filter -->
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-secondary text-uppercase font-monospace">Round Category</label>
+                        <select name="category" class="form-select form-select-sm" onchange="this.form.submit()">
+                            <option value="">All Categories</option>
+                            <option value="Technical" {% if category == 'Technical' %}selected{% endif %}>Technical Round</option>
+                            <option value="Coding" {% if category == 'Coding' %}selected{% endif %}>Coding / Hands-on</option>
+                            <option value="System Design" {% if category == 'System Design' %}selected{% endif %}>System Architecture</option>
+                            <option value="HR / Behavioral" {% if category == 'HR / Behavioral' %}selected{% endif %}>HR / Behavioral</option>
+                        </select>
+                    </div>
+
+                    <!-- Difficulty Filter -->
+                    <div class="mb-4">
+                        <label class="form-label small fw-bold text-secondary text-uppercase font-monospace">Difficulty</label>
+                        <select name="difficulty" class="form-select form-select-sm" onchange="this.form.submit()">
+                            <option value="">All Difficulties</option>
+                            <option value="Easy" {% if difficulty == 'Easy' %}selected{% endif %}>Easy</option>
+                            <option value="Medium" {% if difficulty == 'Medium' %}selected{% endif %}>Medium</option>
+                            <option value="Hard" {% if difficulty == 'Hard' %}selected{% endif %}>Hard</option>
+                        </select>
+                    </div>
+
+                    <a href="{% url 'courses:interview_questions_list' %}" class="btn btn-outline-secondary btn-sm w-100 fw-semibold">
+                        <i class="fa-solid fa-arrows-rotate me-1"></i> Reset Filters
+                    </a>
+                </form>
+            </div>
+        </div>
+
+        <!-- Questions Accordion Feed -->
+        <div class="col-lg-9">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <span class="text-secondary small">Found <strong>{{ questions|length }}</strong> Interview Question/s</span>
+                {% if company or category or difficulty or query %}
+                    <span class="badge bg-light text-dark border">
+                        Filtered View
+                    </span>
+                {% endif %}
+            </div>
+
+            <div class="accordion accordion-flush" id="interviewQuestionsAccordion">
+                {% for q in questions %}
+                    <div class="card border-0 shadow-sm rounded-4 mb-3 overflow-hidden border-start border-4 {% if q.company_name == 'TCS' %}border-primary{% elif q.company_name == 'Amazon' %}border-warning{% elif q.company_name == 'Google' %}border-danger{% else %}border-info{% endif %}">
+                        <div class="card-header bg-white p-4 border-0" id="heading{{ q.id }}">
+                            <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+                                <!-- Company Badge -->
+                                <span class="badge bg-dark text-white font-monospace px-3 py-1 fs-6">
+                                    <i class="fa-solid fa-building me-1 text-warning"></i>{{ q.company_name }}
+                                </span>
+                                <!-- Topic Badge -->
+                                <span class="badge bg-light text-dark border px-3 py-1 font-monospace fw-semibold">
+                                    <i class="fa-solid fa-code text-primary me-1"></i>{{ q.topic }}
+                                </span>
+                                <!-- Difficulty Badge -->
+                                <span class="badge {% if q.difficulty == 'Easy' %}bg-success{% elif q.difficulty == 'Medium' %}bg-warning text-dark{% else %}bg-danger{% endif %} px-2 py-1">
+                                    {{ q.difficulty }}
+                                </span>
+                                <!-- Round Category Badge -->
+                                <span class="badge bg-secondary bg-opacity-10 text-dark px-2 py-1">
+                                    {{ q.category }}
+                                </span>
+                            </div>
+
+                            <!-- Question Text -->
+                            <h5 class="fw-bold text-dark mb-3 lh-base fs-5">
+                                {{ q.question_text }}
+                            </h5>
+
+                            <div class="d-flex align-items-center justify-content-between">
+                                <button class="btn btn-sm btn-outline-primary fw-bold px-3 py-2 rounded-pill" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ q.id }}" aria-expanded="false">
+                                    <i class="fa-solid fa-eye me-1"></i> Reveal Answer & Explanation
+                                </button>
+                                <small class="text-muted"><i class="fa-regular fa-clock me-1"></i>Added {{ q.created_at|date:"M d, Y" }}</small>
+                            </div>
+                        </div>
+
+                        <!-- Answer & Code Collapsible Body -->
+                        <div id="collapse{{ q.id }}" class="collapse" data-bs-parent="#interviewQuestionsAccordion">
+                            <div class="card-body p-4 bg-light border-top">
+                                <h6 class="fw-bold text-dark mb-2"><i class="fa-solid fa-circle-check text-success me-2"></i> Verified Answer & Detailed Explanation:</h6>
+                                <p class="text-secondary lh-lg mb-3" style="white-space: pre-line;">{{ q.answer_text }}</p>
+
+                                {% if q.code_snippet %}
+                                    <div class="position-relative mt-3">
+                                        <div class="d-flex justify-content-between align-items-center bg-dark text-white px-3 py-2 rounded-top small font-monospace">
+                                            <span><i class="fa-solid fa-code me-1 text-warning"></i> Code Example / Solution</span>
+                                            <button class="btn btn-sm btn-link text-warning p-0 text-decoration-none" onclick="navigator.clipboard.writeText(`{{ q.code_snippet|escapejs }}`); alert('Code copied to clipboard!');">
+                                                <i class="fa-solid fa-copy me-1"></i> Copy Code
+                                            </button>
+                                        </div>
+                                        <pre class="bg-dark text-success p-3 rounded-bottom mb-0 font-monospace text-wrap" style="font-size: 13px; line-height: 1.5;"><code>{{ q.code_snippet }}</code></pre>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                {% empty %}
+                    <div class="card border-0 shadow-sm p-5 text-center bg-white rounded-4">
+                        <i class="fa-solid fa-magnifying-glass display-4 text-muted mb-3 d-block"></i>
+                        <h5 class="fw-bold text-dark">No Interview Questions Found</h5>
+                        <p class="text-secondary mb-3">Try adjusting your filters or search keywords.</p>
+                        <a href="{% url 'courses:interview_questions_list' %}" class="btn btn-outline-primary btn-sm mx-auto" style="width: max-content;">Reset All Filters</a>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,348 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid px-0">
+    <div class="row g-0">
+        <!-- Main Content Area -->
+        <div class="col-lg-8 col-xl-9 bg-light min-vh-100 p-4">
+            <!-- Header bar -->
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <a href="{% url 'courses:course_detail' slug=course.slug %}" class="btn btn-sm btn-outline-secondary">
+                    <i class="fa-solid fa-arrow-left me-1"></i> Back to Course Overview
+                </a>
+                <span class="badge bg-primary fs-6">{{ active_lesson.get_lesson_type_display }}</span>
+            </div>
+
+            <!-- Active Lesson Viewer -->
+            {% if not active_lesson %}
+                <div class="card border-0 shadow-lg p-5 text-center my-4 bg-white rounded-4 border-top border-warning border-4">
+                    <div class="mb-3">
+                        <i class="fa-solid fa-hourglass-half display-1 text-warning"></i>
+                    </div>
+                    <h2 class="fw-bold text-dark mb-2">⏳ Course Videos & Content Coming Soon!</h2>
+                    <p class="text-secondary fs-5 mb-4">
+                        Our instructors are actively recording videos and preparing study notes for <strong>{{ course.title }}</strong>.
+                    </p>
+                    <div class="d-flex justify-content-center gap-3">
+                        <a href="{% url 'courses:course_detail' slug=course.slug %}" class="btn btn-dark btn-lg fw-bold">
+                            <i class="fa-solid fa-arrow-left me-1"></i> Back to Course Overview
+                        </a>
+                        <a href="{% url 'courses:contact' %}" class="btn btn-outline-warning btn-lg fw-bold">
+                            <i class="fa-solid fa-headset me-1"></i> Contact Instructor
+                        </a>
+                    </div>
+                </div>
+            {% else %}
+            <div class="card border-0 shadow-sm overflow-hidden mb-4">
+                {% if active_lesson.lesson_type == 'video' %}
+                    <div class="ratio ratio-16x9 bg-black">
+                        {% if active_lesson.video_url %}
+                            {% if active_lesson.is_cloudinary_console %}
+                                {# console.cloudinary.com blocks iframes — show guidance instead #}
+                                <div class="d-flex align-items-center justify-content-center text-white flex-column p-4 text-center">
+                                    <i class="fa-solid fa-triangle-exclamation display-4 text-danger mb-3"></i>
+                                    <h5 class="text-warning fw-bold mb-2">Invalid Cloudinary URL</h5>
+                                    <p class="text-secondary small mb-3">The video URL points to the Cloudinary <strong>Console</strong> which cannot be embedded.<br>Please use the direct CDN video link instead.</p>
+                                    <div class="bg-dark border border-warning rounded-3 px-4 py-2 small font-monospace text-warning">
+                                        https://res.cloudinary.com/&lt;cloud_name&gt;/video/upload/&lt;filename&gt;.mp4
+                                    </div>
+                                    <a href="https://console.cloudinary.com" target="_blank" class="btn btn-outline-warning btn-sm mt-3">
+                                        <i class="fa-solid fa-arrow-up-right-from-square me-1"></i> Open Cloudinary to Copy URL
+                                    </a>
+                                </div>
+                            {% elif active_lesson.is_cloudinary_or_direct_video %}
+                                <video controls class="w-100 h-100" style="object-fit: contain;" controlsList="nodownload">
+                                    <source src="{{ active_lesson.video_url }}" type="video/mp4">
+                                    Your browser does not support HTML5 video playback.
+                                </video>
+                            {% else %}
+                                <iframe id="video-iframe" src="{{ active_lesson.get_embed_video_url }}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen class="w-100 h-100 border-0"></iframe>
+                            {% endif %}
+                        {% else %}
+                            <div class="d-flex align-items-center justify-content-center text-white flex-column p-4">
+                                <i class="fa-solid fa-circle-play display-4 text-warning mb-2"></i>
+                                <p class="mb-0 text-secondary">Video stream placeholder — Instructor has not attached a YouTube or Cloudinary link yet.</p>
+                            </div>
+                        {% endif %}
+                    </div>
+
+
+
+                {% elif active_lesson.lesson_type == 'pdf' %}
+                    <div class="p-5 text-center bg-white">
+                        <i class="fa-solid fa-file-pdf text-danger display-1 mb-3"></i>
+                        <h4>{{ active_lesson.title }}</h4>
+                        <p class="text-secondary">Download PDF Notes & Documentation for this lesson.</p>
+                        {% if active_lesson.pdf_file %}
+                            <a href="{{ active_lesson.pdf_file.url }}" target="_blank" class="btn btn-danger btn-lg"><i class="fa-solid fa-download me-2"></i> Download PDF Notes</a>
+                        {% else %}
+                            <p class="text-muted">PDF File attached in course resources.</p>
+                        {% endif %}
+                    </div>
+                {% elif active_lesson.lesson_type == 'quiz' %}
+                    <div class="p-5 text-center bg-white">
+                        <i class="fa-solid fa-clipboard-question text-warning display-1 mb-3"></i>
+                        <h4>{{ active_lesson.quiz.title|default:active_lesson.title }}</h4>
+                        <p class="text-secondary">Pass percentage required: {{ active_lesson.quiz.pass_percentage|default:60 }}%</p>
+                        {% if active_lesson.quiz %}
+                            <a href="{% url 'courses:quiz_take' quiz_id=active_lesson.quiz.id %}" class="btn btn-warning btn-lg fw-bold"><i class="fa-solid fa-play me-2"></i> Start Quiz Exam</a>
+                        {% else %}
+                            <p class="text-muted">Quiz questions being drafted.</p>
+                        {% endif %}
+                    </div>
+                {% endif %}
+
+                <div class="card-body p-4 d-flex justify-content-between align-items-center">
+                    <div>
+                        <h4 class="fw-bold mb-1">{{ active_lesson.title }}</h4>
+                        <p class="text-secondary small mb-0"><i class="fa-regular fa-clock me-1"></i> {{ active_lesson.duration_minutes }} minutes</p>
+                    </div>
+
+                    {% if enrollment %}
+                        <form method="POST" id="mark-complete-form">
+                            {% csrf_token %}
+                            <input type="hidden" name="mark_complete" value="1">
+                            {% if active_lesson.id in completed_lesson_ids %}
+                                <button type="button" class="btn btn-success" disabled>
+                                    <i class="fa-solid fa-circle-check me-1"></i> Completed
+                                </button>
+                            {% else %}
+                                <button type="submit" class="btn btn-primary" id="mark-complete-btn">
+                                    <i class="fa-solid fa-check me-1"></i> Mark as Complete
+                                </button>
+                            {% endif %}
+                        </form>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Project Source Code ZIP Download & Run Guide Section -->
+            {% if course.project_files.all %}
+                <div class="card border-0 shadow-sm p-4 mb-4 border-start border-warning border-4">
+                    <h5 class="fw-bold mb-3"><i class="fa-solid fa-file-zipper text-warning me-2"></i> Project Source Code & Setup Guide</h5>
+                    <div class="list-group list-group-flush">
+                        {% for pf in course.project_files.all %}
+                            <div class="list-group-item bg-light border rounded-3 mb-3 p-3">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <div>
+                                        <h6 class="fw-bold text-dark mb-1"><i class="fa-solid fa-file-code text-primary me-2"></i>{{ pf.title }}</h6>
+                                        <small class="text-secondary">Uploaded: {{ pf.uploaded_at|date:"M d, Y" }} • Size: {{ pf.file_size_mb }} MB</small>
+                                    </div>
+                                    {% if pf.zip_file %}
+                                        <a href="{{ pf.zip_file.url }}" download class="btn btn-warning fw-bold">
+                                            <i class="fa-solid fa-download me-1"></i> Download .ZIP
+                                        </a>
+                                    {% else %}
+                                        <button disabled class="btn btn-secondary fw-bold">
+                                            <i class="fa-solid fa-clock me-1"></i> File Pending
+                                        </button>
+                                    {% endif %}
+
+                                </div>
+                                <div class="bg-dark text-success font-monospace p-3 rounded-3 mt-2 small" style="font-size: 12px; line-height: 1.6;">
+                                    <strong class="text-warning d-block mb-1"><i class="fa-solid fa-terminal me-1"></i> How to Run Process (Local Setup):</strong>
+                                    {{ pf.run_instructions|linebreaksbr }}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+
+
+            <!-- Q&A & Discussion Board -->
+            <div class="card border-0 shadow-sm p-4">
+
+                <h5 class="fw-bold mb-3"><i class="fa-solid fa-comments me-2 text-primary"></i> Lesson Discussion & Q&A</h5>
+                
+                {% if enrollment %}
+                    <form action="{% url 'courses:post_discussion_lesson' course_id=course.id lesson_id=active_lesson.id %}" method="POST" class="mb-4">
+                        {% csrf_token %}
+                        <div class="mb-2">
+                            <input type="text" name="title" class="form-control form-control-sm" placeholder="Question Title..." required>
+                        </div>
+                        <div class="mb-2">
+                            <textarea name="content" class="form-control form-control-sm" rows="2" placeholder="Ask a question about this lesson..." required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-sm btn-primary">Post Question</button>
+                    </form>
+                {% endif %}
+
+                {% for disc in discussions %}
+                    <div class="border rounded-3 mb-3 p-3 bg-light">
+                        <!-- Question -->
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                <span class="fw-bold text-dark">
+                                    <i class="fa-solid fa-circle-question text-primary me-1"></i>
+                                    {{ disc.user.get_full_name|default:disc.user.username }}
+                                </span>
+                                <small class="text-muted ms-2">{{ disc.created_at|date:"M d, Y H:i" }}</small>
+                            </div>
+                        </div>
+                        <h6 class="fw-bold mb-1">{{ disc.title }}</h6>
+                        <p class="text-secondary small mb-3">{{ disc.content }}</p>
+
+                        <!-- Replies -->
+                        {% for reply in disc.replies.all %}
+                            <div class="ms-3 mb-2 p-2 rounded-3 {% if reply.is_instructor_reply %}bg-warning bg-opacity-10 border border-warning{% else %}bg-white border{% endif %}">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <span class="fw-bold small">
+                                        {% if reply.is_instructor_reply %}
+                                            <i class="fa-solid fa-chalkboard-user text-warning me-1"></i>
+                                            {{ reply.user.get_full_name|default:reply.user.username }}
+                                            <span class="badge bg-warning text-dark ms-1" style="font-size:10px;">Instructor</span>
+                                        {% else %}
+                                            <i class="fa-solid fa-user text-secondary me-1"></i>
+                                            {{ reply.user.get_full_name|default:reply.user.username }}
+                                        {% endif %}
+                                    </span>
+                                    <small class="text-muted">{{ reply.created_at|date:"M d, H:i" }}</small>
+                                </div>
+                                <p class="small mb-0 text-dark">{{ reply.content }}</p>
+                            </div>
+                        {% endfor %}
+
+                        <!-- Reply Form -->
+                        {% if user.is_authenticated %}
+                            <form method="POST" action="{% url 'courses:reply_discussion' discussion_id=disc.id %}" class="mt-2">
+                                {% csrf_token %}
+                                <div class="input-group input-group-sm">
+                                    <input type="text" name="content" class="form-control" 
+                                           placeholder="{% if user.is_instructor or user.is_lms_admin %}Write your answer as instructor...{% else %}Write a reply...{% endif %}"
+                                           required>
+                                    <button type="submit" class="btn {% if user.is_instructor or user.is_lms_admin %}btn-warning{% else %}btn-primary{% endif %} btn-sm fw-bold">
+                                        <i class="fa-solid fa-paper-plane me-1"></i>
+                                        {% if user.is_instructor or user.is_lms_admin %}Answer{% else %}Reply{% endif %}
+                                    </button>
+                                </div>
+                            </form>
+                        {% endif %}
+                    </div>
+                {% empty %}
+                    <p class="text-secondary small">No discussions for this lesson yet. Be the first to ask!</p>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+
+
+        <!-- Sidebar Playlist -->
+        <div class="col-lg-4 col-xl-3 lms-sidebar p-3 border-start">
+            <h5 class="fw-bold mb-2">{{ course.title }}</h5>
+
+            {% if enrollment %}
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between align-items-center small mb-1">
+                        <span class="fw-bold text-secondary">Course Progress</span>
+                        <span class="fw-bold text-primary">{{ enrollment.progress_percentage }}%</span>
+                    </div>
+                    <div class="progress" style="height: 8px;">
+                        <div class="progress-bar bg-primary" role="progressbar" style="width: {{ enrollment.progress_percentage }}%;"></div>
+                    </div>
+                </div>
+
+                {% if enrollment.progress_percentage == 100 %}
+                    <a href="{% url 'courses:download_certificate' enrollment_id=enrollment.id %}" class="btn btn-gradient btn-sm w-100 mb-3 shadow">
+                        <i class="fa-solid fa-award me-1"></i> Download PDF Certificate
+                    </a>
+                {% endif %}
+            {% endif %}
+
+            <div class="accordion shadow-none" id="sidebarAccordion">
+                {% for module in modules %}
+                    <div class="accordion-item border-0 mb-2">
+                        <h2 class="accordion-header" id="sideHead{{ module.id }}">
+                            <button class="accordion-button fw-bold text-dark bg-light py-2 px-3 small" type="button" data-bs-toggle="collapse" data-bs-target="#sideCollapse{{ module.id }}">
+                                Module {{ module.order }}: {{ module.title }}
+                            </button>
+                        </h2>
+                        <div id="sideCollapse{{ module.id }}" class="accordion-collapse collapse show" data-bs-parent="#sidebarAccordion">
+                            <div class="list-group list-group-flush">
+                                {% for lesson in module.lessons.all %}
+                                    <a href="{% url 'courses:lesson_player_lesson' course_slug=course.slug lesson_id=lesson.id %}" 
+                                       class="list-group-item list-group-item-action lesson-item py-2 px-3 border-0 small d-flex justify-content-between align-items-center {% if active_lesson.id == lesson.id %}active{% endif %}">
+                                        <div class="d-flex align-items-center me-2 text-truncate">
+                                            {% if lesson.id in completed_lesson_ids %}
+                                                <i class="fa-solid fa-circle-check text-success me-2"></i>
+                                            {% else %}
+                                                <i class="fa-regular fa-circle text-muted me-2"></i>
+                                            {% endif %}
+                                            <span class="text-truncate">{{ lesson.title }}</span>
+                                        </div>
+                                        <small class="text-muted">{{ lesson.duration_minutes }}m</small>
+                                    </a>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Helper function to submit mark-complete form
+    function submitMarkComplete() {
+        const form = document.getElementById('mark-complete-form');
+        const btn = document.getElementById('mark-complete-btn');
+        if (form && btn && !btn.disabled) {
+            console.log("Automatically marking lesson as complete...");
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-1"></i> Completing...';
+            btn.disabled = true;
+            form.submit();
+        }
+    }
+
+    // 1. Direct HTML5 <video> element watch completion listener
+    document.addEventListener("DOMContentLoaded", function() {
+        const video = document.querySelector('video');
+        if (video) {
+            video.addEventListener('ended', function() {
+                console.log("HTML5 video ended.");
+                submitMarkComplete();
+            });
+        }
+    });
+
+    // 2. YouTube Iframe API Player state listener
+    document.addEventListener("DOMContentLoaded", function() {
+        const iframe = document.getElementById('video-iframe');
+        if (iframe && (iframe.src.includes('youtube.com') || iframe.src.includes('youtu.be'))) {
+            // Append enablejsapi=1 if not present
+            let src = iframe.src;
+            if (!src.includes('enablejsapi=1')) {
+                src += (src.includes('?') ? '&' : '?') + 'enablejsapi=1';
+                iframe.src = src;
+            }
+
+            // Load YouTube Player API script
+            const tag = document.createElement('script');
+            tag.src = "https://www.youtube.com/iframe_api";
+            const firstScriptTag = document.getElementsByTagName('script')[0];
+            firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+        }
+    });
+
+    let player;
+    function onYouTubeIframeAPIReady() {
+        const iframe = document.getElementById('video-iframe');
+        if (iframe) {
+            player = new YT.Player('video-iframe', {
+                events: {
+                    'onStateChange': onPlayerStateChange
+                }
+            });
+        }
+    }
+
+    function onPlayerStateChange(event) {
+        // YT.PlayerState.ENDED is 0
+        if (event.data === 0) {
+            console.log("YouTube video ended.");
+            submitMarkComplete();
+        }
+    }
+</script>
+{% endblock %}

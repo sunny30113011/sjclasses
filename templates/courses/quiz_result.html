@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center text-center">
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-lg p-5">
+                {% if passed %}
+                    <i class="fa-solid fa-trophy display-1 text-warning mb-3"></i>
+                    <h2 class="fw-bold text-success mb-2">Congratulations!</h2>
+                    <p class="text-secondary">You successfully passed {{ quiz.title }}</p>
+                {% else %}
+                    <i class="fa-solid fa-circle-xmark display-1 text-danger mb-3"></i>
+                    <h2 class="fw-bold text-danger mb-2">Quiz Failed</h2>
+                    <p class="text-secondary">Don't worry, review the material and try again!</p>
+                {% endif %}
+
+                <div class="display-4 fw-extrabold my-3 {% if passed %}text-success{% else %}text-danger{% endif %}">
+                    {{ score_pct }}%
+                </div>
+                <p class="text-muted small">Passing Threshold: {{ quiz.pass_percentage }}%</p>
+
+                <div class="d-flex justify-content-center gap-3 mt-4">
+                    <a href="{% url 'courses:quiz_take' quiz_id=quiz.id %}" class="btn btn-outline-primary">Retake Quiz</a>
+                    <a href="{% url 'courses:lesson_player' course_slug=course.slug %}" class="btn btn-gradient">Return to LMS</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

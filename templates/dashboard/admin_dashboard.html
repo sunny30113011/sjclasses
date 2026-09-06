@@ -1,0 +1,1549 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="bg-dark text-white py-4 mb-4">
+    <div class="container d-flex justify-content-between align-items-center">
+        <div>
+            <h2 class="fw-bold mb-1"><i class="fa-solid fa-shield-halved me-2 text-warning"></i> Admin Panel & Control Studio</h2>
+            <p class="text-secondary small mb-0">Verify manual UPI student payments, approve course access, and add instructors.</p>
+        </div>
+        <div class="d-flex gap-2 flex-wrap">
+            <a href="{% url 'dashboard:broadcast_offer' %}" class="btn btn-warning fw-bold">
+                <i class="fa-solid fa-bullhorn me-1"></i> Broadcast Prize Offer
+            </a>
+            <button type="button" class="btn btn-primary fw-bold" data-bs-toggle="modal" data-bs-target="#unlockAllCoursesModal">
+                <i class="fa-solid fa-crown me-1"></i> Unlock All Courses
+            </button>
+            <a href="{% url 'courses:manage_interview_questions' %}" class="btn btn-outline-warning fw-bold">
+                <i class="fa-solid fa-cloud-arrow-up me-1"></i> Interview Q&A
+            </a>
+            <button type="button" class="btn btn-info fw-bold" data-bs-toggle="modal" data-bs-target="#addInstructorModal">
+                <i class="fa-solid fa-user-plus me-1"></i> Add Instructor
+            </button>
+            <button type="button" class="btn btn-success fw-bold" data-bs-toggle="modal" data-bs-target="#manualEnrollmentModal">
+                <i class="fa-solid fa-unlock me-1"></i> Single Course Free
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Add Instructor Modal -->
+<div class="modal fade" id="addInstructorModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-dark text-white">
+                <h5 class="modal-header-title fw-bold"><i class="fa-solid fa-user-chalkboard text-info me-2"></i> Add New Instructor</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{% url 'dashboard:add_instructor' %}" method="POST">
+                {% csrf_token %}
+                <div class="modal-body p-4">
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Username *</label>
+                        <input type="text" name="username" class="form-control" placeholder="e.g. instructor_sunny" required>
+                    </div>
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <label class="form-label small fw-bold">First Name</label>
+                            <input type="text" name="first_name" class="form-control" placeholder="Sunny">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small fw-bold">Last Name</label>
+                            <input type="text" name="last_name" class="form-control" placeholder="Waghmode">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Email Address *</label>
+                        <input type="email" name="email" class="form-control" placeholder="instructor@example.com" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Password *</label>
+                        <input type="password" name="password" class="form-control" placeholder="Enter secure password" required minlength="6">
+                    </div>
+                    <div class="row g-2 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Phone Number</label>
+                            <input type="text" name="phone_number" class="form-control" placeholder="+91 9876543210">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Payout UPI ID</label>
+                            <input type="text" name="upi_id" class="form-control" placeholder="e.g. instructor@upi">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Professional Headline</label>
+                        <input type="text" name="headline" class="form-control" placeholder="e.g. Senior Full Stack Engineer & Corporate Trainer">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Instructor Bio / Qualification</label>
+                        <textarea name="bio" class="form-control" rows="2" placeholder="Senior Django Developer & Mentor at SJ TECH CLASSES"></textarea>
+                    </div>
+                    <div class="form-check form-switch bg-light p-3 rounded-3 border">
+                        <input class="form-check-input ms-0 me-2" type="checkbox" name="is_instructor_approved" id="addApproveToggle" checked>
+                        <label class="form-check-label small fw-bold text-dark" for="addApproveToggle">
+                            <i class="fa-solid fa-circle-check text-success me-1"></i> Grant Instant Access (Auto-Approve)
+                        </label>
+                        <small class="text-muted d-block ms-4">When checked, the instructor can log in and start publishing courses immediately.</small>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-info btn-sm fw-bold px-4">Create Instructor Account</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Manual Enrollment Modal -->
+<div class="modal fade" id="manualEnrollmentModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content text-start">
+            <div class="modal-header bg-dark text-white">
+                <h5 class="modal-title fw-bold text-success"><i class="fa-solid fa-unlock me-2"></i> Manual Student Enrollment</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{% url 'dashboard:admin_enroll_student_free' %}" method="POST">
+                {% csrf_token %}
+                <div class="modal-body p-4 text-dark">
+                    <p class="text-secondary small mb-3">Manually enroll a student in any course for free. The student will be notified and can access all lessons instantly.</p>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Select Student *</label>
+                        <select name="student_id" class="form-select" required>
+                            <option value="" disabled selected>-- Choose Student --</option>
+                            {% for std in students %}
+                                <option value="{{ std.id }}">{{ std.username }} ({{ std.get_full_name|default:"No Name" }} - {{ std.email }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Select Course *</label>
+                        <select name="course_id" class="form-select" required>
+                            <option value="" disabled selected>-- Choose Course --</option>
+                            {% for crs in courses %}
+                                <option value="{{ crs.id }}">{{ crs.title }} (₹{{ crs.discount_price }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success fw-bold">Unlock & Enroll Free</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Unlock ALL Courses Modal -->
+<div class="modal fade" id="unlockAllCoursesModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content text-start">
+            <div class="modal-header bg-dark text-white">
+                <h5 class="modal-title fw-bold text-warning"><i class="fa-solid fa-crown me-2"></i> Grant All-Access Pass (Unlock All Courses)</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{% url 'dashboard:admin_unlock_all_courses_free' %}" method="POST">
+                {% csrf_token %}
+                <div class="modal-body p-4 text-dark">
+                    <div class="alert alert-warning small mb-3">
+                        <i class="fa-solid fa-triangle-exclamation me-1"></i>
+                        This action will grant <strong>All-Access Pass</strong> to the selected student, unlocking <strong>EVERY published course</strong> instantly!
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Select Student *</label>
+                        <select name="student_id" class="form-select" required>
+                            <option value="" disabled selected>-- Choose Student --</option>
+                            {% for std in students %}
+                                <option value="{{ std.id }}">{{ std.username }} ({{ std.get_full_name|default:"No Name" }} - {{ std.email }}) {% if std.has_all_access %}★ Already All-Access{% endif %}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-warning fw-bold text-dark" onclick="return confirm('Grant full All-Access Pass to this student? All courses will be unlocked.');">
+                        <i class="fa-solid fa-crown me-1"></i> Unlock All Courses Now
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+<div class="container mb-5">
+    <!-- All-Access Offer Live Controller Bar -->
+    <div class="card border-0 shadow-sm rounded-4 p-3 mb-4 {% if all_access_plan.is_active %}bg-warning bg-opacity-10 border-start border-warning border-4{% else %}bg-light border{% endif %}">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <div class="d-flex align-items-center gap-3">
+                <div class="rounded-circle p-2 {% if all_access_plan.is_active %}bg-warning text-dark{% else %}bg-secondary text-white{% endif %} d-flex align-items-center justify-content-center shadow-sm" style="width: 48px; height: 48px;">
+                    <i class="fa-solid fa-crown fs-4"></i>
+                </div>
+                <div>
+                    <div class="d-flex align-items-center flex-wrap gap-2 mb-1">
+                        <strong class="text-dark fs-6">All-Courses Pass Offer:</strong>
+                        {% if all_access_plan.is_active %}
+                            <span class="badge bg-success py-1 px-2 fw-bold"><i class="fa-solid fa-circle-check me-1"></i> ACTIVE (₹{{ all_access_plan.offer_price|floatformat:0 }})</span>
+                            <span class="text-success small fw-medium d-none d-md-inline">• Live on website</span>
+                        {% else %}
+                            <span class="badge bg-danger py-1 px-2 fw-bold"><i class="fa-solid fa-circle-xmark me-1"></i> INACTIVE</span>
+                            <span class="text-muted small fw-medium d-none d-md-inline">• Hidden from entire website</span>
+                        {% endif %}
+                        <span class="badge bg-primary bg-opacity-15 text-primary fw-bold border border-primary border-opacity-25">
+                            <i class="fa-regular fa-clock me-1"></i> {{ all_access_plan.duration_days|default:365 }} Days (1 Year)
+                        </span>
+                    </div>
+                    <div class="d-flex align-items-center gap-3 text-secondary small">
+                        <span>Price: <strong class="text-success">₹{{ all_access_plan.offer_price|floatformat:0 }}</strong> <span class="text-decoration-line-through text-muted small ms-1">₹{{ all_access_plan.original_price|floatformat:0 }}</span></span>
+                        <span>•</span>
+                        <span>Active Pass Holders: <strong class="text-dark">{{ all_access_students_count }}</strong></span>
+                    </div>
+                </div>
+            </div>
+            <div class="d-flex flex-wrap gap-2">
+                <button type="button" class="btn btn-outline-dark btn-sm fw-bold px-3 shadow-sm bg-white" data-bs-toggle="modal" data-bs-target="#editAllAccessModal">
+                    <i class="fa-solid fa-pen-to-square me-1 text-primary"></i> Edit Price & Validity
+                </button>
+                <a href="{% url 'dashboard:broadcast_offer' %}" class="btn btn-outline-warning text-dark btn-sm fw-bold px-3 shadow-sm bg-white">
+                    <i class="fa-solid fa-bullhorn me-1 text-warning"></i> Broadcast
+                </a>
+                <a href="{% url 'dashboard:toggle_all_access_offer' %}" class="btn {% if all_access_plan.is_active %}btn-outline-danger bg-white{% else %}btn-success{% endif %} btn-sm fw-bold px-3 shadow-sm">
+                    {% if all_access_plan.is_active %}
+                        <i class="fa-solid fa-power-off me-1"></i> Turn OFF (Hide)
+                    {% else %}
+                        <i class="fa-solid fa-play me-1"></i> Turn ON (Show)
+                    {% endif %}
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Platform Metrics -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm p-4 text-center border-start border-success border-4">
+                <span class="text-secondary small text-uppercase fw-bold">Total Verified Revenue</span>
+                <h3 class="fw-extrabold text-success mb-0 mt-1">₹{{ total_revenue }}</h3>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm p-4 text-center border-start border-warning border-4">
+                <span class="text-secondary small text-uppercase fw-bold">Pending Manual UPI</span>
+                <h3 class="fw-extrabold text-warning mb-0 mt-1">{{ pending_payments.count }}</h3>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm p-4 text-center border-start border-primary border-4">
+                <span class="text-secondary small text-uppercase fw-bold">Total Students</span>
+                <h3 class="fw-extrabold text-primary mb-0 mt-1">{{ total_students }}</h3>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm p-4 text-center border-start border-info border-4">
+                <span class="text-secondary small text-uppercase fw-bold">Published Courses</span>
+                <h3 class="fw-extrabold text-info mb-0 mt-1">{{ total_courses }}</h3>
+            </div>
+        </div>
+    </div>
+
+    <!-- LMS FINANCIAL & PERFORMANCE ANALYTICS STUDIO -->
+    <div class="row g-4 mb-5">
+        <!-- Monthly Revenue trend (Line/Area Chart) -->
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm p-4 h-100 bg-white rounded-4">
+                <h5 class="fw-bold mb-3 text-dark"><i class="fa-solid fa-chart-line text-success me-2"></i> Monthly Verified Revenue Trends</h5>
+                <div style="position: relative; height:280px; width:100%;">
+                    <canvas id="monthlyRevenueChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <!-- Course Popularity Enrollments & Course Revenue (Bar Chart) -->
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm p-4 h-100 bg-white rounded-4">
+                <h5 class="fw-bold mb-3 text-dark"><i class="fa-solid fa-chart-bar text-info me-2"></i> Course Popularity (Total Enrollments)</h5>
+                <div style="position: relative; height:280px; width:100%;">
+                    <canvas id="coursePopularityChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PENDING PAYMENTS VERIFICATION SECTION -->
+    <div class="card border-0 shadow-lg p-4 mb-5 border-top border-warning border-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h4 class="fw-bold mb-0 text-dark">
+                <i class="fa-solid fa-clock-rotate-left text-warning me-2"></i> Pending Payment Approvals ({{ pending_payments.count }})
+            </h4>
+            <span class="badge bg-warning text-dark px-3 py-2">Manual UTR & Receipt Check</span>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table align-middle table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Date & Time</th>
+                        <th>Student</th>
+                        <th>Course</th>
+                        <th>Amount</th>
+                        <th>UTR Number</th>
+                        <th>Receipt Screenshot</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in pending_payments %}
+                        <tr>
+                            <td><small class="text-secondary">{{ p.paid_on|date:"M d, Y H:i" }}</small></td>
+                            <td>
+                                <strong>{{ p.user.get_full_name|default:p.user.username }}</strong><br>
+                                <small class="text-secondary">{{ p.user.email }}</small>
+                            </td>
+                            <td class="fw-semibold">
+                                {% if p.is_all_access %}
+                                    <span class="badge bg-warning text-dark py-1 px-2 fw-bold d-inline-block">
+                                        <i class="fa-solid fa-crown text-danger me-1"></i> All-Access VIP Pass
+                                    </span>
+                                    <small class="d-block text-muted">Unlocks ALL Courses</small>
+                                {% else %}
+                                    {{ p.course.title }}
+                                {% endif %}
+                            </td>
+                            <td class="fw-bold text-success fs-5">₹{{ p.amount }}</td>
+                            <td><code class="fs-6 bg-light text-dark p-1 rounded border border-primary">{{ p.utr }}</code></td>
+                            <td>
+                                {% if p.screenshot %}
+                                    <button type="button" class="btn btn-sm btn-outline-info" data-bs-toggle="modal" data-bs-target="#receiptModal{{ p.id }}">
+                                        <i class="fa-solid fa-image me-1"></i> View Screenshot
+                                    </button>
+
+                                    <!-- Receipt Image Modal -->
+                                    <div class="modal fade" id="receiptModal{{ p.id }}" tabindex="-1">
+                                        <div class="modal-dialog modal-dialog-centered modal-lg">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title fw-bold">Payment Receipt - UTR: {{ p.utr }}</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                </div>
+                                                <div class="modal-body text-center bg-light">
+                                                    <img src="{{ p.screenshot.url }}" class="receipt-preview-img shadow-sm" alt="Payment Receipt">
+                                                    <div class="mt-3 text-start small text-secondary">
+                                                        <p class="mb-1"><strong>Student:</strong> {{ p.user.username }} ({{ p.user.email }})</p>
+                                                        <p class="mb-1"><strong>Item:</strong> {% if p.is_all_access %}<span class="badge bg-warning text-dark">All-Access Pass (ALL COURSES)</span>{% else %}{{ p.course.title }}{% endif %}</p>
+                                                        <p class="mb-0"><strong>Submitted UTR:</strong> {{ p.utr }}</p>
+                                                    </div>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <a href="{% url 'dashboard:approve_payment' payment_id=p.id %}" class="btn btn-success fw-bold">
+                                                        <i class="fa-solid fa-circle-check me-1"></i> Approve & Unlock {% if p.is_all_access %}ALL Courses{% else %}Course{% endif %}
+                                                    </a>
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% else %}
+                                    <span class="text-muted small">No image uploaded</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-end">
+                                <a href="{% url 'dashboard:approve_payment' payment_id=p.id %}" class="btn btn-sm btn-success me-1 fw-semibold">
+                                    <i class="fa-solid fa-check"></i> Approve
+                                </a>
+                                <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#rejectModal{{ p.id }}">
+                                    <i class="fa-solid fa-xmark"></i> Reject
+                                </button>
+
+                                <!-- Reject Modal -->
+                                <div class="modal fade" id="rejectModal{{ p.id }}" tabindex="-1">
+                                    <div class="modal-dialog modal-dialog-centered">
+                                        <div class="modal-content text-start">
+                                            <form action="{% url 'dashboard:reject_payment' payment_id=p.id %}" method="POST">
+                                                {% csrf_token %}
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title fw-bold text-danger">Reject Payment #{{ p.id }}</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <p class="small text-secondary">Student will be notified with this rejection reason.</p>
+                                                    <div class="mb-3">
+                                                        <label class="form-label small fw-bold">Rejection Reason / Admin Note</label>
+                                                        <textarea name="admin_note" class="form-control form-control-sm" rows="3" required>UTR reference number or payment screenshot did not match. Please verify your transaction details.</textarea>
+                                                    </div>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                                                    <button type="submit" class="btn btn-danger btn-sm">Confirm Reject</button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center text-muted py-5">
+                                <i class="fa-solid fa-circle-check display-4 text-success mb-2"></i>
+                                <p class="mb-0">All pending payments have been processed!</p>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- INSTRUCTOR MANAGEMENT & APPROVALS STUDIO -->
+    <div id="instructors-management-section" class="card border-0 shadow-lg p-4 mb-5 border-top border-info border-4 bg-white rounded-4">
+        <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-3">
+            <div>
+                <div class="d-flex align-items-center gap-2 mb-1">
+                    <h4 class="fw-bold mb-0 text-dark">
+                        <i class="fa-solid fa-chalkboard-user text-info me-2"></i> Instructor Management & Approvals
+                    </h4>
+                    {% if pending_instructors_count > 0 %}
+                        <span class="badge bg-danger py-1 px-2 fw-bold">
+                            <i class="fa-solid fa-clock me-1"></i> {{ pending_instructors_count }} Awaiting Approval
+                        </span>
+                    {% endif %}
+                </div>
+                <p class="text-secondary small mb-0">Review pending instructor applications, approve or revoke studio permissions, update mentor details, or add new instructors.</p>
+            </div>
+            <div class="d-flex gap-2">
+                <button type="button" class="btn btn-info btn-sm fw-bold px-3 text-white shadow-sm" data-bs-toggle="modal" data-bs-target="#addInstructorModal">
+                    <i class="fa-solid fa-user-plus me-1"></i> Add New Instructor
+                </button>
+            </div>
+        </div>
+
+        {% if pending_instructors_count > 0 %}
+            <div class="alert alert-warning border-0 rounded-3 p-3 mb-3 bg-warning bg-opacity-15 d-flex align-items-center justify-content-between flex-wrap gap-2">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="fa-solid fa-triangle-exclamation text-warning fs-4"></i>
+                    <div>
+                        <strong class="text-dark">Pending Instructor Verification Required:</strong>
+                        <span class="text-secondary small ms-1">{{ pending_instructors_count }} applicant(s) signed up and need your review before they can publish courses.</span>
+                    </div>
+                </div>
+                <span class="badge bg-warning text-dark fw-bold px-3 py-1">Review Below</span>
+            </div>
+        {% endif %}
+
+        <!-- Instructor Navigation Tabs -->
+        <ul class="nav nav-pills mb-3 border-bottom pb-2" id="instructorTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link {% if pending_instructors_count > 0 %}active bg-warning text-dark{% else %}active{% endif %} btn-sm fw-bold me-2" id="pending-inst-tab" data-bs-toggle="tab" data-bs-target="#pending-instructors-pane" type="button" role="tab">
+                    <i class="fa-solid fa-clock-rotate-left me-1"></i> Pending Applications 
+                    <span class="badge {% if pending_instructors_count > 0 %}bg-danger text-white{% else %}bg-secondary{% endif %} ms-1">{{ pending_instructors.count }}</span>
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link btn-sm fw-bold me-2 {% if pending_instructors_count == 0 %}active{% endif %}" id="approved-inst-tab" data-bs-toggle="tab" data-bs-target="#approved-instructors-pane" type="button" role="tab">
+                    <i class="fa-solid fa-circle-check text-success me-1"></i> Approved Instructors 
+                    <span class="badge bg-success ms-1">{{ approved_instructors.count }}</span>
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link btn-sm fw-bold" id="all-inst-tab" data-bs-toggle="tab" data-bs-target="#all-instructors-pane" type="button" role="tab">
+                    <i class="fa-solid fa-users me-1"></i> All Instructors 
+                    <span class="badge bg-dark ms-1">{{ all_instructors.count }}</span>
+                </button>
+            </li>
+        </ul>
+
+        <div class="tab-content" id="instructorTabsContent">
+            <!-- 1. PENDING APPLICATIONS TAB -->
+            <div class="tab-pane fade {% if pending_instructors_count > 0 %}show active{% endif %}" id="pending-instructors-pane" role="tabpanel">
+                <div class="table-responsive">
+                    <table class="table align-middle table-hover small">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Instructor Applicant</th>
+                                <th>Contact & UPI</th>
+                                <th>Headline & Teaching Bio</th>
+                                <th>Applied Date</th>
+                                <th>Status</th>
+                                <th class="text-end">Admin Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for inst in pending_instructors %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <div class="rounded-circle bg-warning bg-opacity-20 text-warning d-flex align-items-center justify-content-center fw-bold shadow-sm" style="width: 40px; height: 40px;">
+                                                {{ inst.first_name|first|default:inst.username|first|upper }}
+                                            </div>
+                                            <div>
+                                                <strong class="text-dark d-block">{{ inst.get_full_name|default:inst.username }}</strong>
+                                                <small class="text-secondary">@{{ inst.username }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div><i class="fa-solid fa-envelope text-muted me-1 small"></i>{{ inst.email }}</div>
+                                        {% if inst.phone_number %}<div><i class="fa-solid fa-phone text-muted me-1 small"></i>{{ inst.phone_number }}</div>{% endif %}
+                                        {% if inst.upi_id %}<div class="mt-1"><span class="badge bg-light text-primary border">UPI: {{ inst.upi_id }}</span></div>{% endif %}
+                                    </td>
+                                    <td style="max-width: 250px;">
+                                        <strong class="text-dark d-block text-truncate">{{ inst.headline|default:"Instructor Applicant" }}</strong>
+                                        <small class="text-secondary d-block text-truncate">{{ inst.bio|default:"No bio provided" }}</small>
+                                    </td>
+                                    <td><small class="text-muted">{{ inst.date_joined|date:"M d, Y H:i" }}</small></td>
+                                    <td>
+                                        <span class="badge bg-warning text-dark py-1 px-2 fw-bold">
+                                            <i class="fa-solid fa-hourglass-half me-1"></i> Pending Review
+                                        </span>
+                                    </td>
+                                    <td class="text-end">
+                                        <a href="{% url 'dashboard:approve_instructor' instructor_id=inst.id %}" class="btn btn-sm btn-success fw-bold px-2 py-1 shadow-sm me-1" title="Approve Instructor">
+                                            <i class="fa-solid fa-circle-check me-1"></i> Approve
+                                        </a>
+                                        <button type="button" class="btn btn-sm btn-outline-primary px-2 py-1 me-1" data-bs-toggle="modal" data-bs-target="#editInstructorModal{{ inst.id }}" title="Edit Instructor">
+                                            <i class="fa-solid fa-pen-to-square"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-outline-danger px-2 py-1" data-bs-toggle="modal" data-bs-target="#deleteInstructorModal{{ inst.id }}" title="Delete Instructor">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="6" class="text-center text-muted py-4">
+                                        <i class="fa-solid fa-circle-check text-success fs-3 d-block mb-1"></i>
+                                        No pending instructor applications. All registered instructors are verified!
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 2. APPROVED INSTRUCTORS TAB -->
+            <div class="tab-pane fade {% if pending_instructors_count == 0 %}show active{% endif %}" id="approved-instructors-pane" role="tabpanel">
+                <div class="table-responsive">
+                    <table class="table align-middle table-hover small">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Instructor</th>
+                                <th>Contact & UPI</th>
+                                <th>Headline / Bio</th>
+                                <th>Courses Created</th>
+                                <th>Status</th>
+                                <th class="text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for inst in approved_instructors %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <div class="rounded-circle bg-primary bg-opacity-10 text-primary d-flex align-items-center justify-content-center fw-bold shadow-sm" style="width: 40px; height: 40px;">
+                                                {{ inst.first_name|first|default:inst.username|first|upper }}
+                                            </div>
+                                            <div>
+                                                <strong class="text-dark d-block">{{ inst.get_full_name|default:inst.username }}</strong>
+                                                <small class="text-secondary">@{{ inst.username }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div><i class="fa-solid fa-envelope text-muted me-1 small"></i>{{ inst.email }}</div>
+                                        {% if inst.phone_number %}<div><i class="fa-solid fa-phone text-muted me-1 small"></i>{{ inst.phone_number }}</div>{% endif %}
+                                        {% if inst.upi_id %}<div class="mt-1"><span class="badge bg-light text-primary border">UPI: {{ inst.upi_id }}</span></div>{% endif %}
+                                    </td>
+                                    <td style="max-width: 250px;">
+                                        <strong class="text-dark d-block text-truncate">{{ inst.headline|default:"Instructor" }}</strong>
+                                        <small class="text-secondary d-block text-truncate">{{ inst.bio|default:"No bio" }}</small>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info text-dark fw-bold">
+                                            <i class="fa-solid fa-book-open me-1"></i> {{ inst.courses_count }} Course(s)
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-success py-1 px-2 fw-bold">
+                                            <i class="fa-solid fa-circle-check me-1"></i> Active (Approved)
+                                        </span>
+                                    </td>
+                                    <td class="text-end">
+                                        <a href="{% url 'dashboard:reject_instructor' instructor_id=inst.id %}" class="btn btn-sm btn-outline-warning text-dark px-2 py-1 me-1" onclick="return confirm('Revoke instructor access for {{ inst.username }}? They will not be able to access Instructor Studio until approved again.');" title="Revoke Studio Access">
+                                            <i class="fa-solid fa-ban me-1"></i> Revoke
+                                        </a>
+                                        <button type="button" class="btn btn-sm btn-outline-primary px-2 py-1 me-1" data-bs-toggle="modal" data-bs-target="#editInstructorModal{{ inst.id }}" title="Edit Profile">
+                                            <i class="fa-solid fa-pen-to-square"></i> Edit
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-outline-danger px-2 py-1" data-bs-toggle="modal" data-bs-target="#deleteInstructorModal{{ inst.id }}" title="Delete Instructor">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="6" class="text-center text-muted py-4">No approved instructors found.</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 3. ALL INSTRUCTORS TAB -->
+            <div class="tab-pane fade" id="all-instructors-pane" role="tabpanel">
+                <div class="table-responsive">
+                    <table class="table align-middle table-hover small">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Instructor</th>
+                                <th>Email</th>
+                                <th>Courses</th>
+                                <th>Joined</th>
+                                <th>Approval Status</th>
+                                <th class="text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for inst in all_instructors %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ inst.get_full_name|default:inst.username }}</strong>
+                                        <small class="text-secondary d-block">@{{ inst.username }}</small>
+                                    </td>
+                                    <td>{{ inst.email }}</td>
+                                    <td><span class="badge bg-secondary">{{ inst.courses_count }} Courses</span></td>
+                                    <td><small class="text-muted">{{ inst.date_joined|date:"M d, Y" }}</small></td>
+                                    <td>
+                                        {% if inst.is_instructor_approved %}
+                                            <span class="badge bg-success"><i class="fa-solid fa-circle-check me-1"></i> Approved</span>
+                                        {% else %}
+                                            <span class="badge bg-warning text-dark"><i class="fa-solid fa-clock me-1"></i> Pending Approval</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-end">
+                                        {% if inst.is_instructor_approved %}
+                                            <a href="{% url 'dashboard:reject_instructor' instructor_id=inst.id %}" class="btn btn-sm btn-outline-warning text-dark px-2 py-1 me-1" onclick="return confirm('Revoke instructor access?');">Revoke</a>
+                                        {% else %}
+                                            <a href="{% url 'dashboard:approve_instructor' instructor_id=inst.id %}" class="btn btn-sm btn-success px-2 py-1 me-1">Approve</a>
+                                        {% endif %}
+                                        <button type="button" class="btn btn-sm btn-outline-primary px-2 py-1 me-1" data-bs-toggle="modal" data-bs-target="#editInstructorModal{{ inst.id }}"><i class="fa-solid fa-pen-to-square"></i></button>
+                                        <button type="button" class="btn btn-sm btn-outline-danger px-2 py-1" data-bs-toggle="modal" data-bs-target="#deleteInstructorModal{{ inst.id }}"><i class="fa-solid fa-trash"></i></button>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals for Each Instructor (Edit & Delete) -->
+    {% for inst in all_instructors %}
+        <!-- Edit Instructor Modal -->
+        <div class="modal fade" id="editInstructorModal{{ inst.id }}" tabindex="-1" aria-labelledby="editInstLabel{{ inst.id }}" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-lg">
+                <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden text-start">
+                    <div class="modal-header bg-dark text-white border-0 py-3">
+                        <h5 class="modal-title fw-bold" id="editInstLabel{{ inst.id }}">
+                            <i class="fa-solid fa-user-pen text-info me-2"></i> Edit Instructor: {{ inst.username }}
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <form method="POST" action="{% url 'dashboard:edit_instructor' instructor_id=inst.id %}">
+                        {% csrf_token %}
+                        <div class="modal-body p-4 text-dark">
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-bold text-secondary">First Name</label>
+                                    <input type="text" name="first_name" class="form-control" value="{{ inst.first_name }}">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-bold text-secondary">Last Name</label>
+                                    <input type="text" name="last_name" class="form-control" value="{{ inst.last_name }}">
+                                </div>
+                            </div>
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-bold text-secondary">Email Address *</label>
+                                    <input type="email" name="email" class="form-control" value="{{ inst.email }}" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-bold text-secondary">Phone Number</label>
+                                    <input type="text" name="phone_number" class="form-control" value="{{ inst.phone_number|default:'' }}">
+                                </div>
+                            </div>
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-bold text-secondary">Professional Headline</label>
+                                    <input type="text" name="headline" class="form-control" value="{{ inst.headline|default:'' }}" placeholder="e.g. Senior Full Stack Engineer">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-bold text-secondary">Payout UPI ID</label>
+                                    <input type="text" name="upi_id" class="form-control" value="{{ inst.upi_id|default:'' }}" placeholder="e.g. mentor@upi">
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label small fw-bold text-secondary">Teaching Bio</label>
+                                <textarea name="bio" class="form-control" rows="3">{{ inst.bio|default:'' }}</textarea>
+                            </div>
+
+                            <!-- Approval Status Selection -->
+                            <div class="mb-3 p-3 bg-light rounded-3 border">
+                                <label class="form-label small fw-bold text-dark d-block">Teaching Access Approval Status:</label>
+                                <div class="d-flex gap-4">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="is_instructor_approved" id="statusApprove{{ inst.id }}" value="1" {% if inst.is_instructor_approved %}checked{% endif %}>
+                                        <label class="form-check-label fw-bold text-success" for="statusApprove{{ inst.id }}">
+                                            <i class="fa-solid fa-circle-check me-1"></i> Approved (Full Studio Access)
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="is_instructor_approved" id="statusPending{{ inst.id }}" value="0" {% if not inst.is_instructor_approved %}checked{% endif %}>
+                                        <label class="form-check-label fw-bold text-warning text-dark" for="statusPending{{ inst.id }}">
+                                            <i class="fa-solid fa-clock me-1"></i> Pending / Revoked (No Access)
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Reset Password Optional -->
+                            <div class="mb-2">
+                                <label class="form-label small fw-bold text-secondary">Reset Password (Leave blank to keep unchanged)</label>
+                                <input type="password" name="new_password" class="form-control" placeholder="Enter new password if changing">
+                            </div>
+                        </div>
+                        <div class="modal-footer bg-light border-0 py-3 px-4">
+                            <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-primary btn-sm fw-bold px-4">
+                                <i class="fa-solid fa-floppy-disk me-1"></i> Save Changes
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Delete Instructor Modal -->
+        <div class="modal fade" id="deleteInstructorModal{{ inst.id }}" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden text-start">
+                    <form method="POST" action="{% url 'dashboard:delete_instructor' instructor_id=inst.id %}">
+                        {% csrf_token %}
+                        <div class="modal-header bg-danger text-white border-0 py-3">
+                            <h5 class="modal-title fw-bold">
+                                <i class="fa-solid fa-triangle-exclamation me-2"></i> Delete Instructor: {{ inst.username }}
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body p-4 text-dark">
+                            <p class="mb-3">Are you sure you want to delete instructor account <strong>{{ inst.username }}</strong> ({{ inst.email }})?</p>
+                            {% if inst.courses_count > 0 %}
+                                <div class="alert alert-info py-2 px-3 small rounded-3 border-0 bg-info bg-opacity-10 text-dark">
+                                    <i class="fa-solid fa-shield-halved text-info me-1"></i>
+                                    <strong>Course Protection:</strong> This instructor has authored <strong>{{ inst.courses_count }} course(s)</strong>. To protect enrolled students, all their courses will be safely reassigned to your Administrator account.
+                                </div>
+                            {% endif %}
+                            <p class="text-danger small mb-0 fw-bold">This action cannot be undone.</p>
+                        </div>
+                        <div class="modal-footer bg-light border-0 py-3 px-4">
+                            <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-danger btn-sm fw-bold px-4">
+                                <i class="fa-solid fa-trash me-1"></i> Permanently Delete
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+
+    <!-- Coupons & All Payments Row -->
+    <div class="row g-4 mb-5">
+        <!-- Create Coupon Form -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm p-4">
+                <h5 class="fw-bold mb-3"><i class="fa-solid fa-ticket text-primary me-2"></i> Create Coupon</h5>
+                <form action="{% url 'dashboard:create_coupon' %}" method="POST">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Coupon Code</label>
+                        <input type="text" name="code" class="form-control text-uppercase" placeholder="e.g. SAVE20" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Discount Percentage (%)</label>
+                        <input type="number" step="0.1" name="discount_percentage" class="form-control" placeholder="20" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-sm w-100">Create Coupon</button>
+                </form>
+
+                <h6 class="fw-bold mt-4 mb-2">Active Coupons</h6>
+                <ul class="list-group list-group-flush small">
+                    {% for c in coupons %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <code>{{ c.code }}</code>
+                            <span class="badge bg-success">{{ c.discount_percentage }}% OFF</span>
+                        </li>
+                    {% empty %}
+                        <li class="list-group-item text-muted">No active coupons.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+
+        <!-- Recent Payment Log -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm p-4 mb-4">
+                <h5 class="fw-bold mb-3">Recent Payment Transactions</h5>
+                <div class="table-responsive">
+                    <table class="table align-middle small">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Date</th>
+                                <th>Student</th>
+                                <th>Course</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for p in all_payments %}
+                                <tr>
+                                    <td>{{ p.paid_on|date:"M d, Y" }}</td>
+                                    <td>{{ p.user.username }}</td>
+                                    <td class="text-truncate" style="max-width: 180px;">{{ p.course.title }}</td>
+                                    <td>₹{{ p.amount }}</td>
+                                    <td>
+                                        {% if p.payment_status == 'Approved' %}
+                                            <span class="badge bg-success">Approved</span>
+                                        {% elif p.payment_status == 'Pending' %}
+                                            <span class="badge bg-warning text-dark">Pending</span>
+                                        {% else %}
+                                            <span class="badge bg-danger">Rejected</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="5" class="text-center text-muted">No transactions recorded.</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CERTIFICATE SEARCH BY ID / NUMBER SECTION -->
+    <div id="cert-search-section" class="card border-0 shadow-lg p-4 mb-5 border-top border-info border-4">
+        <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-3">
+            <div>
+                <h4 class="fw-bold mb-1 text-dark">
+                    <i class="fa-solid fa-magnifying-glass text-info me-2"></i> Certificate Lookup & Search
+                </h4>
+                <p class="text-secondary small mb-0">Search issued certificates instantly by Certificate ID (e.g. <code>SJTC0001P...</code> or <code>1</code>), Student Name, Email, or Course Title.</p>
+            </div>
+            <form method="GET" action="{% url 'dashboard:admin_dashboard' %}#cert-search-section" class="d-flex gap-2" style="max-width: 400px; width: 100%;">
+                <input type="text" name="cert_query" class="form-control form-control-sm" placeholder="Enter Certificate ID, Student, or Course..." value="{{ cert_query }}">
+                <button type="submit" class="btn btn-info btn-sm fw-bold px-3">Search</button>
+                {% if cert_query %}
+                    <a href="{% url 'dashboard:admin_dashboard' %}#cert-search-section" class="btn btn-outline-secondary btn-sm">Clear</a>
+                {% endif %}
+            </form>
+        </div>
+
+        {% if cert_query %}
+            <div class="alert alert-info py-2 px-3 small mb-3">
+                <i class="fa-solid fa-filter me-1"></i> Showing search results for query: <strong>"{{ cert_query }}"</strong> (Found {{ certificates|length }} matching record/s)
+            </div>
+        {% endif %}
+
+        <div class="table-responsive">
+            <table class="table align-middle table-hover small">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Cert ID</th>
+                        <th>Certificate Number</th>
+                        <th>Student Details</th>
+                        <th>Course</th>
+                        <th>Issue Date &amp; Duration</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for cert in certificates %}
+                        <tr>
+                            <td><span class="badge bg-dark">#{{ cert.id }}</span></td>
+                            <td>
+                                <code class="fw-bold text-primary fs-6">{{ cert.certificate_number }}</code>
+                                {% if cert.student_name or cert.course_title or cert.issue_date %}
+                                    <span class="badge bg-info text-dark d-block mt-1" style="font-size: 10px; width: fit-content;"><i class="fa-solid fa-pen-nib me-1"></i>Customized</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <strong>{{ cert.display_student_name }}</strong>
+                                {% if cert.student_name %}
+                                    <span class="badge bg-warning text-dark ms-1" style="font-size: 10px;">Custom</span>
+                                {% endif %}
+                                <br>
+                                <small class="text-secondary">{{ cert.enrollment.student.email }}</small>
+                            </td>
+                            <td>
+                                <span class="fw-semibold">{{ cert.display_course_title }}</span>
+                                {% if cert.course_title %}
+                                    <span class="badge bg-info text-dark ms-1" style="font-size: 10px;">Custom</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <small class="text-muted d-block">{{ cert.display_issue_date|date:"M d, Y" }}</small>
+                                <span class="badge bg-secondary" style="font-size: 10px;">{{ cert.display_duration_hours }} Hours</span>
+                            </td>
+                            <td class="text-end">
+                                <div class="d-inline-flex gap-1 flex-wrap justify-content-end">
+                                    <button type="button" class="btn btn-sm btn-warning fw-bold" data-bs-toggle="modal" data-bs-target="#editCertModal{{ cert.id }}" title="Edit Certificate Details">
+                                        <i class="fa-solid fa-pen-to-square me-1"></i> Edit
+                                    </button>
+                                    <a href="{% url 'dashboard:admin_regenerate_certificate' certificate_id=cert.id %}" class="btn btn-sm btn-outline-secondary" title="Re-render PDF" onclick="return confirm('Re-render PDF certificate for {{ cert.display_student_name }}?');">
+                                        <i class="fa-solid fa-arrows-rotate"></i>
+                                    </a>
+                                    {% if cert.pdf_file %}
+                                        <a href="{{ cert.pdf_file.url }}" target="_blank" class="btn btn-sm btn-success fw-bold" title="View PDF">
+                                            <i class="fa-solid fa-file-pdf me-1"></i> PDF
+                                        </a>
+                                    {% endif %}
+                                    <a href="{% url 'courses:certificate_verify' certificate_id=cert.id %}" target="_blank" class="btn btn-sm btn-outline-info" title="Public Verification Link">
+                                        <i class="fa-solid fa-qrcode me-1"></i> Verify
+                                    </a>
+                                </div>
+
+                                <!-- EDIT CERTIFICATE MODAL -->
+                                <div class="modal fade text-start" id="editCertModal{{ cert.id }}" tabindex="-1" aria-labelledby="editCertModalLabel{{ cert.id }}" aria-hidden="true">
+                                    <div class="modal-dialog modal-dialog-centered modal-lg">
+                                        <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+                                            <div class="modal-header bg-dark text-white p-3 px-4">
+                                                <div class="d-flex align-items-center gap-3">
+                                                    <div class="rounded-3 bg-warning text-dark p-2 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                                        <i class="fa-solid fa-award fs-5"></i>
+                                                    </div>
+                                                    <div>
+                                                        <h5 class="modal-title fw-bold mb-0 text-white" id="editCertModalLabel{{ cert.id }}">
+                                                            Edit Certificate Details <span class="badge bg-warning text-dark fs-6 ms-2">#{{ cert.certificate_number }}</span>
+                                                        </h5>
+                                                        <small class="text-white-50">Customize student name, course title, dates, duration, instructor &amp; credentials.</small>
+                                                    </div>
+                                                </div>
+                                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <form method="POST" action="{% url 'dashboard:admin_edit_certificate' certificate_id=cert.id %}">
+                                                {% csrf_token %}
+                                                <div class="modal-body p-4 bg-light">
+                                                    <!-- Certificate Number & Date -->
+                                                    <div class="card p-3 mb-3 border-0 shadow-sm rounded-3 bg-white">
+                                                        <div class="row g-3">
+                                                            <div class="col-md-6">
+                                                                <label class="form-label fw-bold small text-dark"><i class="fa-solid fa-hashtag text-primary me-1"></i> Certificate ID / Serial Number</label>
+                                                                <input type="text" name="certificate_number" class="form-control" value="{{ cert.certificate_number }}" required placeholder="e.g. SJTC0001P9A2F">
+                                                                <small class="text-muted" style="font-size: 11px;">Unique identifier printed on the certificate and used for verification.</small>
+                                                            </div>
+                                                            <div class="col-md-6">
+                                                                <label class="form-label fw-bold small text-dark"><i class="fa-solid fa-calendar text-info me-1"></i> Issue / Completion Date</label>
+                                                                <input type="date" name="issue_date" class="form-control" value="{{ cert.display_issue_date|date:'Y-m-d' }}">
+                                                                <small class="text-muted" style="font-size: 11px;">Date displayed on certificate (defaults to original issue date).</small>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <!-- Student & Course Details -->
+                                                    <div class="card p-3 mb-3 border-0 shadow-sm rounded-3 bg-white">
+                                                        <div class="row g-3">
+                                                            <div class="col-md-6">
+                                                                <label class="form-label fw-bold small text-dark"><i class="fa-solid fa-user text-warning me-1"></i> Student Full Name on Certificate</label>
+                                                                <input type="text" name="student_name" class="form-control" value="{{ cert.student_name }}" placeholder="{{ cert.enrollment.student.get_full_name|default:cert.enrollment.student.username }}">
+                                                                <small class="text-muted" style="font-size: 11px;">Leave empty to use account name: <em>{{ cert.enrollment.student.get_full_name|default:cert.enrollment.student.username }}</em></small>
+                                                            </div>
+                                                            <div class="col-md-6">
+                                                                <label class="form-label fw-bold small text-dark"><i class="fa-solid fa-graduation-cap text-success me-1"></i> Course Title on Certificate</label>
+                                                                <input type="text" name="course_title" class="form-control" value="{{ cert.course_title }}" placeholder="{{ cert.enrollment.course.title }}">
+                                                                <small class="text-muted" style="font-size: 11px;">Leave empty to use course title: <em>{{ cert.enrollment.course.title }}</em></small>
+                                                            </div>
+                                                            <div class="col-md-4">
+                                                                <label class="form-label fw-bold small text-dark"><i class="fa-solid fa-clock text-primary me-1"></i> Course Duration (Hours)</label>
+                                                                <input type="number" name="duration_hours" class="form-control" value="{{ cert.duration_hours|default:cert.display_duration_hours }}" min="1" max="1000">
+                                                                <small class="text-muted" style="font-size: 11px;">Total hours printed on certificate (e.g. 40).</small>
+                                                            </div>
+                                                            <div class="col-md-4">
+                                                                <label class="form-label fw-bold small text-dark"><i class="fa-solid fa-chalkboard-user text-info me-1"></i> Signer / Instructor Name</label>
+                                                                <input type="text" name="instructor_name" class="form-control" value="{{ cert.instructor_name }}" placeholder="SUNNY SIR">
+                                                                <small class="text-muted" style="font-size: 11px;">Default: SUNNY SIR</small>
+                                                            </div>
+                                                            <div class="col-md-4">
+                                                                <label class="form-label fw-bold small text-dark"><i class="fa-solid fa-tag text-secondary me-1"></i> Instructor Title / Role</label>
+                                                                <input type="text" name="instructor_title" class="form-control" value="{{ cert.instructor_title }}" placeholder="FOUNDER &amp; INSTRUCTOR">
+                                                                <small class="text-muted" style="font-size: 11px;">Default: FOUNDER &amp; INSTRUCTOR</small>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <!-- PDF Regeneration Switch -->
+                                                    <div class="card p-3 border-0 bg-white shadow-sm rounded-3">
+                                                        <div class="form-check form-switch d-flex align-items-center gap-3">
+                                                            <input class="form-check-input ms-0 fs-5" type="checkbox" name="regenerate_pdf" id="regenSwitch{{ cert.id }}" checked>
+                                                            <label class="form-check-label fw-bold small text-dark mb-0" for="regenSwitch{{ cert.id }}">
+                                                                <i class="fa-solid fa-arrows-rotate text-success me-1"></i> Re-render PDF Certificate immediately
+                                                                <span class="d-block fw-normal text-muted" style="font-size: 11px;">Automatically regenerates the PDF file so downloaded and viewed versions reflect updated details immediately.</span>
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="modal-footer bg-white px-4 py-3 border-top">
+                                                    <button type="button" class="btn btn-outline-secondary px-4 fw-semibold" data-bs-dismiss="modal">Cancel</button>
+                                                    <button type="submit" class="btn btn-warning px-4 fw-bold shadow-sm">
+                                                        <i class="fa-solid fa-floppy-disk me-1"></i> Save Changes &amp; Update Certificate
+                                                    </button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center text-muted py-4">
+                                <i class="fa-solid fa-certificate fs-3 text-secondary mb-2 d-block"></i>
+                                {% if cert_query %}
+                                    No certificates found matching <strong>"{{ cert_query }}"</strong>.
+                                {% else %}
+                                    No certificates issued yet. Use the generator table below to issue one.
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ADMIN MANUAL CERTIFICATE GENERATOR TABLE -->
+    <div class="card border-0 shadow-lg p-4 mb-5 border-top border-primary border-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h4 class="fw-bold mb-0 text-dark">
+                <i class="fa-solid fa-award text-primary me-2"></i> Admin Certificate Issuer / Generator
+            </h4>
+            <span class="badge bg-primary px-3 py-2">Manual Admin Override</span>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table align-middle table-hover small">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Enrollment Date</th>
+                        <th>Student Name</th>
+                        <th>Course</th>
+                        <th>Progress %</th>
+                        <th>Quiz Status</th>
+                        <th class="text-end">Admin Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for en in enrollments %}
+                        <tr>
+                            <td>{{ en.enrolled_at|date:"M d, Y" }}</td>
+                            <td class="fw-bold">{{ en.student.get_full_name|default:en.student.username }}</td>
+                            <td>{{ en.course.title }}</td>
+                            <td>
+                                <span class="badge {% if en.progress_percentage == 100 %}bg-success{% else %}bg-secondary{% endif %}">
+                                    {{ en.progress_percentage }}%
+                                </span>
+                            </td>
+                            <td>
+                                {% if en.is_completed %}
+                                    <span class="badge bg-success">Completed & Quiz Passed</span>
+                                {% else %}
+                                    <span class="badge bg-info">In Progress</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-end">
+                                <a href="{% url 'dashboard:admin_generate_certificate' enrollment_id=en.id %}" class="btn btn-sm btn-gradient fw-bold">
+                                    <i class="fa-solid fa-file-pdf me-1"></i> Admin Generate PDF Certificate
+                                </a>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center text-muted py-4">No student enrollments found.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- STUDENT REVIEWS & FEEDBACK MANAGEMENT STUDIO -->
+    <div id="student-feedback-section" class="card border-0 shadow-lg p-4 mb-5 border-top border-success border-4">
+        <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-3">
+            <div>
+                <h4 class="fw-bold mb-1 text-dark">
+                    <i class="fa-solid fa-comments text-success me-2"></i> Student Reviews &amp; Feedback Management
+                </h4>
+                <p class="text-secondary small mb-0">Manage testimonials displayed in the home page carousel. Edit text, adjust ratings, update student placement details, or delete inappropriate feedback.</p>
+            </div>
+            <div class="d-flex gap-2 align-items-center">
+                <span class="badge bg-success px-3 py-2 fs-6">
+                    <i class="fa-solid fa-star text-warning me-1"></i> {{ student_feedbacks_admin.count }} Reviews
+                </span>
+                <button type="button" class="btn btn-success btn-sm fw-bold px-3 shadow-sm text-white" data-bs-toggle="modal" data-bs-target="#addFeedbackModal">
+                    <i class="fa-solid fa-plus me-1"></i> Add Review
+                </button>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table align-middle table-hover small">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Student</th>
+                        <th>Role &amp; Company</th>
+                        <th>Rating</th>
+                        <th>Feedback Comment</th>
+                        <th>Visibility</th>
+                        <th>Date</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for fb in student_feedbacks_admin %}
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    {% if fb.student_image %}
+                                        <img src="{{ fb.student_image.url }}" class="rounded-circle shadow-sm" style="width: 38px; height: 38px; object-fit: cover;">
+                                    {% else %}
+                                        <div class="rounded-circle bg-warning text-dark d-flex align-items-center justify-content-center fw-bold shadow-sm" style="width: 38px; height: 38px; font-size: 13px;">
+                                            {{ fb.student_name|slice:":2"|upper }}
+                                        </div>
+                                    {% endif %}
+                                    <div>
+                                        <strong class="text-dark d-block">{{ fb.student_name }}</strong>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="badge bg-light text-dark border fw-medium px-2 py-1">
+                                    <i class="fa-solid fa-briefcase text-success me-1"></i>{{ fb.student_role_company }}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="text-warning text-nowrap" title="{{ fb.rating }} out of 5 stars">
+                                    {% for i in "12345" %}
+                                        {% if forloop.counter <= fb.rating %}
+                                            <i class="fa-solid fa-star"></i>
+                                        {% else %}
+                                            <i class="fa-regular fa-star text-muted"></i>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                            </td>
+                            <td style="max-width: 340px;">
+                                <p class="text-secondary small mb-0 text-truncate" title="{{ fb.feedback_text }}">
+                                    "{{ fb.feedback_text }}"
+                                </p>
+                            </td>
+                            <td>
+                                {% if fb.is_approved %}
+                                    <span class="badge bg-success"><i class="fa-solid fa-check me-1"></i>Visible on Home</span>
+                                {% else %}
+                                    <span class="badge bg-secondary"><i class="fa-solid fa-eye-slash me-1"></i>Hidden</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <small class="text-muted">{{ fb.created_at|date:"M d, Y" }}</small>
+                            </td>
+                            <td class="text-end">
+                                <div class="d-inline-flex gap-1">
+                                    <a href="{% url 'dashboard:admin_toggle_feedback_approval' feedback_id=fb.id %}" class="btn btn-sm {% if fb.is_approved %}btn-outline-secondary{% else %}btn-outline-success{% endif %}" title="{% if fb.is_approved %}Hide from Home{% else %}Show on Home{% endif %}">
+                                        {% if fb.is_approved %}<i class="fa-solid fa-eye-slash"></i>{% else %}<i class="fa-solid fa-eye"></i>{% endif %}
+                                    </a>
+                                    <button type="button" class="btn btn-sm btn-warning fw-bold" data-bs-toggle="modal" data-bs-target="#editFeedbackModal{{ fb.id }}" title="Edit Review">
+                                        <i class="fa-solid fa-pen-to-square me-1"></i> Edit
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-danger fw-bold" data-bs-toggle="modal" data-bs-target="#deleteFeedbackModal{{ fb.id }}" title="Delete Review">
+                                        <i class="fa-solid fa-trash"></i>
+                                    </button>
+                                </div>
+
+                                <!-- EDIT FEEDBACK MODAL -->
+                                <div class="modal fade text-start" id="editFeedbackModal{{ fb.id }}" tabindex="-1" aria-labelledby="editFeedbackModalLabel{{ fb.id }}" aria-hidden="true">
+                                    <div class="modal-dialog modal-dialog-centered modal-lg">
+                                        <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+                                            <div class="modal-header bg-dark text-white p-3 px-4">
+                                                <div class="d-flex align-items-center gap-3">
+                                                    <div class="rounded-3 bg-warning text-dark p-2 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                                        <i class="fa-solid fa-pen-to-square fs-5"></i>
+                                                    </div>
+                                                    <div>
+                                                        <h5 class="modal-title fw-bold mb-0 text-white" id="editFeedbackModalLabel{{ fb.id }}">
+                                                            Edit Student Review <span class="badge bg-warning text-dark fs-6 ms-2">{{ fb.student_name }}</span>
+                                                        </h5>
+                                                        <small class="text-white-50">Update student details, review comment, star rating, or profile image.</small>
+                                                    </div>
+                                                </div>
+                                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <form method="POST" action="{% url 'dashboard:admin_update_feedback' feedback_id=fb.id %}" enctype="multipart/form-data">
+                                                {% csrf_token %}
+                                                <div class="modal-body p-4 bg-light">
+                                                    <div class="card p-3 mb-3 border-0 shadow-sm rounded-3 bg-white">
+                                                        <div class="row g-3">
+                                                            <div class="col-md-6">
+                                                                <label class="form-label fw-bold small text-dark"><i class="fa-solid fa-user text-primary me-1"></i> Student Full Name <span class="text-danger">*</span></label>
+                                                                <input type="text" name="student_name" class="form-control" value="{{ fb.student_name }}" required placeholder="e.g. Rahul Sharma">
+                                                            </div>
+                                                            <div class="col-md-6">
+                                                                <label class="form-label fw-bold small text-dark"><i class="fa-solid fa-briefcase text-success me-1"></i> Role &amp; Placement / Company <span class="text-danger">*</span></label>
+                                                                <input type="text" name="student_role_company" class="form-control" value="{{ fb.student_role_company }}" required placeholder="e.g. Placed @ TCS (7.0 LPA)">
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="card p-3 mb-3 border-0 shadow-sm rounded-3 bg-white">
+                                                        <div class="row g-3">
+                                                            <div class="col-md-6">
+                                                                <label class="form-label fw-bold small text-dark"><i class="fa-solid fa-star text-warning me-1"></i> Star Rating (1 to 5)</label>
+                                                                <select name="rating" class="form-select">
+                                                                    <option value="5" {% if fb.rating == 5 %}selected{% endif %}>★★★★★ (5 Stars - Excellent)</option>
+                                                                    <option value="4" {% if fb.rating == 4 %}selected{% endif %}>★★★★☆ (4 Stars - Great)</option>
+                                                                    <option value="3" {% if fb.rating == 3 %}selected{% endif %}>★★★☆☆ (3 Stars - Good)</option>
+                                                                    <option value="2" {% if fb.rating == 2 %}selected{% endif %}>★★☆☆☆ (2 Stars - Fair)</option>
+                                                                    <option value="1" {% if fb.rating == 1 %}selected{% endif %}>★☆☆☆☆ (1 Star - Poor)</option>
+                                                                </select>
+                                                            </div>
+                                                            <div class="col-md-6">
+                                                                <label class="form-label fw-bold small text-dark"><i class="fa-solid fa-image text-info me-1"></i> Student Photo (Optional)</label>
+                                                                <input type="file" name="student_image" class="form-control" accept="image/*">
+                                                                {% if fb.student_image %}
+                                                                    <small class="text-muted" style="font-size: 11px;">Current: <a href="{{ fb.student_image.url }}" target="_blank">View image</a></small>
+                                                                {% endif %}
+                                                            </div>
+                                                            <div class="col-12">
+                                                                <label class="form-label fw-bold small text-dark"><i class="fa-solid fa-comment-dots text-primary me-1"></i> Feedback / Review Comment <span class="text-danger">*</span></label>
+                                                                <textarea name="feedback_text" class="form-control" rows="4" required placeholder="Write the student's review...">{{ fb.feedback_text }}</textarea>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="card p-3 border-0 bg-white shadow-sm rounded-3">
+                                                        <div class="form-check form-switch d-flex align-items-center gap-3">
+                                                            <input class="form-check-input ms-0 fs-5" type="checkbox" name="is_approved" id="approvalSwitch{{ fb.id }}" {% if fb.is_approved %}checked{% endif %}>
+                                                            <label class="form-check-label fw-bold small text-dark mb-0" for="approvalSwitch{{ fb.id }}">
+                                                                <i class="fa-solid fa-circle-check text-success me-1"></i> Show on Home Page (Approved)
+                                                                <span class="d-block fw-normal text-muted" style="font-size: 11px;">When checked, this review appears in the home page Student Reviews carousel.</span>
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="modal-footer bg-white px-4 py-3 border-top">
+                                                    <button type="button" class="btn btn-outline-secondary px-4 fw-semibold" data-bs-dismiss="modal">Cancel</button>
+                                                    <button type="submit" class="btn btn-warning px-4 fw-bold shadow-sm">
+                                                        <i class="fa-solid fa-floppy-disk me-1"></i> Update Review
+                                                    </button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- DELETE FEEDBACK MODAL -->
+                                <div class="modal fade text-start" id="deleteFeedbackModal{{ fb.id }}" tabindex="-1" aria-labelledby="deleteFeedbackModalLabel{{ fb.id }}" aria-hidden="true">
+                                    <div class="modal-dialog modal-dialog-centered">
+                                        <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+                                            <div class="modal-header bg-danger text-white p-3 px-4">
+                                                <h5 class="modal-title fw-bold" id="deleteFeedbackModalLabel{{ fb.id }}">
+                                                    <i class="fa-solid fa-triangle-exclamation me-2"></i> Delete Student Review
+                                                </h5>
+                                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <form method="POST" action="{% url 'dashboard:admin_delete_feedback' feedback_id=fb.id %}">
+                                                {% csrf_token %}
+                                                <div class="modal-body p-4 bg-white text-dark">
+                                                    <p class="mb-2">Are you sure you want to delete the student review from <strong>{{ fb.student_name }}</strong>?</p>
+                                                    <div class="p-3 bg-light rounded-3 border small text-secondary fst-italic mb-3">
+                                                        "{{ fb.feedback_text|truncatechars:120 }}"
+                                                    </div>
+                                                    <p class="small text-danger mb-0"><i class="fa-solid fa-circle-exclamation me-1"></i> This action is permanent and cannot be undone.</p>
+                                                </div>
+                                                <div class="modal-footer bg-light px-4 py-3 border-top">
+                                                    <button type="button" class="btn btn-secondary px-3" data-bs-dismiss="modal">Cancel</button>
+                                                    <button type="submit" class="btn btn-danger px-4 fw-bold">
+                                                        <i class="fa-solid fa-trash me-1"></i> Yes, Delete Review
+                                                    </button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center text-muted py-4">
+                                <i class="fa-solid fa-comment-slash fs-3 text-secondary mb-2 d-block"></i>
+                                No student reviews found. Click "Add Review" to create one.
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ADD FEEDBACK MODAL -->
+    <div class="modal fade text-start" id="addFeedbackModal" tabindex="-1" aria-labelledby="addFeedbackModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="modal-header bg-dark text-white p-3 px-4">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="rounded-3 bg-success text-white p-2 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                            <i class="fa-solid fa-plus fs-5"></i>
+                        </div>
+                        <div>
+                            <h5 class="modal-title fw-bold mb-0 text-white" id="addFeedbackModalLabel">Add Student Review</h5>
+                            <small class="text-white-50">Create a new student testimonial for the home page carousel.</small>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form method="POST" action="{% url 'dashboard:admin_add_feedback' %}" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="modal-body p-4 bg-light">
+                        <div class="card p-3 mb-3 border-0 shadow-sm rounded-3 bg-white">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold small text-dark"><i class="fa-solid fa-user text-primary me-1"></i> Student Full Name <span class="text-danger">*</span></label>
+                                    <input type="text" name="student_name" class="form-control" required placeholder="e.g. Nikita Shinde">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold small text-dark"><i class="fa-solid fa-briefcase text-success me-1"></i> Role &amp; Placement / Company <span class="text-danger">*</span></label>
+                                    <input type="text" name="student_role_company" class="form-control" required placeholder="e.g. Placed @ Infosys (6.5 LPA)">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card p-3 mb-3 border-0 shadow-sm rounded-3 bg-white">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold small text-dark"><i class="fa-solid fa-star text-warning me-1"></i> Star Rating (1 to 5)</label>
+                                    <select name="rating" class="form-select">
+                                        <option value="5" selected>★★★★★ (5 Stars - Excellent)</option>
+                                        <option value="4">★★★★☆ (4 Stars - Great)</option>
+                                        <option value="3">★★★☆☆ (3 Stars - Good)</option>
+                                        <option value="2">★★☆☆☆ (2 Stars - Fair)</option>
+                                        <option value="1">★☆☆☆☆ (1 Star - Poor)</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold small text-dark"><i class="fa-solid fa-image text-info me-1"></i> Student Photo (Optional)</label>
+                                    <input type="file" name="student_image" class="form-control" accept="image/*">
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label fw-bold small text-dark"><i class="fa-solid fa-comment-dots text-primary me-1"></i> Feedback / Review Comment <span class="text-danger">*</span></label>
+                                    <textarea name="feedback_text" class="form-control" rows="4" required placeholder="Write the student's testimonial..."></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card p-3 border-0 bg-white shadow-sm rounded-3">
+                            <div class="form-check form-switch d-flex align-items-center gap-3">
+                                <input class="form-check-input ms-0 fs-5" type="checkbox" name="is_approved" id="addApprovalSwitch" checked>
+                                <label class="form-check-label fw-bold small text-dark mb-0" for="addApprovalSwitch">
+                                    <i class="fa-solid fa-circle-check text-success me-1"></i> Show on Home Page immediately
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer bg-white px-4 py-3 border-top">
+                        <button type="button" class="btn btn-outline-secondary px-4 fw-semibold" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-success px-4 fw-bold shadow-sm">
+                            <i class="fa-solid fa-plus me-1"></i> Create Review
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit All-Access Plan Modal -->
+<div class="modal fade" id="editAllAccessModal" tabindex="-1" aria-labelledby="editAllAccessModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+            <div class="modal-header bg-dark text-white border-0 py-3">
+                <h5 class="modal-title fw-bold" id="editAllAccessModalLabel">
+                    <i class="fa-solid fa-crown text-warning me-2"></i> Edit All-Access Pass Price & Settings
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{% url 'dashboard:admin_update_all_access_plan' %}">
+                {% csrf_token %}
+                <div class="modal-body p-4">
+                    <div class="alert alert-info py-2 px-3 small rounded-3 mb-3 border-0 bg-info bg-opacity-10 text-info">
+                        <i class="fa-solid fa-info-circle me-1"></i>
+                        Updates made here take effect immediately across the Home Page Banner, Checkout Page, and Admin approval workflows.
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-secondary">Offer Price (₹) <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light fw-bold">₹</span>
+                                <input type="number" step="1" name="offer_price" class="form-control form-control-lg fw-bold text-success" value="{{ all_access_plan.offer_price|floatformat:0 }}" required>
+                            </div>
+                            <small class="text-muted">The one-time discounted amount students pay.</small>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-secondary">Original Value (₹) <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light fw-bold">₹</span>
+                                <input type="number" step="1" name="original_price" class="form-control form-control-lg text-muted" value="{{ all_access_plan.original_price|floatformat:0 }}" required>
+                            </div>
+                            <small class="text-muted">Displayed as strikethrough value (e.g. ₹4999).</small>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-secondary">Access Duration (Days) <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light"><i class="fa-regular fa-clock"></i></span>
+                                <input type="number" step="1" min="1" name="duration_days" class="form-control fw-bold" value="{{ all_access_plan.duration_days|default:365 }}" required>
+                            </div>
+                            <small class="text-primary fw-medium">Default is <strong>365</strong> days (1 Year). Access expires automatically after this period.</small>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-secondary">Pass Title</label>
+                            <input type="text" name="title" class="form-control" value="{{ all_access_plan.title }}" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-secondary">Tagline / Subtitle</label>
+                        <input type="text" name="tagline" class="form-control" value="{{ all_access_plan.tagline }}">
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-secondary">Admin UPI ID <span class="text-danger">*</span></label>
+                            <input type="text" name="upi_id" class="form-control" value="{{ all_access_plan.upi_id }}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-secondary">PhonePe / UPI Number <span class="text-danger">*</span></label>
+                            <input type="text" name="upi_number" class="form-control" value="{{ all_access_plan.upi_number }}" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-2">
+                        <label class="form-label fw-bold small text-secondary">Included Benefits (One per line)</label>
+                        <textarea name="features" class="form-control" rows="4">{{ all_access_plan.features }}</textarea>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light border-0 py-3 px-4">
+                    <button type="button" class="btn btn-outline-secondary btn-sm px-3" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary fw-bold px-4">
+                        <i class="fa-solid fa-floppy-disk me-1"></i> Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    // 1. Monthly Revenue Chart
+    const revenueLabels = [{% for r in monthly_revenue %}"{{ r.month|date:"M Y" }}",{% endfor %}];
+    const revenueData = [{% for r in monthly_revenue %}{{ r.total }},{% endfor %}];
+
+    if (revenueLabels.length > 0) {
+        const ctxRev = document.getElementById('monthlyRevenueChart').getContext('2d');
+        new Chart(ctxRev, {
+            type: 'line',
+            data: {
+                labels: revenueLabels,
+                datasets: [{
+                    label: 'Monthly Earnings (₹)',
+                    data: revenueData,
+                    backgroundColor: 'rgba(25, 135, 84, 0.15)',
+                    borderColor: 'rgb(25, 135, 84)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.3,
+                    pointBackgroundColor: 'rgb(25, 135, 84)',
+                    pointRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) { return "₹" + value; }
+                        }
+                    }
+                }
+            }
+        });
+    } else {
+        document.getElementById('monthlyRevenueChart').parentElement.innerHTML = '<div class="h-100 d-flex align-items-center justify-content-center text-secondary small">No revenue transaction data recorded.</div>';
+    }
+
+    // 2. Course Popularity Enrollments Chart (Horizontal Bar Chart)
+    const courseLabels = [{% for c in course_enrollments %}"{{ c.title|escapejs }}",{% endfor %}];
+    const courseEnrollmentData = [{% for c in course_enrollments %}{{ c.student_count }},{% endfor %}];
+
+    if (courseLabels.length > 0) {
+        const ctxCourse = document.getElementById('coursePopularityChart').getContext('2d');
+        new Chart(ctxCourse, {
+            type: 'bar',
+            data: {
+                labels: courseLabels.map(l => l.length > 25 ? l.substring(0, 22) + '...' : l),
+                datasets: [{
+                    label: 'Enrolled Students',
+                    data: courseEnrollmentData,
+                    backgroundColor: 'rgba(13, 202, 240, 0.75)',
+                    borderColor: 'rgb(13, 202, 240)',
+                    borderWidth: 1,
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        ticks: {
+                            precision: 0
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
+    } else {
+        document.getElementById('coursePopularityChart').parentElement.innerHTML = '<div class="h-100 d-flex align-items-center justify-content-center text-secondary small">No course enrollments data recorded.</div>';
+    }
+});
+</script>
+{% endblock %}
+{% endblock %}

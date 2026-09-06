@@ -1,0 +1,51 @@
+# Python
+*.py[cod]
+__pycache__/
+*.so
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environment
+venv/
+.venv/
+ENV/
+
+# Environment Variables & Secrets
+.env
+.env.local
+.env.*.local
+
+# Django & SQLite
+db.sqlite3
+db.sqlite3-journal
+
+# Static collected files
+staticfiles/
+
+# IDE & OS
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Test outputs
+test_*.pdf
+cert_test_*.pdf
+*.log

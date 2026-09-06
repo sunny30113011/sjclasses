@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="bg-dark text-white py-4 mb-4">
+    <div class="container d-flex justify-content-between align-items-center">
+        <div>
+            <h2 class="fw-bold mb-1"><i class="fa-solid fa-briefcase text-warning me-2"></i> {{ job.title }}</h2>
+            <p class="text-secondary small mb-0"><i class="fa-solid fa-building me-1"></i> {{ job.company_name }} • <i class="fa-solid fa-location-dot me-1"></i> {{ job.location }}</p>
+        </div>
+        <a href="{% url 'courses:placement_portal' %}" class="btn btn-outline-light btn-sm"><i class="fa-solid fa-arrow-left me-1"></i> Back to Jobs</a>
+    </div>
+</div>
+
+<div class="container mb-5">
+    <div class="row g-4">
+        <!-- Job Details -->
+        <div class="col-lg-7">
+            <div class="card border-0 shadow-sm p-4 mb-4">
+                <div class="d-flex flex-wrap gap-3 mb-4 p-3 bg-light rounded-3">
+                    <div>
+                        <small class="text-muted d-block">Offered CTC</small>
+                        <strong class="text-success fs-5">₹{{ job.salary_package }}</strong>
+                    </div>
+                    <div class="border-start ps-3">
+                        <small class="text-muted d-block">Job Type</small>
+                        <strong class="text-dark">{{ job.job_type }}</strong>
+                    </div>
+                    <div class="border-start ps-3">
+                        <small class="text-muted d-block">Experience</small>
+                        <strong class="text-dark">{{ job.experience_required }}</strong>
+                    </div>
+                    <div class="border-start ps-3">
+                        <small class="text-muted d-block">Deadline</small>
+                        <strong class="text-danger">{{ job.application_deadline|date:"M d, Y" }}</strong>
+                    </div>
+                </div>
+
+                <h5 class="fw-bold mb-3">Required Technical Skills</h5>
+                <div class="d-flex flex-wrap gap-2 mb-4">
+                    {% for skill in job.skills_required.split %}
+                        <span class="badge bg-primary bg-opacity-10 text-primary fs-6 px-3 py-2">{{ skill }}</span>
+                    {% endfor %}
+                </div>
+
+                <h5 class="fw-bold mb-3">Job Description & Responsibilities</h5>
+                <div class="text-secondary lh-lg mb-4">
+                    {{ job.description|linebreaks }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Application Form Card -->
+        <div class="col-lg-5">
+            <!-- Official External Company Career Link Box -->
+            <div class="card border-0 shadow-sm p-4 mb-4 bg-primary bg-opacity-10 border-start border-primary border-4 text-center">
+                <h5 class="fw-bold text-primary mb-2"><i class="fa-solid fa-building me-2"></i> Official Company Career Site</h5>
+                <p class="text-secondary small mb-3">Admin verified direct application link for {{ job.company_name }}</p>
+                <a href="{{ job.official_apply_url }}" target="_blank" rel="noopener" class="btn btn-primary btn-lg w-100 fw-bold">
+                    <i class="fa-solid fa-arrow-up-right-from-square me-2"></i> Apply on Official Site
+                </a>
+            </div>
+
+            <div class="card border-0 shadow-lg p-4 border-top border-warning border-4">
+                <h5 class="fw-bold mb-3"><i class="fa-solid fa-paper-plane text-warning me-2"></i> Submit Resume to LMS Admin</h5>
+
+                
+                {% if has_applied %}
+                    <div class="alert alert-success d-flex align-items-center mb-0">
+                        <i class="fa-solid fa-circle-check fs-2 me-3"></i>
+                        <div>
+                            <h6 class="fw-bold mb-1">Application Submitted!</h6>
+                            <p class="small mb-0">Status: <span class="badge bg-success">{{ application.status }}</span> (Applied on {{ application.applied_at|date:"M d, Y" }})</p>
+                        </div>
+                    </div>
+                {% else %}
+                    <form action="{% url 'courses:apply_job' job_id=job.id %}" method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold">Upload Resume / CV (.pdf, .docx) *</label>
+                            <input type="file" name="resume" class="form-control" accept=".pdf,.doc,.docx" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold">GitHub / Portfolio URL</label>
+                            <input type="url" name="github_portfolio" class="form-control" placeholder="https://github.com/yourprofile">
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label small fw-bold">Cover Note / Why you are a good fit</label>
+                            <textarea name="cover_note" class="form-control" rows="3" placeholder="Briefly describe your experience..."></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-gradient btn-lg w-100 fw-bold">
+                            <i class="fa-solid fa-check-circle me-1"></i> Submit Resume & Apply
+                        </button>
+                    </form>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

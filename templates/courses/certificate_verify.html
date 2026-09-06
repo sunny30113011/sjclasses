@@ -1,0 +1,239 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Certificate Verified — SJ Tech Classes</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 50%, #0f172a 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .card {
+            background: #fff;
+            border-radius: 24px;
+            max-width: 480px;
+            width: 100%;
+            overflow: hidden;
+            box-shadow: 0 40px 80px rgba(0,0,0,0.5);
+        }
+        .card-header {
+            background: linear-gradient(135deg, #0f172a, #1e3a8a);
+            padding: 32px 28px 24px;
+            text-align: center;
+            position: relative;
+        }
+        .card-header::after {
+            content: '';
+            position: absolute;
+            bottom: 0; left: 0; right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #d97706, #fbbf24, #d97706);
+        }
+        .brand {
+            font-size: 22px;
+            font-weight: 900;
+            color: #fff;
+            letter-spacing: 2px;
+        }
+        .brand span { color: #fbbf24; }
+        .tagline {
+            font-size: 10px;
+            color: #94a3b8;
+            letter-spacing: 3px;
+            margin-top: 4px;
+            text-transform: uppercase;
+        }
+        .verified-badge {
+            margin: 20px auto 0;
+            width: 72px; height: 72px;
+            background: linear-gradient(135deg, #16a34a, #22c55e);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 0 6px rgba(34,197,94,0.2);
+            font-size: 36px;
+        }
+        .verified-text {
+            margin-top: 12px;
+            font-size: 18px;
+            font-weight: 700;
+            color: #22c55e;
+            letter-spacing: 1px;
+        }
+        .card-body { padding: 28px; }
+        .section-title {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #94a3b8;
+            margin-bottom: 6px;
+        }
+        .student-name {
+            font-family: 'Playfair Display', serif;
+            font-size: 28px;
+            font-style: italic;
+            font-weight: 700;
+            color: #1e3a8a;
+            margin-bottom: 20px;
+        }
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            margin-bottom: 20px;
+        }
+        .info-box {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 14px;
+        }
+        .info-box .label {
+            font-size: 10px;
+            font-weight: 700;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 4px;
+        }
+        .info-box .value {
+            font-size: 13px;
+            font-weight: 700;
+            color: #0f172a;
+        }
+        .course-box {
+            background: linear-gradient(135deg, #fefce8, #fffbeb);
+            border: 2px solid #d97706;
+            border-radius: 14px;
+            padding: 18px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .course-box .label {
+            font-size: 10px;
+            color: #92400e;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 6px;
+        }
+        .course-box .course-name {
+            font-size: 16px;
+            font-weight: 800;
+            color: #0f172a;
+        }
+        .cert-id-box {
+            background: #0f172a;
+            border-radius: 12px;
+            padding: 14px 20px;
+            text-align: center;
+            margin-bottom: 22px;
+        }
+        .cert-id-box .label {
+            font-size: 10px;
+            color: #64748b;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+        .cert-id-box .cert-id {
+            font-size: 18px;
+            font-weight: 900;
+            color: #fbbf24;
+            font-family: monospace;
+            letter-spacing: 3px;
+        }
+        .footer-bar {
+            background: #f1f5f9;
+            border-top: 1px solid #e2e8f0;
+            padding: 16px 28px;
+            text-align: center;
+            font-size: 12px;
+            color: #64748b;
+        }
+        .footer-bar a {
+            color: #1e3a8a;
+            font-weight: 700;
+            text-decoration: none;
+        }
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 0 6px rgba(34,197,94,0.2); }
+            50% { box-shadow: 0 0 0 14px rgba(34,197,94,0.1); }
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="card-header">
+            <div class="brand">SJ TECH <span>CLASSES</span></div>
+            <div class="tagline">Empowering Students for a Better Tomorrow</div>
+            <div class="verified-badge pulse">✓</div>
+            <div class="verified-text">Certificate Verified</div>
+        </div>
+
+        <div class="card-body">
+            <div class="section-title">Awarded To</div>
+            <div class="student-name">{{ certificate.display_student_name }}</div>
+
+            <div class="course-box">
+                <div class="label">🎓 Completed Course</div>
+                <div class="course-name">{{ certificate.display_course_title }}</div>
+            </div>
+
+            <div class="info-grid">
+                <div class="info-box">
+                    <div class="label">📅 Issue Date</div>
+                    <div class="value">
+                        {% if certificate.display_issue_date %}
+                            {{ certificate.display_issue_date|date:"d M Y" }}
+                        {% elif enrollment.completed_at %}
+                            {{ enrollment.completed_at|date:"d M Y" }}
+                        {% else %}
+                            01 Aug 2026
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="info-box">
+                    <div class="label">⏱ Duration</div>
+                    <div class="value">{{ certificate.display_duration_hours }} Hours</div>
+                </div>
+                <div class="info-box">
+                    <div class="label">🏫 Institute</div>
+                    <div class="value">SJ Tech Classes</div>
+                </div>
+                <div class="info-box">
+                    <div class="label">👨‍🏫 Instructor</div>
+                    <div class="value">{{ certificate.display_instructor_name }}</div>
+                </div>
+            </div>
+
+            <div class="cert-id-box">
+                <div class="label">Certificate ID</div>
+                <div class="cert-id">{{ certificate.certificate_number }}</div>
+            </div>
+
+            <div style="text-align:center; color:#16a34a; font-size:13px; font-weight:600;">
+                ✅ This certificate is <strong>authentic</strong> and issued by SJ Tech Classes.
+            </div>
+        </div>
+
+        <div class="footer-bar">
+            <a href="http://10.243.185.186:8000/">Visit SJ Tech Classes</a> &nbsp;|&nbsp;
+            Verified on {{ certificate.issued_at|date:"d M Y" }}
+        </div>
+    </div>
+</body>
+</html>

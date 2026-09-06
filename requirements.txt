@@ -1,0 +1,15 @@
+Django>=5.1.0,<5.2.0
+gunicorn>=23.0.0
+whitenoise[brotli]>=6.6.0
+dj-database-url>=2.1.0
+psycopg2-binary>=2.9.9
+reportlab>=4.2.0
+qrcode>=7.4.2
+pillow>=10.2.0
+django-crispy-forms>=2.1
+crispy-bootstrap5>=2024.2
+cloudinary>=1.40.0
+django-cloudinary-storage>=0.3.0
+google-generativeai>=0.8.0
+requests>=2.31.0
+python-dotenv>=1.0.0

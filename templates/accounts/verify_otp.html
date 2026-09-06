@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card border-0 shadow-lg p-4">
+                <div class="text-center mb-4">
+                    <div class="rounded-circle bg-success bg-opacity-10 text-success mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 70px; height: 70px;">
+                        <i class="fa-solid fa-shield-halved fs-2"></i>
+                    </div>
+                    <h3 class="fw-bold mb-1">Verify OTP & Reset</h3>
+                    <p class="text-secondary small">Enter the 6-digit OTP code sent to your email and your new password.</p>
+                </div>
+
+                <form method="POST">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">6-Digit OTP Code *</label>
+                        <input type="text" name="otp" class="form-control text-center fs-4 letter-spacing-2" placeholder="123456" required maxlength="6">
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label small fw-bold">New Password *</label>
+                        <input type="password" name="new_password" class="form-control" placeholder="Enter new password" required minlength="6">
+                    </div>
+                    <button type="submit" class="btn btn-success btn-lg w-100 mb-3 fw-bold">Reset Password & Log In</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

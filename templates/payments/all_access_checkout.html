@@ -1,0 +1,210 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}👑 Unlock ALL Courses — All-Access VIP Pass | SJ TECH CLASSES{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="py-5 text-white position-relative overflow-hidden" style="background: radial-gradient(circle at top right, #312e81, #0f172a 80%);">
+    <div class="container text-center py-2">
+        <span class="badge bg-warning text-dark px-3 py-2 fw-bold text-uppercase rounded-pill shadow-sm mb-3">
+            <i class="fa-solid fa-crown text-warning me-1"></i> 1-Year VIP Master Pass
+        </span>
+        <h1 class="display-4 fw-extrabold mb-3">
+            Unlock <span class="text-warning">ALL Courses</span> For 1 Year
+        </h1>
+        <p class="lead text-light text-opacity-75 mx-auto mb-4" style="max-width: 680px;">
+            Get unlimited access to <strong>every single course</strong> on SJ TECH CLASSES. Full access to all courses, projects, and verified certificates for <strong>365 Days (1 Year)</strong>!
+        </p>
+
+        <!-- Price Banner -->
+        <div class="d-inline-flex align-items-center flex-wrap justify-content-center gap-3 bg-white bg-opacity-10 backdrop-blur px-4 py-3 rounded-4 border border-warning border-opacity-30 shadow-lg">
+            <div class="text-start">
+                <small class="text-secondary text-uppercase d-block fw-bold" style="font-size: 11px;">Total Value</small>
+                <span class="text-decoration-line-through text-muted fs-5">₹{{ plan.original_price|floatformat:0 }}</span>
+            </div>
+            <div class="vr bg-secondary opacity-50 d-none d-sm-block" style="height: 36px;"></div>
+            <div class="text-start">
+                <small class="text-warning text-uppercase d-block fw-bold" style="font-size: 11px;">1-Year Pass Price</small>
+                <span class="fs-2 fw-extrabold text-success">₹{{ plan.offer_price|floatformat:0 }}</span>
+            </div>
+            <div class="vr bg-secondary opacity-50 d-none d-sm-block" style="height: 36px;"></div>
+            <div class="text-start">
+                <small class="text-info text-uppercase d-block fw-bold" style="font-size: 11px;">Validity Period</small>
+                <span class="fs-5 fw-bold text-white"><i class="fa-regular fa-clock me-1 text-warning"></i>{{ plan.duration_days|default:365 }} Days</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container py-5">
+    <div class="row g-5 justify-content-center">
+        <!-- Left Column: Value Proposition & Courses List -->
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm rounded-4 p-4 mb-4 bg-white">
+                <h4 class="fw-bold text-dark mb-3 d-flex align-items-center gap-2">
+                    <i class="fa-solid fa-gem text-primary"></i> What's Included in Your Pass:
+                </h4>
+
+                <ul class="list-unstyled mb-4">
+                    {% for f in features %}
+                        <li class="d-flex align-items-start gap-3 py-2 border-bottom">
+                            <i class="fa-solid fa-circle-check text-success fs-5 mt-1"></i>
+                            <div>
+                                <strong class="text-dark">{{ f }}</strong>
+                            </div>
+                        </li>
+                    {% empty %}
+                        <li class="d-flex align-items-center gap-2 py-2">
+                            <i class="fa-solid fa-circle-check text-success"></i> Access to all current & future courses
+                        </li>
+                        <li class="d-flex align-items-center gap-2 py-2">
+                            <i class="fa-solid fa-circle-check text-success"></i> Instant verified QR-stamped PDF certificates
+                        </li>
+                        <li class="d-flex align-items-center gap-2 py-2">
+                            <i class="fa-solid fa-circle-check text-success"></i> Full project source code downloads (.ZIP)
+                        </li>
+                        <li class="d-flex align-items-center gap-2 py-2">
+                            <i class="fa-solid fa-circle-check text-success"></i> Placement drives and interview Q&A bank
+                        </li>
+                    {% endfor %}
+                </ul>
+
+                <!-- Unlocked Courses Preview -->
+                <h6 class="fw-bold text-dark mb-2 d-flex align-items-center justify-content-between">
+                    <span><i class="fa-solid fa-layer-group text-warning me-1"></i> Unlocks All {{ published_courses|length }} Courses:</span>
+                    <span class="badge bg-secondary small">{{ published_courses|length }} Total</span>
+                </h6>
+                <div class="d-flex flex-wrap gap-2 mt-2" style="max-height: 220px; overflow-y: auto;">
+                    {% for c in published_courses %}
+                        <span class="badge bg-light text-dark border p-2 fw-medium d-flex align-items-center gap-1">
+                            <i class="fa-solid fa-check text-success small"></i> {{ c.title }}
+                        </span>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Guarantee Card -->
+            <div class="p-3 rounded-4 bg-primary bg-opacity-10 border border-primary border-opacity-25 d-flex align-items-center gap-3">
+                <i class="fa-solid fa-shield-halved text-primary fs-1"></i>
+                <div>
+                    <h6 class="fw-bold text-dark mb-0">100% Genuine Access Guarantee</h6>
+                    <small class="text-secondary">Verified by instructors. Single payment activates 1 Year ({{ plan.duration_days|default:365 }} Days) full course access on your account.</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Checkout Box & QR Code -->
+        <div class="col-lg-6 col-xl-5">
+            <div class="card border-0 shadow-lg rounded-4 p-4 bg-white position-relative">
+                {% if already_unlocked %}
+                    <div class="text-center py-4">
+                        <div class="rounded-circle bg-success bg-opacity-10 text-success mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                            <i class="fa-solid fa-circle-check fs-1"></i>
+                        </div>
+                        <h3 class="fw-bold text-dark mb-2">🎉 1-Year All-Access Pass Active!</h3>
+                        <p class="text-secondary small mb-3">
+                            Your pass is currently active until <strong class="text-dark">{{ user.all_access_valid_until|date:"d M Y" }}</strong> 
+                            {% if user.all_access_days_left is not None %}
+                                ({{ user.all_access_days_left }} days remaining)
+                            {% endif %}.
+                        </p>
+                        <a href="{% url 'dashboard:dashboard' %}" class="btn btn-warning fw-bold px-4 py-2 shadow-sm">
+                            <i class="fa-solid fa-gauge me-1"></i> Go to My Dashboard
+                        </a>
+                    </div>
+                {% elif pending_payment %}
+                    <div class="text-center py-4">
+                        <div class="rounded-circle bg-warning bg-opacity-20 text-warning mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                            <i class="fa-solid fa-clock-rotate-left fs-1"></i>
+                        </div>
+                        <h4 class="fw-bold text-dark mb-2">Verification in Progress ⏳</h4>
+                        <p class="text-secondary small mb-3">
+                            Your payment receipt of <strong>₹{{ pending_payment.amount }}</strong> (UTR: <code>{{ pending_payment.utr }}</code>) has been received and is waiting for Admin approval.
+                        </p>
+                        <span class="badge bg-warning text-dark py-2 px-3 fw-bold mb-3">
+                            Status: Pending Admin Review
+                        </span>
+                        <p class="text-muted small mb-0">Courses will be automatically unlocked as soon as Admin confirms your transaction.</p>
+                    </div>
+                {% else %}
+                    {% if is_expired_all_access %}
+                        <div class="alert alert-warning py-2 px-3 small rounded-3 mb-3 border-0 bg-warning bg-opacity-15 text-dark">
+                            <i class="fa-solid fa-triangle-exclamation text-warning me-1"></i>
+                            <strong>Pass Expired:</strong> Your previous 1-Year All-Access Pass has expired. Submit payment below to renew for another 365 days!
+                        </div>
+                    {% endif %}
+                    <div class="text-center mb-3">
+                        <span class="badge bg-warning bg-opacity-20 text-warning px-3 py-1 fw-bold text-uppercase small mb-2">
+                            <i class="fa-solid fa-lock-open me-1"></i> 1-Year Access Checkout
+                        </span>
+                        <h4 class="fw-bold text-dark mb-1">Pay Once • Unlock All for 1 Year</h4>
+                        <p class="text-secondary small mb-0">Pay using any UPI App (PhonePe, Google Pay, Paytm, BHIM)</p>
+                    </div>
+
+                    <!-- Price Display -->
+                    <div class="bg-light p-3 rounded-3 text-center mb-3 border">
+                        <span class="text-secondary small text-uppercase fw-bold d-block">Payable Amount</span>
+                        <h2 class="display-6 fw-extrabold text-success mb-0">₹{{ plan.offer_price|floatformat:0 }}</h2>
+                        <small class="text-muted">No hidden charges • 1 Year All Courses Access ({{ plan.duration_days|default:365 }} Days)</small>
+                    </div>
+
+                    <!-- UPI ID & PhonePe Number -->
+                    <div class="text-center mb-3">
+                        <span class="text-secondary small text-uppercase fw-bold d-block mb-1">PhonePe / UPI Number</span>
+                        <div class="d-flex align-items-center justify-content-center gap-2 mb-1">
+                            <code class="fs-5 text-dark fw-bold px-3 py-1 bg-light border rounded-3">{{ plan.upi_number }}</code>
+                            <button type="button" class="btn btn-outline-primary btn-sm" onclick="navigator.clipboard.writeText('{{ plan.upi_number }}'); alert('UPI Number copied!');">
+                                <i class="fa-solid fa-copy"></i>
+                            </button>
+                        </div>
+                        <small class="text-secondary d-block">UPI ID: <strong>{{ plan.upi_id }}</strong></small>
+                    </div>
+
+                    <!-- QR Code Display -->
+                    <div class="text-center mb-4">
+                        <span class="text-secondary small text-uppercase fw-bold mb-2 d-block">Scan QR to Pay ₹{{ plan.offer_price|floatformat:0 }}</span>
+                        <div class="d-inline-block bg-white p-3 rounded-4 shadow-sm border border-2 border-warning" style="max-width: 250px;">
+                            <img src="{% static 'images/upi_qr.jpg' %}" class="img-fluid rounded" style="max-height: 210px; object-fit: contain;" alt="PhonePe QR Code HDFC Bank">
+                            <div class="mt-2 pt-2 border-top text-center text-muted small fw-bold d-flex align-items-center justify-content-center gap-1">
+                                <i class="fa-solid fa-building-columns text-danger"></i> HDFC Bank - 6024
+                            </div>
+                        </div>
+                    </div>
+
+                    {% if not user.is_authenticated %}
+                        <div class="alert alert-info text-center p-3 rounded-3 mb-0">
+                            <i class="fa-solid fa-user-lock me-1"></i> Please <a href="{% url 'accounts:login' %}?next={% url 'payments:all_access_checkout' %}" class="fw-bold text-decoration-underline">Sign In</a> or <a href="{% url 'accounts:register' %}" class="fw-bold text-decoration-underline">Create Account</a> to submit your payment.
+                        </div>
+                    {% else %}
+                        <!-- Submission Form -->
+                        <form method="POST" action="{% url 'payments:submit_all_access_payment' %}" enctype="multipart/form-data">
+                            {% csrf_token %}
+                            
+                            <div class="mb-3">
+                                <label class="form-label small fw-bold">
+                                    <i class="fa-solid fa-hashtag text-primary me-1"></i> 12-Digit UTR / Transaction ID <span class="text-danger">*</span>
+                                </label>
+                                <input type="text" name="utr" class="form-control form-control-lg fs-6" placeholder="e.g. 423456789012" required autocomplete="off">
+                                <small class="text-muted" style="font-size: 11px;">Found in your payment app receipt under 'UPI Transaction ID' or 'UTR'.</small>
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="form-label small fw-bold">
+                                    <i class="fa-solid fa-image text-primary me-1"></i> Upload Payment Screenshot <span class="text-danger">*</span>
+                                </label>
+                                <input type="file" name="screenshot" accept="image/*" class="form-control" required>
+                                <small class="text-muted" style="font-size: 11px;">PNG, JPG, or JPEG up to 5MB.</small>
+                            </div>
+
+                            <button type="submit" class="btn btn-warning btn-lg w-100 fw-bold shadow-sm py-3 text-dark">
+                                <i class="fa-solid fa-paper-plane me-2"></i> Submit & Request All-Courses Unlock
+                            </button>
+                        </form>
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

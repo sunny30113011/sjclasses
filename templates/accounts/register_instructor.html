@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-7 col-lg-6">
+            <div class="card border-0 shadow-lg p-4">
+                <div class="text-center mb-4">
+                    <div class="rounded-circle bg-info bg-opacity-10 text-info mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 70px; height: 70px;">
+                        <i class="fa-solid fa-chalkboard-user fs-2"></i>
+                    </div>
+                    <h3 class="fw-bold mb-1">Instructor Sign Up</h3>
+                    <p class="text-secondary small">Share your expertise and earn with EduLearn</p>
+                </div>
+
+                <form method="POST">
+                    {% csrf_token %}
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <label class="form-label small fw-bold">First Name</label>
+                            {{ form.first_name }}
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small fw-bold">Last Name</label>
+                            {{ form.last_name }}
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Username *</label>
+                        {{ form.username }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Email Address *</label>
+                        {{ form.email }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Headline / Title</label>
+                        {{ form.headline }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">UPI ID (For Earnings Payout)</label>
+                        {{ form.upi_id }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Bio</label>
+                        {{ form.bio }}
+                    </div>
+                    <div class="row g-2 mb-4">
+                        <div class="col-6">
+                            <label class="form-label small fw-bold">Password *</label>
+                            {{ form.password }}
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small fw-bold">Confirm Password *</label>
+                            {{ form.confirm_password }}
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-info text-white fw-bold btn-lg w-100 mb-3">Join as Instructor</button>
+                </form>
+
+                <div class="text-center text-secondary small border-top pt-3">
+                    Already have an account? <a href="{% url 'accounts:login' %}" class="fw-bold text-primary">Log in here</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

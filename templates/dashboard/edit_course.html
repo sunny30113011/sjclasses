@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="bg-dark text-white py-4 mb-4" style="background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);">
+    <div class="container d-flex justify-content-between align-items-center">
+        <div>
+            <h2 class="fw-bold mb-0"><i class="fa-solid fa-pen-to-square text-warning me-2"></i> Edit Course Details</h2>
+            <p class="text-secondary small mb-0">Update course title, pricing, description, category, and preview video</p>
+        </div>
+        <a href="{% url 'dashboard:course_builder' %}" class="btn btn-outline-light btn-sm"><i class="fa-solid fa-arrow-left me-1"></i> Back to Builder</a>
+    </div>
+</div>
+
+<div class="container mb-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-lg p-4 rounded-4">
+                <form method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Course Title *</label>
+                        <input type="text" name="title" class="form-control" value="{{ course.title }}" required>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Category *</label>
+                            <select name="category_id" class="form-select" required>
+                                {% for cat in categories %}
+                                    <option value="{{ cat.id }}" {% if cat.id == course.category.id %}selected{% endif %}>{{ cat.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Skill Level</label>
+                            <select name="level" class="form-select">
+                                <option value="Beginner" {% if course.level == 'Beginner' %}selected{% endif %}>Beginner</option>
+                                <option value="Intermediate" {% if course.level == 'Intermediate' %}selected{% endif %}>Intermediate</option>
+                                <option value="Advanced" {% if course.level == 'Advanced' %}selected{% endif %}>Advanced</option>
+                                <option value="All Levels" {% if course.level == 'All Levels' %}selected{% endif %}>All Levels</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Original Price (₹)</label>
+                            <input type="number" step="0.01" name="price" class="form-control" value="{{ course.price }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Discount Price (₹)</label>
+                            <input type="number" step="0.01" name="discount_price" class="form-control" value="{{ course.discount_price }}">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Short Summary</label>
+                        <input type="text" name="short_description" class="form-control" value="{{ course.short_description }}">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Full Course Description</label>
+                        <textarea name="description" class="form-control" rows="5">{{ course.description }}</textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Preview Video URL (YouTube or Cloudinary)</label>
+                        <input type="url" name="preview_video_url" class="form-control" value="{{ course.preview_video_url }}" placeholder="https://res.cloudinary.com/... or https://youtube.com/...">
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Upload Thumbnail Image</label>
+                            <input type="file" name="thumbnail" class="form-control" accept="image/*">
+                            {% if course.thumbnail %}
+                                <small class="text-muted d-block mt-1">Current Uploaded File: <a href="{{ course.thumbnail.url }}" target="_blank">View File</a></small>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Online Image URL (Unsplash / Web)</label>
+                            <input type="url" name="online_thumbnail_url" class="form-control" value="{{ course.online_thumbnail_url }}" placeholder="https://images.unsplash.com/...">
+                            {% if course.online_thumbnail_url %}
+                                <small class="text-muted d-block mt-1">Current URL: <a href="{{ course.online_thumbnail_url }}" target="_blank">View URL Image</a></small>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="form-check mb-4">
+                        <input class="form-check-input" type="checkbox" name="is_published" id="isPub" {% if course.is_published %}checked{% endif %}>
+                        <label class="form-check-label fw-bold" for="isPub">Publish Course (Visible to Students)</label>
+                    </div>
+
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'dashboard:delete_course' course_id=course.id %}" class="btn btn-outline-danger"><i class="fa-solid fa-trash me-1"></i> Delete Course</a>
+                        <button type="submit" class="btn btn-warning fw-bold px-4"><i class="fa-solid fa-floppy-disk me-1"></i> Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

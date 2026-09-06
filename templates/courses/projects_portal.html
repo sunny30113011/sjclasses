@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<!-- Standalone Projects Header -->
+<div class="bg-dark text-white py-5 mb-4 border-bottom border-secondary" style="background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <span class="badge bg-warning text-dark font-monospace px-3 py-2 text-uppercase fw-bold mb-3"><i class="fa-solid fa-code me-1"></i> STANDALONE PROJECT REPOSITORY</span>
+                <h1 class="fw-extrabold mb-2 display-5">Projects & Source Code Hub</h1>
+                <p class="lead text-light opacity-90 mb-0">Download production-ready software project `.ZIP` archives with full source code, database models, and step-by-step local setup guides.</p>
+            </div>
+            <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
+                {% if user.is_authenticated and user.is_instructor or user.is_lms_admin %}
+                    <a href="{% url 'dashboard:course_builder' %}" class="btn btn-warning btn-lg fw-bold shadow"><i class="fa-solid fa-cloud-arrow-up me-2"></i> Upload New Project</a>
+                {% else %}
+                    <div class="p-3 bg-secondary bg-opacity-20 rounded-3 border border-secondary text-start text-lg-center">
+                        <strong class="d-block text-warning mb-1"><i class="fa-solid fa-shield-halved me-1"></i> Verified Clean Code</strong>
+                        <small class="text-secondary">All project .ZIP archives tested & verified by SJ TECH Instructors.</small>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container mb-5">
+    <div class="row g-4">
+        {% for item in project_items %}
+            <div class="col-md-6 col-lg-4">
+                <div class="card border-0 shadow-sm h-100 border-top border-warning border-4 hover-lift transition-all">
+                    <div class="card-body p-4 d-flex flex-column">
+                        <!-- Top Tech Stack & Pricing Badges -->
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span class="badge bg-primary bg-opacity-10 text-primary fw-bold px-3 py-2"><i class="fa-solid fa-layer-group me-1"></i> {{ item.project.tech_stack }}</span>
+                            {% if item.is_paid %}
+                                <span class="badge bg-warning text-dark font-monospace fw-bold px-3 py-2">₹{{ item.project.price }}</span>
+                            {% else %}
+                                <span class="badge bg-success text-white font-monospace fw-bold px-3 py-2">FREE</span>
+                            {% endif %}
+                        </div>
+
+                        <!-- Project Title & Description -->
+                        <h5 class="fw-bold text-dark mb-2">{{ item.project.title }}</h5>
+                        <p class="text-secondary small mb-3 flex-grow-1">{{ item.project.description }}</p>
+
+                        <div class="d-flex justify-content-between align-items-center mb-3 small text-muted">
+                            <span><i class="fa-solid fa-hard-drive me-1"></i> Size: <strong>{{ item.project.file_size_mb }} MB</strong></span>
+                            <span><i class="fa-solid fa-calendar me-1"></i> Added: {{ item.project.uploaded_at|date:"M Y" }}</span>
+                        </div>
+
+                        <!-- How to Run Process Accordion -->
+                        <div class="mb-3">
+                            <button class="btn btn-dark btn-sm w-100 text-start d-flex justify-content-between align-items-center py-2 px-3" type="button" data-bs-toggle="collapse" data-bs-target="#runGuide{{ item.project.id }}">
+                                <span class="fw-bold text-warning small"><i class="fa-solid fa-terminal text-info me-2"></i> How to Run Process</span>
+                                <i class="fa-solid fa-chevron-down small text-secondary"></i>
+                            </button>
+                            <div class="collapse mt-2" id="runGuide{{ item.project.id }}">
+                                <div class="bg-black text-success font-monospace p-3 rounded-3 small border border-secondary" style="font-size: 12px; line-height: 1.6;">
+                                    <strong class="text-warning d-block mb-1">⚡ Terminal Setup Guide:</strong>
+                                    {{ item.project.run_instructions|linebreaksbr }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Download vs Purchase Button -->
+                        {% if user.is_authenticated %}
+                            {% if item.is_accessible %}
+                                {% if item.project.zip_file %}
+                                    <a href="{{ item.project.zip_file.url }}" download class="btn btn-warning btn-lg w-100 fw-bold shadow-sm">
+                                        <i class="fa-solid fa-cloud-arrow-down me-2"></i> Download Source .ZIP
+                                    </a>
+                                {% else %}
+                                    <button disabled class="btn btn-secondary btn-lg w-100 fw-bold">
+                                        <i class="fa-solid fa-clock me-2"></i> Source Code Pending
+                                    </button>
+                                {% endif %}
+                            {% elif item.is_pending %}
+                                <a href="{% url 'payments:checkout_project' project_id=item.project.id %}" class="btn btn-warning btn-lg w-100 fw-bold">
+                                    <i class="fa-solid fa-clock me-2"></i> Pending Admin Approval
+                                </a>
+                            {% else %}
+                                <a href="{% url 'payments:checkout_project' project_id=item.project.id %}" class="btn btn-success btn-lg w-100 fw-bold shadow-sm">
+                                    <i class="fa-solid fa-qrcode me-2"></i> Pay ₹{{ item.project.price }} to Unlock .ZIP
+                                </a>
+                            {% endif %}
+                        {% else %}
+                            <a href="{% url 'accounts:login' %}" class="btn btn-outline-primary btn-lg w-100 fw-bold">
+                                <i class="fa-solid fa-right-to-bracket me-2"></i> Log In to Unlock .ZIP
+                            </a>
+                        {% endif %}
+
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <div class="col-12 text-center py-5">
+                <i class="fa-solid fa-folder-slash display-1 text-secondary mb-3"></i>
+                <h5>No Project Files Available Yet</h5>
+                <p class="text-secondary">Instructors will upload source code .ZIP files soon.</p>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

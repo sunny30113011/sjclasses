@@ -1,0 +1,155 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ profile.name }} — Instructor Profile | SJ TECH CLASSES{% endblock %}
+
+{% block content %}
+<!-- Instructor Hero Header -->
+<div class="bg-dark text-white py-5 position-relative overflow-hidden mb-5" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);">
+    <div class="container position-relative z-1">
+        <div class="row align-items-center g-4">
+            <div class="col-auto">
+                <div class="position-relative">
+                    <div class="rounded-circle bg-{{ profile.bg_class }} text-dark d-flex align-items-center justify-content-center fw-bold display-4 shadow-lg"
+                         style="width: 120px; height: 120px; border: 4px solid {{ profile.border_color }}; text-shadow: none;">
+                        {{ profile.badge }}
+                    </div>
+                    <span class="position-absolute bottom-0 end-0 badge rounded-circle bg-success p-2 shadow border border-white" title="Verified Instructor">
+                        <i class="fa-solid fa-check fs-6 text-white"></i>
+                    </span>
+                </div>
+            </div>
+            <div class="col">
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <span class="badge bg-warning text-dark font-monospace text-uppercase fw-bold px-3 py-1">Verified Mentor</span>
+                    <span class="badge bg-light text-dark font-monospace px-3 py-1"><i class="fa-solid fa-location-dot me-1 text-danger"></i>{{ profile.location }}</span>
+                </div>
+                <h1 class="fw-bold text-white mb-1 display-5">{{ profile.name }}</h1>
+                <p class="text-warning fs-5 fw-semibold mb-3">{{ profile.title }} • SJ TECH CLASSES</p>
+                <div class="d-flex flex-wrap align-items-center gap-3 text-secondary small">
+                    <span class="text-white"><i class="fa-solid fa-briefcase text-warning me-1"></i> {{ profile.experience }} Industry Experience</span>
+                    <span>•</span>
+                    <span class="text-white"><i class="fa-solid fa-star text-warning me-1"></i> {{ profile.rating }} Rating ({{ profile.reviews_count }} Student Reviews)</span>
+                    <span>•</span>
+                    <span class="text-white"><i class="fa-solid fa-user-graduate text-info me-1"></i> {{ profile.students_count }} Students Taught</span>
+                </div>
+            </div>
+            <div class="col-lg-auto ms-auto text-lg-end">
+                <a href="#contact-instructor" class="btn btn-warning btn-lg fw-bold shadow-lg mb-2 w-100 w-lg-auto">
+                    <i class="fa-solid fa-envelope me-2"></i> Contact Instructor
+                </a>
+                <div class="text-secondary small">Office Hours: <strong class="text-light">{{ profile.office_hours }}</strong></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container mb-5">
+    <div class="row g-4">
+        <!-- Main Profile Info -->
+        <div class="col-lg-8">
+            <!-- About Instructor -->
+            <div class="card border-0 shadow-sm p-4 rounded-4 mb-4 bg-white">
+                <h4 class="fw-bold mb-3"><i class="fa-solid fa-user-gear me-2 text-warning"></i> About {{ profile.name }}</h4>
+                <p class="text-secondary lh-lg mb-4 fs-6">{{ profile.bio }}</p>
+                
+                <h6 class="fw-bold mb-3 text-uppercase text-muted font-monospace"><i class="fa-solid fa-code me-2 text-primary"></i> Core Technical Expertise</h6>
+                <div class="d-flex flex-wrap gap-2 mb-2">
+                    {% for skill in profile.skills %}
+                        <span class="badge bg-light text-dark border px-3 py-2 fs-6 rounded-pill fw-semibold"><i class="fa-solid fa-layer-group text-warning me-1"></i> {{ skill }}</span>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Instructor Courses -->
+            <div class="card border-0 shadow-sm p-4 rounded-4 bg-white">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h4 class="fw-bold mb-0"><i class="fa-solid fa-graduation-cap me-2 text-primary"></i> Courses Taught by {{ profile.name }}</h4>
+                    <span class="badge bg-primary rounded-pill px-3 py-2">{{ courses|length }} Available</span>
+                </div>
+
+                <div class="row g-4">
+                    {% for course in courses %}
+                    <div class="col-md-6">
+                        <div class="card border-0 shadow-sm h-100 rounded-3 overflow-hidden border-top border-primary border-3">
+                            <div class="card-body p-4 d-flex flex-column">
+                                <span class="badge bg-primary bg-opacity-10 text-primary w-auto me-auto mb-2 font-monospace">{{ course.category.name|default:"Software Dev" }}</span>
+                                <h5 class="fw-bold text-dark mb-2">{{ course.title }}</h5>
+                                <p class="text-secondary small mb-3 line-clamp-2">{{ course.short_description|default:course.description|truncatewords:15 }}</p>
+
+                                <div class="mt-auto">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <span class="fw-bold fs-5 text-success">
+                                            {% if course.price == 0 %}
+                                                FREE
+                                            {% else %}
+                                                ₹{{ course.price }}
+                                            {% endif %}
+                                        </span>
+                                        <small class="text-muted"><i class="fa-solid fa-clock me-1"></i> {{ course.total_duration|default:40 }} hrs</small>
+                                    </div>
+                                    <a href="{% url 'courses:course_detail' slug=course.slug %}" class="btn btn-outline-dark btn-sm fw-bold w-100">
+                                        View Course Details <i class="fa-solid fa-arrow-right ms-1"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <p class="text-secondary">No published courses available right now.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar Contact & Other Instructors -->
+        <div class="col-lg-4">
+            <!-- Contact Card -->
+            <div id="contact-instructor" class="card border-0 shadow-sm p-4 rounded-4 mb-4 bg-dark text-white border-top border-warning border-4">
+                <h5 class="fw-bold text-white mb-3"><i class="fa-solid fa-headset me-2 text-warning"></i> Contact Details</h5>
+                
+                <div class="mb-3">
+                    <small class="text-secondary d-block font-monospace uppercase">Official Phone</small>
+                    <a href="tel:{{ profile.phone_primary }}" class="text-warning fw-bold text-decoration-none fs-5"><i class="fa-solid fa-phone me-2"></i>{{ profile.phone_primary }}</a>
+                </div>
+
+                <div class="mb-3">
+                    <small class="text-secondary d-block font-monospace uppercase">Alternative Support</small>
+                    <a href="tel:{{ profile.phone_secondary }}" class="text-light fw-semibold text-decoration-none"><i class="fa-solid fa-phone me-2"></i>{{ profile.phone_secondary }}</a>
+                </div>
+
+                <div class="mb-4">
+                    <small class="text-secondary d-block font-monospace uppercase">Direct Email</small>
+                    <a href="mailto:{{ profile.email }}" class="text-light fw-semibold text-decoration-none small"><i class="fa-solid fa-envelope me-2"></i>{{ profile.email }}</a>
+                </div>
+
+                <hr class="border-secondary mb-3">
+
+                <div class="p-3 bg-secondary bg-opacity-20 rounded-3">
+                    <small class="text-warning d-block fw-bold mb-1"><i class="fa-solid fa-shield-halved me-1"></i> Verified Instructor Guarantee</small>
+                    <small class="text-light opacity-75 d-block">All queries sent to {{ profile.name }} are responded within 24 hours during working office hours.</small>
+                </div>
+            </div>
+
+            <!-- Meet Other Instructors -->
+            <div class="card border-0 shadow-sm p-4 rounded-4 bg-white">
+                <h5 class="fw-bold mb-3"><i class="fa-solid fa-users me-2 text-primary"></i> All Mentors at SJ TECH</h5>
+                <div class="list-group list-group-flush">
+                    {% for inst in all_instructors %}
+                        <a href="{% url 'courses:instructor_profile' name_slug=inst.username %}" class="list-group-item list-group-item-action d-flex align-items-center gap-3 py-3 border-bottom px-0 {% if inst.username == profile.username %}bg-light rounded-3 px-2{% endif %}">
+                            <div class="rounded-circle bg-warning text-dark d-flex align-items-center justify-content-center fw-bold shadow-sm" style="width: 44px; height: 44px; flex-shrink: 0;">
+                                {{ inst.first_name|slice:":1"|default:inst.username|slice:":1"|upper }}{{ inst.last_name|slice:":1"|default:inst.username|slice:"1:2"|upper }}
+                            </div>
+                            <div>
+                                <h6 class="fw-bold text-dark mb-0">{{ inst.get_full_name|default:inst.username }}</h6>
+                                <small class="text-secondary">{{ inst.headline|default:"Tech Instructor" }}</small>
+                            </div>
+                            <i class="fa-solid fa-chevron-right ms-auto text-muted small"></i>
+                        </a>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

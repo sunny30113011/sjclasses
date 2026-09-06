@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="bg-dark text-white py-5">
+    <div class="container">
+        <div class="row align-items-center g-4">
+            <div class="col-auto">
+                <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center border border-3 border-light" style="width: 100px; height: 100px; font-size: 2.5rem; font-weight: 700;">
+                    {% if instructor.profile_picture %}
+                        <img src="{{ instructor.profile_picture.url }}" class="rounded-circle w-100 h-100" style="object-fit: cover;">
+                    {% else %}
+                        {{ instructor.username|slice:":1"|upper }}
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col">
+                <h2 class="fw-bold mb-1">{{ instructor.get_full_name|default:instructor.username }}</h2>
+                <p class="text-info mb-2 fs-5">{{ instructor.headline|default:"Instructor at EduLearn" }}</p>
+                <div class="d-flex flex-wrap gap-3 small text-secondary">
+                    <span><i class="fa-solid fa-book-open me-1"></i> {{ instructor.courses_taught.count }} Courses</span>
+                    <span><i class="fa-solid fa-users me-1"></i> {{ total_students }} Students</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container py-5">
+    <div class="row g-4">
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm p-4">
+                <h5 class="fw-bold mb-3">About Instructor</h5>
+                <p class="text-secondary small">{{ instructor.bio|default:"No bio provided yet." }}</p>
+            </div>
+        </div>
+        <div class="col-lg-8">
+            <h4 class="fw-bold mb-4">Courses Taught by {{ instructor.first_name|default:instructor.username }}</h4>
+            <div class="row g-4">
+                {% for course in courses %}
+                    <div class="col-md-6">
+                        <div class="card course-card h-100">
+                            <div class="course-thumbnail-wrapper">
+                                {% if course.thumbnail %}
+                                    <img src="{{ course.thumbnail.url }}" class="course-thumbnail">
+                                {% else %}
+                                    <div class="d-flex align-items-center justify-content-center h-100 bg-secondary bg-opacity-25 text-secondary">
+                                        <i class="fa-solid fa-image fs-1"></i>
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="card-body d-flex flex-column">
+                                <h5 class="card-title fw-bold fs-6 mb-2 text-truncate">{{ course.title }}</h5>
+                                <p class="card-text text-secondary small mb-3 flex-grow-1 text-truncate-2">{{ course.short_description }}</p>
+                                <div class="border-top pt-2 d-flex align-items-center justify-content-between">
+                                    <span class="fs-5 fw-bold text-primary">₹{{ course.discount_price }}</span>
+                                    <a href="{% url 'courses:course_detail' slug=course.slug %}" class="btn btn-sm btn-outline-primary">View Course</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% empty %}
+                    <p class="text-secondary">No courses published yet.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

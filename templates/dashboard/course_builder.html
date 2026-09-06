@@ -1,0 +1,153 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="bg-dark text-white py-4 mb-4">
+    <div class="container d-flex justify-content-between align-items-center">
+        <div>
+            <h2 class="fw-bold mb-1"><i class="fa-solid fa-cubes-stacked me-2 text-info"></i> Visual Course & Syllabus Builder</h2>
+            <p class="text-secondary small mb-0">Build modules, attach video/PDF/Quiz lessons, schedule live sessions, and upload project source .zip files.</p>
+        </div>
+        <a href="{% url 'dashboard:instructor_dashboard' %}" class="btn btn-outline-light btn-sm">Done & Exit Builder</a>
+    </div>
+</div>
+
+<div class="container mb-5">
+    <div class="row g-4">
+        <!-- Builder Controls Column -->
+        <div class="col-lg-5">
+            <!-- 1. Schedule Live Class Box -->
+            <div class="card border-0 shadow-sm p-4 mb-4 border-top border-danger border-4">
+                <h5 class="fw-bold mb-3"><i class="fa-solid fa-video me-2 text-danger"></i> Schedule Live Class Session</h5>
+                <form action="{% url 'dashboard:schedule_live_class' %}" method="POST">
+                    {% csrf_token %}
+                    <div class="mb-2">
+                        <label class="form-label small fw-bold">Select Course</label>
+                        <select name="course_id" class="form-select form-select-sm" required>
+                            {% for c in my_courses %}
+                                <option value="{{ c.id }}">{{ c.title }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label small fw-bold">Session Title</label>
+                        <input type="text" name="title" class="form-control form-control-sm" placeholder="e.g. Live Q&A & Project Code Review" required>
+                    </div>
+                    <div class="row g-2 mb-2">
+                        <div class="col-6">
+                            <label class="form-label small fw-bold">Date & Time</label>
+                            <input type="datetime-local" name="scheduled_at" class="form-control form-control-sm" required>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small fw-bold">Duration (mins)</label>
+                            <input type="number" name="duration_minutes" class="form-control form-control-sm" value="60" required>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Meeting Link (Zoom / GMeet / Jitsi)</label>
+                        <input type="url" name="meeting_link" class="form-control form-control-sm" placeholder="https://meet.google.com/..." required>
+                    </div>
+                    <button type="submit" class="btn btn-danger btn-sm w-100 fw-bold"><i class="fa-solid fa-calendar-plus me-1"></i> Schedule Live Session</button>
+                </form>
+            </div>
+
+            <!-- 2. Attach Project Zip File Box -->
+            <div class="card border-0 shadow-sm p-4 mb-4 border-top border-warning border-4">
+                <h5 class="fw-bold mb-3"><i class="fa-solid fa-file-zipper me-2 text-warning"></i> Upload Project Source .ZIP File</h5>
+                <form action="{% url 'dashboard:upload_project_zip' %}" method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="mb-2">
+                        <label class="form-label small fw-bold">Select Course</label>
+                        <select name="course_id" class="form-select form-select-sm" required>
+                            {% for c in my_courses %}
+                                <option value="{{ c.id }}">{{ c.title }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label small fw-bold">Project File Title</label>
+                        <input type="text" name="title" class="form-control form-control-sm" placeholder="e.g. Django Full Source Code .ZIP" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Select .ZIP File</label>
+                        <input type="file" name="zip_file" class="form-control form-control-sm" accept=".zip" required>
+                    </div>
+                    <button type="submit" class="btn btn-warning btn-sm w-100 fw-bold"><i class="fa-solid fa-upload me-1"></i> Upload Project .ZIP</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Course Curriculum Builder Tree -->
+        <div class="col-lg-7">
+            <div class="card border-0 shadow-lg p-4">
+                <h4 class="fw-bold mb-4"><i class="fa-solid fa-layer-group text-primary me-2"></i> Course Assets & Modules Overview</h4>
+
+                {% for c in my_courses %}
+                    <div class="border rounded-3 mb-4 p-3 bg-light">
+                        <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
+                            <h5 class="fw-bold text-dark mb-0">{{ c.title }}</h5>
+                            <div class="d-flex gap-2">
+                                <a href="{% url 'dashboard:edit_course' course_id=c.id %}" class="btn btn-sm btn-outline-warning"><i class="fa-solid fa-pen-to-square me-1"></i> Edit Details</a>
+                                <a href="{% url 'dashboard:manage_course_content' course_id=c.id %}" class="btn btn-sm btn-outline-primary"><i class="fa-solid fa-plus me-1"></i> Add Lessons</a>
+                                <a href="{% url 'dashboard:delete_course' course_id=c.id %}" class="btn btn-sm btn-outline-danger"><i class="fa-solid fa-trash me-1"></i> Delete</a>
+                            </div>
+                        </div>
+
+                        <!-- Scheduled Live Classes -->
+                        {% if c.live_classes.all %}
+                            <h6 class="fw-bold text-danger mb-2 small"><i class="fa-solid fa-video me-1"></i> Live Sessions ({{ c.live_classes.count }})</h6>
+                            <ul class="list-group list-group-flush mb-3 small">
+                                {% for live in c.live_classes.all %}
+                                    <li class="list-group-item bg-white d-flex justify-content-between align-items-center">
+                                        <span><strong>{{ live.title }}</strong> - {{ live.scheduled_at|date:"M d, Y H:i" }}</span>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <a href="{{ live.meeting_link }}" target="_blank" class="btn btn-sm btn-outline-danger py-0">Join Link</a>
+                                            <a href="{% url 'dashboard:edit_live_class' live_class_id=live.id %}" class="btn btn-sm btn-outline-warning py-0" title="Edit Session"><i class="fa-solid fa-pen-to-square"></i></a>
+                                            <a href="{% url 'dashboard:delete_live_class' live_class_id=live.id %}" class="btn btn-sm btn-outline-danger py-0" onclick="return confirm('Delete live class {{ live.title }}?');" title="Delete Session"><i class="fa-solid fa-trash"></i></a>
+                                        </div>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        {% endif %}
+
+                        <!-- Project Zip Source Files -->
+                        {% if c.project_files.all %}
+                            <h6 class="fw-bold text-warning mb-2 small"><i class="fa-solid fa-file-zipper me-1"></i> Project Source .ZIP Files ({{ c.project_files.count }})</h6>
+                            <ul class="list-group list-group-flush mb-3 small">
+                                {% for pf in c.project_files.all %}
+                                    <li class="list-group-item bg-white d-flex justify-content-between align-items-center">
+                                        <span><i class="fa-solid fa-file-arrow-down text-warning me-2"></i><strong>{{ pf.title }}</strong> ({{ pf.file_size_mb }} MB)</span>
+                                        <div class="d-flex align-items-center gap-2">
+                                            {% if pf.zip_file %}
+                                                <a href="{{ pf.zip_file.url }}" class="btn btn-sm btn-outline-secondary py-0"><i class="fa-solid fa-download"></i> Download</a>
+                                            {% else %}
+                                                <span class="badge bg-secondary">No File</span>
+                                            {% endif %}
+                                            <a href="{% url 'dashboard:delete_project_file' project_id=pf.id %}" class="btn btn-sm btn-outline-danger py-0" onclick="return confirm('Delete project file {{ pf.title }}?');"><i class="fa-solid fa-trash"></i></a>
+                                        </div>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        {% endif %}
+
+
+                        <!-- Modules List -->
+                        <h6 class="fw-bold text-secondary mb-2 small"><i class="fa-solid fa-folder me-1"></i> Modules ({{ c.modules.count }})</h6>
+                        <ul class="list-group list-group-flush small">
+                            {% for mod in c.modules.all %}
+                                <li class="list-group-item bg-white d-flex justify-content-between align-items-center">
+                                    <span>Module {{ mod.order }}: {{ mod.title }}</span>
+                                    <span class="badge bg-secondary">{{ mod.lessons.count }} Lessons</span>
+                                </li>
+                            {% empty %}
+                                <li class="list-group-item bg-white text-muted">No modules added yet.</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% empty %}
+                    <p class="text-secondary text-center py-5">No courses created yet. Create a course first!</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

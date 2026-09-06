@@ -1,0 +1,157 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="bg-dark text-white py-4 mb-4">
+    <div class="container d-flex justify-content-between align-items-center">
+        <div>
+            <h2 class="fw-bold mb-1"><i class="fa-solid fa-briefcase me-2 text-info"></i> Placement & Hiring Management</h2>
+            <p class="text-secondary small mb-0">Post new job drives, inspect student resumes, and update recruitment status.</p>
+        </div>
+        <a href="{% url 'courses:placement_portal' %}" class="btn btn-outline-light btn-sm"><i class="fa-solid fa-eye me-1"></i> View Portal</a>
+    </div>
+</div>
+
+<div class="container mb-5">
+    <div class="row g-4">
+        <!-- Post New Job Drive -->
+        <div class="col-lg-5">
+            <div class="card border-0 shadow-sm p-4 border-top border-primary border-4 mb-4">
+                <h5 class="fw-bold mb-3"><i class="fa-solid fa-plus-circle text-primary me-2"></i> Post New Job Drive</h5>
+                <form action="{% url 'dashboard:manage_placements' %}" method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="post_job">
+                    <div class="mb-2">
+                        <label class="form-label small fw-bold">Job Title / Designation *</label>
+                        <input type="text" name="title" class="form-control form-control-sm" placeholder="e.g. Python Full Stack Developer" required>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label small fw-bold">Company Name *</label>
+                        <input type="text" name="company_name" class="form-control form-control-sm" placeholder="e.g. TCS / Infosys / SJ Tech" required>
+                    </div>
+                    <div class="row g-2 mb-2">
+                        <div class="col-6">
+                            <label class="form-label small fw-bold">Location</label>
+                            <input type="text" name="location" class="form-control form-control-sm" value="Pune / Solapur / Remote">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small fw-bold">Salary Package (CTC)</label>
+                            <input type="text" name="salary_package" class="form-control form-control-sm" placeholder="e.g. 4.5 LPA - 7.0 LPA" required>
+                        </div>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label small fw-bold">Skills Required (space separated)</label>
+                        <input type="text" name="skills_required" class="form-control form-control-sm" placeholder="Python Django PostgreSQL HTML CSS" required>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label small fw-bold">Official Company Application URL *</label>
+                        <input type="url" name="official_apply_url" class="form-control form-control-sm" placeholder="https://careers.tcs.com/..." value="https://careers.tcs.com" required>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label small fw-bold">Application Deadline</label>
+                        <input type="date" name="application_deadline" class="form-control form-control-sm" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Job Description</label>
+                        <textarea name="description" class="form-control form-control-sm" rows="3" required placeholder="Job responsibilities..."></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-sm w-100 fw-bold"><i class="fa-solid fa-paper-plane me-1"></i> Publish Job Drive</button>
+                </form>
+            </div>
+
+            <!-- Post Placed Student Record -->
+            <div class="card border-0 shadow-sm p-4 border-top border-success border-4">
+                <h5 class="fw-bold mb-3"><i class="fa-solid fa-trophy text-success me-2"></i> Add Placed Student Record</h5>
+                <form action="{% url 'dashboard:manage_placements' %}" method="POST">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="add_record">
+                    <div class="mb-2">
+                        <label class="form-label small fw-bold">Student Name</label>
+                        <input type="text" name="student_name" class="form-control form-control-sm" required>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label small fw-bold">Company Name</label>
+                        <input type="text" name="company_name" class="form-control form-control-sm" required>
+                    </div>
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <label class="form-label small fw-bold">Designation</label>
+                            <input type="text" name="designation" class="form-control form-control-sm" required>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small fw-bold">Package (LPA)</label>
+                            <input type="number" step="0.1" name="package_lpa" class="form-control form-control-sm" required>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-success btn-sm w-100 fw-bold"><i class="fa-solid fa-plus me-1"></i> Add Hall of Fame Record</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Applications Table -->
+        <div class="col-lg-7">
+            <div class="card border-0 shadow-lg p-4">
+                <h4 class="fw-bold mb-3"><i class="fa-solid fa-users text-primary me-2"></i> Student Job Applications ({{ applications.count }})</h4>
+
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Student</th>
+                                <th>Applied For</th>
+                                <th>Resume</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for app in applications %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ app.student.get_full_name|default:app.student.username }}</strong><br>
+                                        <small class="text-muted">{{ app.student.email }}</small>
+                                    </td>
+                                    <td>
+                                        <small class="fw-bold d-block">{{ app.job.title }}</small>
+                                        <small class="text-secondary">{{ app.job.company_name }}</small>
+                                    </td>
+                                    <td>
+                                        <a href="{{ app.resume.url }}" download class="btn btn-sm btn-outline-secondary py-0"><i class="fa-solid fa-file-pdf text-danger me-1"></i> Resume</a>
+                                    </td>
+                                    <td>
+                                        {% if app.status == 'Selected' %}
+                                            <span class="badge bg-success">Selected 🎉</span>
+                                        {% elif app.status == 'Shortlisted' %}
+                                            <span class="badge bg-info">Shortlisted</span>
+                                        {% elif app.status == 'Rejected' %}
+                                            <span class="badge bg-danger">Rejected</span>
+                                        {% else %}
+                                            <span class="badge bg-warning text-dark">Applied</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <form action="{% url 'dashboard:update_application_status' application_id=app.id %}" method="POST" class="d-flex gap-1">
+                                            {% csrf_token %}
+                                            <select name="status" class="form-select form-select-sm" onchange="this.form.submit()">
+                                                <option value="Applied" {% if app.status == 'Applied' %}selected{% endif %}>Applied</option>
+                                                <option value="Shortlisted" {% if app.status == 'Shortlisted' %}selected{% endif %}>Shortlisted</option>
+                                                <option value="Interviewing" {% if app.status == 'Interviewing' %}selected{% endif %}>Interviewing</option>
+                                                <option value="Selected" {% if app.status == 'Selected' %}selected{% endif %}>Selected</option>
+                                                <option value="Rejected" {% if app.status == 'Rejected' %}selected{% endif %}>Rejected</option>
+                                            </select>
+                                        </form>
+                                    </td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="5" class="text-center text-muted py-4">No job applications submitted yet.</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

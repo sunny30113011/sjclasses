@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="bg-dark text-white py-4 mb-4" style="background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);">
+    <div class="container text-center">
+        <h2 class="fw-bold mb-1"><i class="fa-solid fa-qrcode me-2 text-warning"></i> Project Source Code Checkout</h2>
+        <p class="text-secondary small mb-0">Manual PhonePe / UPI Payment • Instant Admin Approval & .ZIP Download Unlock</p>
+    </div>
+</div>
+
+<div class="container mb-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card border-0 shadow-lg p-4 rounded-4">
+                <!-- Project Details & Price -->
+                <div class="text-center py-2">
+                    <span class="badge bg-warning bg-opacity-20 text-warning px-3 py-2 fw-bold text-uppercase mb-2"><i class="fa-solid fa-code me-1"></i> Standalone Project</span>
+                    <h3 class="fw-bold text-dark mb-1">{{ project.title }}</h3>
+                    <p class="text-secondary small mb-3">{{ project.tech_stack }}</p>
+                    <span class="text-secondary small text-uppercase fw-bold d-block">Unlock Price</span>
+                    <h1 class="display-5 fw-extrabold text-success mb-0">₹{{ amount }}</h1>
+                </div>
+
+                <hr class="my-4 border-2">
+
+                <!-- PhonePe Number & UPI ID Section -->
+                <div class="text-center">
+                    <span class="text-secondary small text-uppercase fw-bold">PhonePe / UPI Number</span>
+                    <div class="d-flex align-items-center justify-content-center gap-2 mt-2 mb-2">
+                        <code class="upi-id-badge fs-4 text-dark fw-bold px-3 py-2 bg-light border rounded-3">{{ upi_number }}</code>
+                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="navigator.clipboard.writeText('{{ upi_number }}'); alert('PhonePe Number {{ upi_number }} copied!');">
+                            <i class="fa-solid fa-copy me-1"></i> Copy Number
+                        </button>
+                    </div>
+                    <small class="text-secondary d-block">UPI ID: <strong>{{ upi_id }}</strong></small>
+                </div>
+
+                <hr class="my-4 border-2">
+
+                <!-- PhonePe QR Code Image Section -->
+                <div class="text-center">
+                    <span class="text-secondary small text-uppercase fw-bold mb-2 d-block">Scan PhonePe QR Code</span>
+                    <div class="qr-container d-inline-block bg-white p-3 rounded-4 shadow-sm border border-2 border-success" style="max-width: 280px;">
+                        <img src="{% static 'images/upi_qr.jpg' %}" class="img-fluid rounded" style="max-height: 240px; object-fit: contain;" alt="PhonePe QR Code HDFC Bank 6024">
+                        <div class="mt-2 pt-2 border-top text-center text-muted small fw-bold d-flex align-items-center justify-content-center gap-1">
+                            <i class="fa-solid fa-building-columns text-danger"></i> HDFC Bank - 6024
+                        </div>
+                    </div>
+                </div>
+
+                <hr class="my-4 border-2">
+
+                <!-- Submission Form Section -->
+                {% if pending_purchase %}
+                    <div class="alert alert-warning text-center fw-bold mb-0">
+                        <i class="fa-solid fa-clock me-2"></i> Your payment receipt for this project has been submitted and is pending Admin verification.
+                    </div>
+                {% else %}
+                    <form method="POST" action="{% url 'payments:submit_project_payment' %}" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <input type="hidden" name="project_id" value="{{ project.id }}">
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold">12-Digit UTR / Transaction Reference ID *</label>
+                            <input type="text" name="utr" class="form-control form-control-lg font-monospace" placeholder="e.g. 420918239012" required minlength="6">
+                            <small class="text-muted" style="font-size: 11px;">You will find this 12-digit number in your PhonePe / GPay payment receipt.</small>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label small fw-bold">Upload Payment Screenshot / Receipt *</label>
+                            <input type="file" name="screenshot" class="form-control" accept="image/*" required>
+                            <small class="text-muted" style="font-size: 11px;">Upload JPG, PNG receipt screenshot (Max 5MB).</small>
+                        </div>
+
+                        <button type="submit" class="btn btn-warning btn-lg w-100 fw-bold shadow">
+                            <i class="fa-solid fa-paper-plane me-2"></i> Submit UTR for Admin Verification
+                        </button>
+                    </form>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

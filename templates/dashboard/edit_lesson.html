@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="bg-dark text-white py-4 mb-4" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);">
+    <div class="container d-flex justify-content-between align-items-center">
+        <div>
+            <h2 class="fw-bold mb-0"><i class="fa-solid fa-pen-to-square text-warning me-2"></i> Edit Lesson</h2>
+            <p class="text-secondary small mb-0">Update lesson title, type, video URL, duration and preview settings</p>
+        </div>
+        <a href="{% url 'dashboard:manage_course_content' course_id=lesson.module.course.id %}" class="btn btn-outline-light btn-sm">
+            <i class="fa-solid fa-arrow-left me-1"></i> Back to Lessons
+        </a>
+    </div>
+</div>
+
+<div class="container mb-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-lg p-4 rounded-4">
+                <div class="mb-3 p-3 bg-light rounded-3">
+                    <small class="text-muted d-block"><i class="fa-solid fa-folder text-primary me-1"></i> Course: <strong>{{ lesson.module.course.title }}</strong></small>
+                    <small class="text-muted d-block mt-1"><i class="fa-solid fa-layer-group text-warning me-1"></i> Module: <strong>{{ lesson.module.title }}</strong></small>
+                </div>
+
+                <form method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Lesson Title *</label>
+                        <input type="text" name="title" class="form-control" value="{{ lesson.title }}" required>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Lesson Type</label>
+                            <select name="lesson_type" class="form-select">
+                                <option value="video" {% if lesson.lesson_type == 'video' %}selected{% endif %}>🎬 Video Lesson</option>
+                                <option value="pdf" {% if lesson.lesson_type == 'pdf' %}selected{% endif %}>📄 PDF Notes</option>
+                                <option value="quiz" {% if lesson.lesson_type == 'quiz' %}selected{% endif %}>📋 Quiz Exam</option>
+                                <option value="text" {% if lesson.lesson_type == 'text' %}selected{% endif %}>📝 Text Content</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Duration (Minutes)</label>
+                            <input type="number" name="duration_minutes" class="form-control" value="{{ lesson.duration_minutes }}" min="1">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Video URL (YouTube or Cloudinary)</label>
+                        <input type="url" name="video_url" class="form-control" value="{{ lesson.video_url }}" 
+                               placeholder="https://res.cloudinary.com/... or https://youtube.com/watch?v=...">
+                        <small class="text-muted">Paste your YouTube video link or Cloudinary media library video URL.</small>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Update PDF Notes File (Optional)</label>
+                        <input type="file" name="pdf_file" class="form-control" accept=".pdf">
+                        {% if lesson.pdf_file %}
+                            <small class="text-muted d-block mt-1"><a href="{{ lesson.pdf_file.url }}" target="_blank">📄 Current PDF</a></small>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-check mb-4">
+                        <input class="form-check-input" type="checkbox" name="is_free_preview" id="freePreview"
+                               {% if lesson.is_free_preview %}checked{% endif %}>
+                        <label class="form-check-label fw-bold" for="freePreview">
+                            <i class="fa-solid fa-eye text-success me-1"></i> Allow Free Preview (No Enrollment Required)
+                        </label>
+                    </div>
+
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'dashboard:delete_lesson' lesson_id=lesson.id %}" 
+                           onclick="return confirm('Permanently delete lesson {{ lesson.title }}?');"
+                           class="btn btn-outline-danger">
+                            <i class="fa-solid fa-trash me-1"></i> Delete Lesson
+                        </a>
+                        <button type="submit" class="btn btn-warning fw-bold px-4">
+                            <i class="fa-solid fa-floppy-disk me-1"></i> Save Changes
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

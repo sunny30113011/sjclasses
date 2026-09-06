@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="bg-dark text-white py-5">
+    <div class="container text-center">
+        <h1 class="fw-extrabold mb-2">Contact Us</h1>
+        <p class="lead text-light opacity-75">Have questions about courses, payment verification, or becoming an instructor? Reach out to us!</p>
+    </div>
+</div>
+
+<div class="container py-5">
+    <div class="row justify-content-center g-4">
+        <div class="col-lg-7">
+            <div class="card border-0 shadow-lg p-4">
+                <h4 class="fw-bold mb-4"><i class="fa-solid fa-paper-plane text-primary me-2"></i> Send Us a Message</h4>
+                <form method="POST" action="{% url 'courses:contact' %}">
+                    {% csrf_token %}
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Your Name *</label>
+                            <input type="text" name="name" class="form-control" placeholder="Rahul Sharma" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Email Address *</label>
+                            <input type="email" name="email" class="form-control" placeholder="rahul@example.com" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Subject *</label>
+                        <input type="text" name="subject" class="form-control" placeholder="e.g. Payment Verification Inquiry" required>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label small fw-bold">Message *</label>
+                        <textarea name="message" class="form-control" rows="5" placeholder="Write your query here..." required></textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-gradient btn-lg w-100">Send Message</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm p-4 bg-light">
+                <h5 class="fw-bold mb-3">Support Info</h5>
+                <div class="d-flex align-items-center mb-3">
+                    <i class="fa-solid fa-envelope fs-4 text-primary me-3"></i>
+                    <div>
+                        <strong class="d-block text-dark">Email Support</strong>
+                        <small class="text-secondary"><a href="mailto:sunnywaghmode8@gmail.com" class="text-decoration-none text-secondary">sunnywaghmode8@gmail.com</a></small>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center mb-3">
+                    <i class="fa-solid fa-phone fs-4 text-success me-3"></i>
+                    <div>
+                        <strong class="d-block text-dark">Phone / WhatsApp Support</strong>
+                        <small class="text-secondary"><a href="tel:9226238798" class="text-decoration-none text-success fw-bold">+91 9226238798</a> / +91 7218858764</small>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center mb-3">
+                    <i class="fa-solid fa-location-dot fs-4 text-warning me-3"></i>
+                    <div>
+                        <strong class="d-block text-dark">Institute Address</strong>
+                        <small class="text-secondary">SJ TECH CLASSES, Solapur, Maharashtra - 413001</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="bg-dark text-white py-4 mb-4">
+    <div class="container">
+        <h2 class="fw-bold mb-0"><i class="fa-solid fa-cart-shopping me-2"></i> Shopping Cart</h2>
+    </div>
+</div>
+
+<div class="container mb-5">
+    <div class="row g-4">
+        <!-- Cart Items List -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm p-4">
+                {% if cart_items %}
+                    <h5 class="fw-bold mb-3">{{ cart_items.count }} Course(s) in Cart</h5>
+                    <div class="table-responsive">
+                        <table class="table align-middle">
+                            <tbody>
+                                {% for item in cart_items %}
+                                    <tr>
+                                        <td style="width: 100px;">
+                                            {% if item.course.thumbnail %}
+                                                <img src="{{ item.course.thumbnail.url }}" class="rounded img-fluid" style="height: 60px; object-fit: cover;">
+                                            {% else %}
+                                                <div class="bg-secondary rounded p-2 text-white text-center"><i class="fa-solid fa-image"></i></div>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <h6 class="fw-bold mb-1"><a href="{% url 'courses:course_detail' slug=item.course.slug %}" class="text-dark text-decoration-none">{{ item.course.title }}</a></h6>
+                                            <small class="text-secondary">By {{ item.course.instructor.get_full_name|default:item.course.instructor.username }}</small>
+                                        </td>
+                                        <td class="text-end fw-bold fs-5 text-primary">
+                                            ₹{{ item.course.discount_price }}
+                                        </td>
+                                        <td class="text-end" style="width: 50px;">
+                                            <a href="{% url 'payments:remove_from_cart' item_id=item.id %}" class="text-danger fs-5" title="Remove"><i class="fa-solid fa-trash-can"></i></a>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="fa-solid fa-cart-arrow-down display-1 text-secondary mb-3"></i>
+                        <h5>Your cart is currently empty</h5>
+                        <p class="text-secondary">Explore thousands of courses and build your skills today!</p>
+                        <a href="{% url 'courses:course_list' %}" class="btn btn-gradient">Browse Courses</a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Order Summary & Coupon -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm p-4">
+                <h5 class="fw-bold mb-3">Order Summary</h5>
+                
+                <!-- Coupon Form -->
+                <form action="{% url 'payments:apply_coupon' %}" method="POST" class="mb-3">
+                    {% csrf_token %}
+                    <label class="form-label small fw-bold text-secondary">Have a Coupon?</label>
+                    <div class="input-group">
+                        <input type="text" name="coupon_code" class="form-control text-uppercase" placeholder="ENTER CODE" value="{{ coupon.code|default:'' }}">
+                        <button type="submit" class="btn btn-outline-primary">Apply</button>
+                    </div>
+                </form>
+
+                <hr>
+
+                <div class="d-flex justify-content-between mb-2 text-secondary">
+                    <span>Subtotal:</span>
+                    <span>₹{{ subtotal }}</span>
+                </div>
+
+                {% if coupon %}
+                    <div class="d-flex justify-content-between mb-2 text-success fw-semibold">
+                        <span>Discount ({{ coupon.code }} - {{ coupon.discount_percentage }}%):</span>
+                        <span>- ₹{{ discount_amount }}</span>
+                    </div>
+                {% endif %}
+
+                <hr>
+
+                <div class="d-flex justify-content-between mb-4 fs-4 fw-bold text-dark">
+                    <span>Total Amount:</span>
+                    <span class="text-primary">₹{{ total_amount }}</span>
+                </div>
+
+                {% if cart_items %}
+                    <a href="{% url 'payments:checkout' %}" class="btn btn-gradient btn-lg w-100">
+                        Proceed to Manual UPI Checkout <i class="fa-solid fa-arrow-right ms-1"></i>
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

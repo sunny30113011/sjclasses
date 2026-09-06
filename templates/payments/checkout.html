@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="bg-dark text-white py-4 mb-4">
+    <div class="container text-center">
+        <h2 class="fw-bold mb-0"><i class="fa-solid fa-qrcode me-2 text-warning"></i> Checkout Page</h2>
+        <p class="text-secondary small mb-0">Manual PhonePe / UPI Payment • Instant Admin Course Unlock</p>
+    </div>
+</div>
+
+<div class="container mb-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card border-0 shadow-lg p-4 rounded-4">
+                <!-- Course Price Section -->
+                <div class="text-center py-2">
+                    <span class="text-secondary small text-uppercase fw-bold">Course Price</span>
+                    <h1 class="display-5 fw-extrabold text-primary mb-0">₹{{ total_amount }}</h1>
+                    {% if courses_to_buy %}
+                        <p class="text-muted small mt-1 mb-0">
+                            {% for c in courses_to_buy %}
+                                {{ c.title }}{% if not forloop.last %}, {% endif %}
+                            {% endfor %}
+                        </p>
+                    {% endif %}
+                </div>
+
+                <hr class="my-4 border-2">
+
+                <!-- PhonePe Number & UPI ID Section -->
+                <div class="text-center">
+                    <span class="text-secondary small text-uppercase fw-bold">PhonePe / UPI Number</span>
+                    <div class="d-flex align-items-center justify-content-center gap-2 mt-2 mb-2">
+                        <code class="upi-id-badge fs-4 text-dark fw-bold px-3 py-2 bg-light border rounded-3" id="upiNumCode">{{ upi_number }}</code>
+                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="navigator.clipboard.writeText('{{ upi_number }}'); alert('PhonePe Number {{ upi_number }} copied!');">
+                            <i class="fa-solid fa-copy me-1"></i> Copy Number
+                        </button>
+                    </div>
+
+                    <small class="text-secondary d-block">UPI ID: <strong>{{ upi_id }}</strong></small>
+                </div>
+
+                <hr class="my-4 border-2">
+
+                <!-- PhonePe QR Code Image Section -->
+                <div class="text-center">
+                    <span class="text-secondary small text-uppercase fw-bold mb-2 d-block">Scan PhonePe QR Code</span>
+                    <div class="qr-container d-inline-block bg-white p-3 rounded-4 shadow-sm border border-2 border-primary" style="max-width: 280px;">
+                        <img src="{% static 'images/upi_qr.jpg' %}" class="img-fluid rounded" style="max-height: 250px; object-fit: contain;" alt="PhonePe QR Code HDFC Bank 6024">
+                        <div class="mt-2 pt-2 border-top text-center text-muted small fw-bold d-flex align-items-center justify-content-center gap-1">
+                            <i class="fa-solid fa-building-columns text-danger"></i> HDFC Bank - 6024
+                        </div>
+                    </div>
+                    <p class="text-muted small mt-2 mb-0">Scan using PhonePe, Google Pay, Paytm, or BHIM</p>
+                </div>
+
+                <hr class="my-4 border-2">
+
+                <!-- Already Paid & Submission Form Section -->
+                <div>
+                    <h5 class="fw-bold text-dark mb-3 text-center"><i class="fa-solid fa-circle-check text-success me-2"></i> Already Paid?</h5>
+
+                    <form action="{% url 'payments:submit_manual_payment' %}" method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+
+                        {% if single_course_id %}
+                            <input type="hidden" name="course_id" value="{{ single_course_id }}">
+                        {% endif %}
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small">Enter UTR <span class="text-danger">*</span></label>
+                            <input type="text" name="utr" class="form-control form-control-lg" placeholder="12-digit UTR / Ref Number" required minlength="6" maxlength="50">
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold small">Upload Screenshot <span class="text-danger">*</span></label>
+                            <input type="file" name="screenshot" class="form-control" accept="image/*" required>
+                        </div>
+
+
+                        <button type="submit" class="btn btn-gradient btn-lg w-100 py-3 mb-3 fw-bold">
+                            Submit Payment Details
+                        </button>
+                    </form>
+                </div>
+
+                <hr class="my-3 border-2">
+
+                <!-- Payment Status Section -->
+                <div class="text-center py-2 bg-light rounded-3 border">
+                    <span class="text-secondary small text-uppercase fw-bold">Initial Payment Status</span>
+                    <div class="mt-1">
+                        <span class="badge bg-warning text-dark px-3 py-2 fs-6"><i class="fa-solid fa-clock me-1"></i> Pending Verification</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

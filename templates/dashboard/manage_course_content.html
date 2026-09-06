@@ -1,0 +1,135 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="bg-dark text-white py-4 mb-4">
+    <div class="container d-flex justify-content-between align-items-center">
+        <div>
+            <h2 class="fw-bold mb-1">Manage Syllabus: {{ course.title }}</h2>
+            <p class="text-secondary small mb-0">Add modules and attach video lessons, PDF notes, or MCQ Quizzes.</p>
+        </div>
+        <a href="{% url 'dashboard:instructor_dashboard' %}" class="btn btn-outline-light btn-sm">Done / Return to Dashboard</a>
+    </div>
+</div>
+
+<div class="container mb-5">
+    <div class="row g-4">
+        <!-- Add Module Form -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm p-4 mb-4">
+                <h5 class="fw-bold mb-3"><i class="fa-solid fa-folder-plus me-2 text-primary"></i> Add New Module</h5>
+                <form method="POST">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="add_module">
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Module Title</label>
+                        <input type="text" name="module_title" class="form-control" placeholder="e.g. Module 1: Introduction" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-sm w-100">Create Module</button>
+                </form>
+            </div>
+
+            <!-- Add Lesson Form -->
+            <div class="card border-0 shadow-sm p-4">
+                <h5 class="fw-bold mb-3"><i class="fa-solid fa-file-circle-plus me-2 text-success"></i> Add Lesson to Module</h5>
+                <form method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="add_lesson">
+                    
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Select Module</label>
+                        <select name="module_id" class="form-select form-select-sm" required>
+                            {% for mod in modules %}
+                                <option value="{{ mod.id }}">Module {{ mod.order }}: {{ mod.title }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Lesson Title</label>
+                        <input type="text" name="lesson_title" class="form-control form-control-sm" placeholder="e.g. Installing Django 5" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Type</label>
+                        <select name="lesson_type" class="form-select form-select-sm">
+                            <option value="video">Video Lesson</option>
+                            <option value="pdf">PDF Notes</option>
+                            <option value="quiz">MCQ Quiz</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Video URL (YouTube or Cloudinary)</label>
+                        <input type="url" name="video_url" class="form-control form-control-sm" placeholder="https://res.cloudinary.com/rydrybp7/video/upload/v.../filename.mp4">
+                        <div class="alert alert-warning p-2 mt-2 mb-0" style="font-size: 11px;">
+                            <strong>⚠️ How to get Cloudinary URL:</strong><br>
+                            1. Open <a href="https://console.cloudinary.com" target="_blank">console.cloudinary.com</a> → Media Library<br>
+                            2. Click your video → click <strong>"Copy URL"</strong> (the <code>res.cloudinary.com/...</code> link)<br>
+                            3. Paste that URL here. <strong>Do NOT paste the console page URL.</strong>
+                        </div>
+                    </div>
+
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">PDF File Notes</label>
+                        <input type="file" name="pdf_file" class="form-control form-control-sm" accept=".pdf">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Duration (Minutes)</label>
+                        <input type="number" name="duration_minutes" class="form-control form-control-sm" value="10">
+                    </div>
+
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" name="is_free_preview" id="freePrev">
+                        <label class="form-check-label small" for="freePrev">Allow Free Preview</label>
+                    </div>
+
+                    <button type="submit" class="btn btn-success btn-sm w-100">Add Lesson</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Modules & Lessons Preview Tree -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm p-4">
+                <h5 class="fw-bold mb-3">Current Course Modules & Lessons</h5>
+                
+                {% for mod in modules %}
+                    <div class="border rounded-3 mb-3 p-3 bg-light">
+                        <div class="d-flex justify-content-between align-items-center mb-2 border-bottom pb-2">
+                            <h6 class="fw-bold text-primary mb-0"><i class="fa-solid fa-folder me-1"></i> Module {{ mod.order }}: {{ mod.title }}</h6>
+                            <a href="{% url 'dashboard:delete_module' module_id=mod.id %}" class="btn btn-sm btn-outline-danger py-0" onclick="return confirm('Delete module {{ mod.title }} and all its lessons?');"><i class="fa-solid fa-trash me-1"></i> Delete Module</a>
+                        </div>
+                        <ul class="list-group list-group-flush">
+                            {% for lesson in mod.lessons.all %}
+                                <li class="list-group-item bg-transparent d-flex justify-content-between align-items-center py-2 px-0">
+                                    <span>
+                                        <i class="fa-solid fa-circle-play me-2 text-warning"></i>
+                                        <strong>{{ lesson.title }}</strong> <small class="text-muted">({{ lesson.get_lesson_type_display }})</small>
+                                    </span>
+                                    <div class="d-flex align-items-center gap-2">
+                                        {% if lesson.is_free_preview %}
+                                            <span class="badge bg-success bg-opacity-10 text-success">Free Preview</span>
+                                        {% endif %}
+                                        <small class="text-secondary">{{ lesson.duration_minutes }} mins</small>
+                                        <a href="{% url 'dashboard:edit_lesson' lesson_id=lesson.id %}" class="btn btn-sm btn-outline-warning py-0"><i class="fa-solid fa-pen-to-square"></i></a>
+                                        <a href="{% url 'dashboard:delete_lesson' lesson_id=lesson.id %}" class="btn btn-sm btn-outline-danger py-0" onclick="return confirm('Delete lesson {{ lesson.title }}?');"><i class="fa-solid fa-trash"></i></a>
+                                    </div>
+                                </li>
+                            {% empty %}
+                                <p class="text-secondary small mb-0">No lessons added to this module yet.</p>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% empty %}
+
+                    <div class="text-center py-5 text-secondary">
+                        <p>No modules created yet. Use the form on the left to add your first module!</p>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

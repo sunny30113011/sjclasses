@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+
+{% block title %}Instructor Application Pending Approval | SJ TECH CLASSES{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-xl-7">
+            <div class="card border-0 shadow-lg rounded-4 overflow-hidden bg-white">
+                <!-- Header Banner -->
+                <div class="p-5 text-center text-white" style="background: linear-gradient(135deg, #1e1b4b 0%, #312e81 60%, #4338ca 100%);">
+                    <div class="rounded-circle bg-warning bg-opacity-20 text-warning mx-auto mb-3 d-flex align-items-center justify-content-center shadow" style="width: 80px; height: 80px;">
+                        <i class="fa-solid fa-clock-rotate-left fs-1"></i>
+                    </div>
+                    <span class="badge bg-warning text-dark px-3 py-2 fw-bold text-uppercase rounded-pill shadow-sm mb-2">
+                        <i class="fa-solid fa-hourglass-half me-1"></i> Application Under Review
+                    </span>
+                    <h2 class="fw-extrabold mb-2">Instructor Access Pending</h2>
+                    <p class="text-light opacity-75 mb-0 small mx-auto" style="max-width: 520px;">
+                        Thank you for applying to become an Instructor on SJ TECH CLASSES! Your profile has been submitted and is waiting for administrator approval.
+                    </p>
+                </div>
+
+                <!-- Body Details -->
+                <div class="p-4 p-md-5">
+                    <div class="alert alert-warning border-0 rounded-3 p-3 mb-4 bg-warning bg-opacity-10 d-flex align-items-start gap-3">
+                        <i class="fa-solid fa-shield-halved text-warning fs-3 mt-1"></i>
+                        <div>
+                            <strong class="text-dark d-block">Admin Verification in Progress</strong>
+                            <small class="text-secondary">
+                                To ensure top course quality and student experience, our team verifies all instructor credentials and payout information. You will receive an in-app notification and email confirmation as soon as Admin approves your account.
+                            </small>
+                        </div>
+                    </div>
+
+                    <!-- Application Summary -->
+                    <h5 class="fw-bold text-dark mb-3 d-flex align-items-center gap-2">
+                        <i class="fa-solid fa-id-card text-primary"></i> Your Submitted Details:
+                    </h5>
+                    <div class="bg-light p-3 rounded-4 border mb-4">
+                        <div class="row g-3 small">
+                            <div class="col-sm-6">
+                                <span class="text-muted d-block">Full Name:</span>
+                                <strong class="text-dark">{{ instructor.get_full_name|default:instructor.username }}</strong>
+                            </div>
+                            <div class="col-sm-6">
+                                <span class="text-muted d-block">Username:</span>
+                                <strong class="text-dark">@{{ instructor.username }}</strong>
+                            </div>
+                            <div class="col-sm-6">
+                                <span class="text-muted d-block">Email Address:</span>
+                                <strong class="text-dark">{{ instructor.email }}</strong>
+                            </div>
+                            <div class="col-sm-6">
+                                <span class="text-muted d-block">Phone Number:</span>
+                                <strong class="text-dark">{{ instructor.phone_number|default:"Not Provided" }}</strong>
+                            </div>
+                            <div class="col-12">
+                                <span class="text-muted d-block">Headline / Title:</span>
+                                <strong class="text-dark">{{ instructor.headline|default:"Instructor Applicant" }}</strong>
+                            </div>
+                            {% if instructor.bio %}
+                                <div class="col-12">
+                                    <span class="text-muted d-block">Teaching Bio:</span>
+                                    <span class="text-secondary">{{ instructor.bio }}</span>
+                                </div>
+                            {% endif %}
+                            {% if instructor.upi_id %}
+                                <div class="col-12">
+                                    <span class="text-muted d-block">Payout UPI ID:</span>
+                                    <code class="text-primary fw-bold">{{ instructor.upi_id }}</code>
+                                </div>
+                            {% endif %}
+                            <div class="col-12 border-top pt-2 mt-2 text-muted">
+                                <span>Applied On: <strong>{{ instructor.date_joined|date:"d M Y, H:i" }}</strong></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- What happens after approval -->
+                    <h6 class="fw-bold text-dark mb-2"><i class="fa-solid fa-rocket text-success me-1"></i> What Unlocks When Approved:</h6>
+                    <ul class="list-unstyled small text-secondary mb-4">
+                        <li class="py-1"><i class="fa-solid fa-circle-check text-success me-2"></i> Full access to <strong>Instructor Dashboard & Studio</strong></li>
+                        <li class="py-1"><i class="fa-solid fa-circle-check text-success me-2"></i> Create and publish video courses, modules, and lessons</li>
+                        <li class="py-1"><i class="fa-solid fa-circle-check text-success me-2"></i> Schedule and host <strong>Live Zoom / Meet Classes</strong></li>
+                        <li class="py-1"><i class="fa-solid fa-circle-check text-success me-2"></i> Track student enrollments, progress, and earnings payouts</li>
+                    </ul>
+
+                    <!-- Action Buttons -->
+                    <div class="d-flex flex-wrap gap-2 justify-content-between align-items-center pt-3 border-top">
+                        <a href="{% url 'dashboard:student_dashboard' %}" class="btn btn-outline-primary btn-sm fw-bold px-3">
+                            <i class="fa-solid fa-graduation-cap me-1"></i> Go to Student Dashboard
+                        </a>
+                        <div class="d-flex gap-2">
+                            <a href="{% url 'courses:course_list' %}" class="btn btn-light btn-sm fw-bold text-secondary">
+                                <i class="fa-solid fa-compass me-1"></i> Browse Courses
+                            </a>
+                            <a href="{% url 'accounts:logout' %}" class="btn btn-outline-danger btn-sm fw-bold">
+                                <i class="fa-solid fa-arrow-right-from-bracket me-1"></i> Log Out
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
