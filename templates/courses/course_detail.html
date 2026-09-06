@@ -159,8 +159,15 @@
                     {% endif %}
 
                     {% if course.preview_video_url %}
-                        <div class="ratio ratio-16x9 rounded-3 mb-3 overflow-hidden bg-black shadow-sm">
-                            <iframe src="{{ course.preview_video_url }}" allowfullscreen></iframe>
+                        <div class="ratio ratio-16x9 rounded-3 mb-3 overflow-hidden bg-black shadow-sm position-relative video-secure-container" id="preview-video-container">
+                            {% if course.is_preview_direct_video %}
+                                <video id="course-preview-video" controls class="w-100 h-100" style="object-fit: contain;" controlsList="nodownload noplaybackrate" disablePictureInPicture="true" disableRemotePlayback="true" oncontextmenu="return false;" ondragstart="return false;" playsinline>
+                                    <source src="{{ course.preview_video_url }}" type="video/mp4">
+                                    Your browser does not support HTML5 video playback.
+                                </video>
+                            {% else %}
+                                <iframe src="{{ course.get_preview_embed_url }}" allowfullscreen class="w-100 h-100 border-0"></iframe>
+                            {% endif %}
                         </div>
                     {% else %}
                         <img src="{{ course.display_thumbnail_url }}" class="img-fluid rounded-3 mb-3 w-100 shadow-sm" style="height: 220px; object-fit: cover;" alt="{{ course.title }}">
@@ -249,4 +256,24 @@
         </div>
     </div>
 </div>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const previewVideo = document.getElementById('course-preview-video');
+        if (previewVideo) {
+            previewVideo.setAttribute('controlsList', 'nodownload noplaybackrate');
+            previewVideo.setAttribute('disablePictureInPicture', 'true');
+            previewVideo.setAttribute('disableRemotePlayback', 'true');
+            previewVideo.oncontextmenu = function(e) { e.preventDefault(); return false; };
+            previewVideo.ondragstart = function(e) { e.preventDefault(); return false; };
+        }
+
+        const previewContainer = document.getElementById('preview-video-container');
+        if (previewContainer) {
+            previewContainer.addEventListener('contextmenu', function(e) {
+                e.preventDefault();
+                return false;
+            });
+        }
+    });
+</script>
 {% endblock %}

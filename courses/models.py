@@ -94,6 +94,33 @@ class Course(models.Model):
     def total_students(self):
         return self.enrollments.count()
 
+    @property
+    def is_preview_direct_video(self):
+        if not self.preview_video_url:
+            return False
+        url = self.preview_video_url.lower().strip()
+        return 'res.cloudinary.com' in url or url.endswith('.mp4') or url.endswith('.webm') or url.endswith('.mov') or url.endswith('.m3u8')
+
+    @property
+    def get_preview_embed_url(self):
+        if not self.preview_video_url:
+            return ""
+        url = self.preview_video_url.strip()
+        if 'youtube.com/watch' in url:
+            import urllib.parse
+            parsed = urllib.parse.urlparse(url)
+            params = urllib.parse.parse_qs(parsed.query)
+            video_id = params.get('v', [''])[0]
+            if video_id:
+                return f"https://www.youtube.com/embed/{video_id}?rel=0&modestbranding=1"
+        elif 'youtu.be/' in url:
+            video_id = url.split('youtu.be/')[-1].split('?')[0].split('/')[0]
+            if video_id:
+                return f"https://www.youtube.com/embed/{video_id}?rel=0&modestbranding=1"
+        elif 'youtube.com/embed/' in url:
+            return url
+        return url
+
     def __str__(self):
         return self.title
 
