@@ -2,8 +2,8 @@ services:
   - type: web
     name: sj-tech-classes-lms
     runtime: python
-    buildCommand: "./build.sh"
-    startCommand: "gunicorn lms_project.wsgi:application"
+    buildCommand: "bash build.sh"
+    startCommand: "python manage.py migrate && python create_admin_superuser.py && gunicorn lms_project.wsgi:application"
     envVars:
       - key: PYTHON_VERSION
         value: 3.13.0

@@ -15,4 +15,9 @@ python manage.py migrate
 echo "==> Ensuring initial superuser exists..."
 python create_admin_superuser.py
 
+echo "==> Seeding initial reviews & interview questions..."
+python seed_student_feedback.py
+python seed_interview_questions.py
+
 echo "==> Build completed successfully!"
+
