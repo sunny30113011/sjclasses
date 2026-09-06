@@ -377,3 +377,33 @@ main {
     border-color: rgba(79, 70, 229, 0.15) !important;
     background-color: #ffffff !important;
 }
+
+/* ============================================================ */
+/* VIDEO ANTI-DOWNLOAD & CONTENT PROTECTION STYLES             */
+/* ============================================================ */
+video::-internal-media-controls-download-button {
+    display: none !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    visibility: hidden !important;
+    -webkit-appearance: none !important;
+}
+video::-webkit-media-controls-enclosure {
+    overflow: hidden !important;
+}
+video::-webkit-media-controls-overflow-button,
+video::-webkit-media-controls-overflow-menu-list,
+video::-webkit-media-controls-cast-button {
+    display: none !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    visibility: hidden !important;
+}
+video, .video-player-container, .video-secure-container {
+    -webkit-user-select: none !important;
+    -moz-user-select: none !important;
+    -ms-user-select: none !important;
+    user-select: none !important;
+    -webkit-touch-callout: none !important;
+}
+

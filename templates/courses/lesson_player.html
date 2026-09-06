@@ -51,7 +51,7 @@
                                     </a>
                                 </div>
                             {% elif active_lesson.is_cloudinary_or_direct_video %}
-                                <video controls class="w-100 h-100" style="object-fit: contain;" controlsList="nodownload">
+                                <video id="lesson-html5-video" controls class="w-100 h-100" style="object-fit: contain;" controlsList="nodownload noplaybackrate" disablePictureInPicture oncontextmenu="return false;" ondragstart="return false;" playsinline>
                                     <source src="{{ active_lesson.video_url }}" type="video/mp4">
                                     Your browser does not support HTML5 video playback.
                                 </video>
@@ -295,15 +295,37 @@
         }
     }
 
-    // 1. Direct HTML5 <video> element watch completion listener
+    // 1. Direct HTML5 <video> element watch completion listener & Download Blocker
     document.addEventListener("DOMContentLoaded", function() {
         const video = document.querySelector('video');
         if (video) {
+            // Disable download attributes dynamically
+            video.setAttribute('controlsList', 'nodownload noplaybackrate');
+            video.setAttribute('disablePictureInPicture', 'true');
+            video.setAttribute('disableRemotePlayback', 'true');
+            video.oncontextmenu = function(e) { e.preventDefault(); return false; };
+            video.ondragstart = function(e) { e.preventDefault(); return false; };
+
             video.addEventListener('ended', function() {
                 console.log("HTML5 video ended.");
                 submitMarkComplete();
             });
         }
+
+        // Global Anti-Download Protection: Disable Right-Click and Save Keyboard Shortcuts
+        document.addEventListener('contextmenu', function(e) {
+            if (e.target.tagName === 'VIDEO' || e.target.closest('video') || e.target.closest('.ratio-16x9')) {
+                e.preventDefault();
+                return false;
+            }
+        });
+
+        window.addEventListener('keydown', function(e) {
+            if ((e.ctrlKey || e.metaKey) && (e.key === 's' || e.key === 'S' || e.key === 'u' || e.key === 'U')) {
+                e.preventDefault();
+                return false;
+            }
+        });
     });
 
     // 2. YouTube Iframe API Player state listener
