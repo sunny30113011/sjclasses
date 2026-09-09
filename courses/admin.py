@@ -4,7 +4,8 @@ from .models import (
     Quiz, QuizQuestion, QuizAttempt, Wishlist, Review, Discussion,
     DiscussionReply, Notification, LiveClass, ProjectFile,
     JobPlacement, JobApplication, PlacementRecord, Certificate,
-    InterviewQuestion, StudentFeedback, ContactMessage, BroadcastOffer
+    InterviewQuestion, StudentFeedback, ContactMessage, BroadcastOffer,
+    CarouselSlide
 )
 
 @admin.register(Category)
@@ -154,3 +155,12 @@ class BroadcastOfferAdmin(admin.ModelAdmin):
     list_display = ('title', 'offer_badge', 'target_audience', 'recipient_count', 'sent_by', 'sent_at')
     list_filter = ('target_audience', 'sent_at')
     search_fields = ('title', 'message')
+
+
+@admin.register(CarouselSlide)
+class CarouselSlideAdmin(admin.ModelAdmin):
+    list_display = ('title', 'order', 'is_active', 'badge_text', 'created_at')
+    list_editable = ('order', 'is_active')
+    list_filter = ('is_active',)
+    search_fields = ('title', 'highlight_text', 'description')
+

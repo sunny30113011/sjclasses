@@ -644,3 +644,45 @@ class ContactMessage(models.Model):
     def __str__(self):
         return f"Message from {self.name} - {self.email}"
 
+
+class CarouselSlide(models.Model):
+    title = models.CharField(max_length=255, help_text="Main heading of the slide (e.g. Learn Today,)")
+    highlight_text = models.CharField(max_length=255, blank=True, null=True, help_text="Highlighted text in yellow (e.g. Build Tomorrow)")
+    badge_text = models.CharField(max_length=100, default="SJ TECH CLASSES", help_text="Pill badge text")
+    badge_icon = models.CharField(max_length=50, default="fa-rocket", help_text="FontAwesome icon (e.g. fa-rocket, fa-qrcode, fa-briefcase, fa-code)")
+    description = models.TextField(help_text="Subtitle or description text")
+    image = models.ImageField(upload_to='carousel_slides/', blank=True, null=True, help_text="Upload custom hero banner image (Cloudinary or local)")
+    online_image_url = models.URLField(max_length=500, blank=True, null=True, help_text="Optional external image URL if not uploading file directly")
+    primary_btn_text = models.CharField(max_length=100, default="Explore All Courses")
+    primary_btn_url = models.CharField(max_length=255, default="/courses/")
+    secondary_btn_text = models.CharField(max_length=100, blank=True, null=True, default="Placement Drive")
+    secondary_btn_url = models.CharField(max_length=255, blank=True, null=True, default="/placements/")
+    gradient_css = models.CharField(
+        max_length=255,
+        default="linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%)",
+        help_text="Background gradient CSS (e.g. linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%))"
+    )
+    order = models.PositiveIntegerField(default=0, help_text="Display order (lowest number appears first)")
+    is_active = models.BooleanField(default=True, help_text="Enable or disable this slide on the home page")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['order', '-created_at']
+        verbose_name = "Carousel Slide"
+        verbose_name_plural = "Carousel Slides"
+
+    def __str__(self):
+        return f"Slide {self.order}: {self.title}"
+
+    @property
+    def display_image_url(self):
+        if self.image:
+            try:
+                return self.image.url
+            except Exception:
+                pass
+        if self.online_image_url:
+            return self.online_image_url
+        return "/static/images/hero1.jpg"
+
+

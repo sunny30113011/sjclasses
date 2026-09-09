@@ -14,7 +14,7 @@ from .utils import generate_pdf_certificate
 
 def home(request):
     from accounts.models import User
-    from .models import StudentFeedback
+    from .models import StudentFeedback, CarouselSlide
     featured_courses = Course.objects.filter(is_published=True).order_by('-created_at')[:8]
     categories = Category.objects.all()[:6]
     total_students = Enrollment.objects.values('student').distinct().count() or 1200
@@ -33,6 +33,9 @@ def home(request):
     # Query student feedbacks dynamically from database
     student_feedbacks = StudentFeedback.objects.filter(is_approved=True).order_by('-created_at')
 
+    # Query active carousel slides dynamically from database
+    carousel_slides = CarouselSlide.objects.filter(is_active=True).order_by('order')
+
     context = {
         'courses': featured_courses,
         'featured_courses': featured_courses,
@@ -41,6 +44,7 @@ def home(request):
         'total_courses': total_courses,
         'instructors': instructors,
         'student_feedbacks': student_feedbacks,
+        'carousel_slides': carousel_slides,
     }
     return render(request, 'courses/home.html', context)
 
