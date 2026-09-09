@@ -39,6 +39,8 @@ def student_dashboard(request):
     avg_quiz_score = quiz_attempts.aggregate(avg=Avg('score_percentage'))['avg'] or 0.0
     avg_quiz_score = round(avg_quiz_score, 1)
 
+    welcome_creds = request.session.pop('welcome_credentials', None)
+
     context = {
         'enrollments': enrollments,
         'payments': payments,
@@ -48,6 +50,7 @@ def student_dashboard(request):
         'quiz_attempts': quiz_attempts,
         'quiz_attempts_count': quiz_attempts_count,
         'avg_quiz_score': avg_quiz_score,
+        'welcome_creds': welcome_creds,
     }
     return render(request, 'dashboard/student_dashboard.html', context)
 

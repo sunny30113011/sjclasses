@@ -18,12 +18,17 @@ def register_student(request):
             raw_password = form.cleaned_data.get('password')
             user = form.save()
             login(request, user, backend='accounts.backends.EmailOrUsernameBackend')
+            request.session['welcome_credentials'] = {
+                'username': user.username,
+                'password': raw_password,
+                'email': user.email,
+            }
             try:
                 send_welcome_email(user, raw_password=raw_password)
             except Exception:
                 pass
             messages.success(request, f"Welcome to SJ TECH CLASSES, {user.username}! Your student account has been created.")
-            return redirect('dashboard:dashboard')
+            return redirect('dashboard:student_dashboard')
         else:
             messages.error(request, "Please check the form for errors below.")
     else:
@@ -41,6 +46,11 @@ def register_instructor(request):
             raw_password = form.cleaned_data.get('password')
             user = form.save()
             login(request, user, backend='accounts.backends.EmailOrUsernameBackend')
+            request.session['welcome_credentials'] = {
+                'username': user.username,
+                'password': raw_password,
+                'email': user.email,
+            }
             try:
                 send_welcome_email(user, raw_password=raw_password)
             except Exception:
@@ -66,7 +76,11 @@ def instructor_pending_approval(request):
     if not request.user.is_pending_instructor():
         return redirect('dashboard:student_dashboard')
 
-    return render(request, 'accounts/instructor_pending_approval.html', {'instructor': request.user})
+    welcome_creds = request.session.pop('welcome_credentials', None)
+    return render(request, 'accounts/instructor_pending_approval.html', {
+        'instructor': request.user,
+        'welcome_creds': welcome_creds
+    })
 
 
 def user_login(request):

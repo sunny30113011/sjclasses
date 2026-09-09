@@ -2,6 +2,8 @@ import os
 import random
 import threading
 import logging
+import base64
+import requests
 from django.core.mail import EmailMultiAlternatives
 from django.conf import settings
 
@@ -35,9 +37,95 @@ def generate_otp():
     return str(random.randint(100000, 999999))
 
 
+def _send_via_brevo_http(api_key, subject, recipients, text_content, html_content, attachments=None):
+    """
+    Sends email via Brevo REST API over HTTPS port 443 (bypasses Render Free Tier SMTP port blocking).
+    """
+    try:
+        url = "https://api.brevo.com/v3/smtp/email"
+        headers = {
+            "accept": "application/json",
+            "api-key": api_key,
+            "content-type": "application/json"
+        }
+        sender_email = getattr(settings, 'EMAIL_HOST_USER', 'sunnywaghmode8@gmail.com')
+        payload = {
+            "sender": {"name": "SJ TECH CLASSES", "email": sender_email},
+            "to": [{"email": r} for r in recipients],
+            "subject": subject,
+            "htmlContent": html_content,
+            "textContent": text_content
+        }
+        if attachments:
+            att_list = []
+            for att in attachments:
+                try:
+                    if isinstance(att, tuple):
+                        name, content = att[0], att[1]
+                        if isinstance(content, str):
+                            content = content.encode('utf-8')
+                        att_list.append({
+                            "name": name,
+                            "content": base64.b64encode(content).decode('utf-8')
+                        })
+                    elif isinstance(att, str) and os.path.exists(att):
+                        with open(att, 'rb') as f:
+                            att_list.append({
+                                "name": os.path.basename(att),
+                                "content": base64.b64encode(f.read()).decode('utf-8')
+                            })
+                except Exception as ex:
+                    logger.warning(f"Attachment encoding error for Brevo: {ex}")
+            if att_list:
+                payload["attachment"] = att_list
+
+        resp = requests.post(url, headers=headers, json=payload, timeout=10)
+        if resp.status_code in [200, 201, 202]:
+            logger.info(f"Email '{subject}' sent successfully via Brevo HTTP API to {recipients}")
+            return True
+        else:
+            logger.error(f"Brevo HTTP API error: {resp.status_code} - {resp.text}")
+            return False
+    except Exception as e:
+        logger.error(f"Brevo HTTP API exception: {e}")
+        return False
+
+
+def _send_via_resend_http(api_key, subject, recipients, text_content, html_content):
+    """
+    Sends email via Resend REST API over HTTPS port 443.
+    """
+    try:
+        url = "https://api.resend.com/emails"
+        headers = {
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json"
+        }
+        sender = getattr(settings, 'DEFAULT_FROM_EMAIL', 'SJ TECH CLASSES <onboarding@resend.dev>')
+        payload = {
+            "from": sender if '<' in sender else f"SJ TECH CLASSES <{sender}>",
+            "to": recipients,
+            "subject": subject,
+            "html": html_content,
+            "text": text_content
+        }
+        resp = requests.post(url, headers=headers, json=payload, timeout=10)
+        if resp.status_code in [200, 201]:
+            logger.info(f"Email '{subject}' sent successfully via Resend HTTP API to {recipients}")
+            return True
+        else:
+            logger.error(f"Resend HTTP API error: {resp.status_code} - {resp.text}")
+            return False
+    except Exception as e:
+        logger.error(f"Resend HTTP API exception: {e}")
+        return False
+
+
 def _send_rich_email(subject, recipient_email, text_content, html_content, attachments=None):
     """
     Utility to dispatch rich HTML emails asynchronously with plain text fallbacks.
+    Attempts HTTPS APIs first (Brevo / Resend) to bypass Render Free Tier SMTP port blocking,
+    falling back to standard SMTP.
     Runs in a background thread so it NEVER blocks user registration, login, or payments.
     """
     if not recipient_email:
@@ -50,6 +138,19 @@ def _send_rich_email(subject, recipient_email, text_content, html_content, attac
             if not recipients:
                 return
 
+            # 1. Try Brevo HTTP API (Port 443 - works on Render Free Tier)
+            brevo_key = getattr(settings, 'BREVO_API_KEY', '') or os.environ.get('BREVO_API_KEY', '')
+            if brevo_key:
+                if _send_via_brevo_http(brevo_key, subject, recipients, text_content, html_content, attachments):
+                    return
+
+            # 2. Try Resend HTTP API (Port 443 - works on Render Free Tier)
+            resend_key = getattr(settings, 'RESEND_API_KEY', '') or os.environ.get('RESEND_API_KEY', '')
+            if resend_key:
+                if _send_via_resend_http(resend_key, subject, recipients, text_content, html_content):
+                    return
+
+            # 3. Standard SMTP fallback (works on localhost & Render paid instances)
             msg = EmailMultiAlternatives(subject, text_content, FROM_EMAIL, recipients)
             msg.attach_alternative(html_content, "text/html")
             if attachments:
@@ -62,11 +163,13 @@ def _send_rich_email(subject, recipient_email, text_content, html_content, attac
                     except Exception as e:
                         logger.warning(f"Could not attach file to email: {e}")
             msg.send(fail_silently=False)
+            logger.info(f"Email '{subject}' dispatched via SMTP to {recipients}")
         except Exception as e:
-            logger.warning(f"Email dispatch warning ({subject}): {e}")
+            logger.warning(f"Email dispatch warning ({subject}): {e}. Note: Render Free Tier blocks outbound SMTP ports 25, 465, and 587. Add BREVO_API_KEY to Render Environment Variables to send over HTTPS port 443.")
 
     threading.Thread(target=_worker, daemon=True).start()
     return True
+
 
 
 def send_welcome_email(user, raw_password=None):
@@ -523,19 +626,12 @@ END:VCALENDAR"""
     except Exception:
         ics_content = ""
 
-    def _worker():
-        try:
-            from django.core.mail import EmailMultiAlternatives
-            msg = EmailMultiAlternatives(subject, text_content, FROM_EMAIL, recipient_emails)
-            msg.attach_alternative(html_content, "text/html")
-            if ics_content:
-                msg.attach(f"invite_{live_class.id}.ics", ics_content, "text/calendar")
-            msg.send(fail_silently=True)
-        except Exception:
-            pass
+    attachments = []
+    if ics_content:
+        attachments.append((f"invite_{live_class.id}.ics", ics_content, "text/calendar"))
 
-    threading.Thread(target=_worker, daemon=True).start()
-    return True
+    return _send_rich_email(subject, recipient_emails, text_content, html_content, attachments=attachments)
+
 
 
 def send_payment_approved_email(payment):

@@ -12,6 +12,49 @@
 </div>
 
 <div class="container mb-5">
+    {% if welcome_creds %}
+    <div class="card border-0 shadow-lg rounded-4 mb-4 overflow-hidden" style="background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%); border-left: 6px solid #10b981 !important;">
+        <div class="card-body p-4">
+            <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="badge bg-success fs-6 px-3 py-2 rounded-pill shadow-sm"><i class="fa-solid fa-check-circle me-1"></i> Registration Successful!</span>
+                    <h4 class="mb-0 fw-extrabold text-success">Welcome to SJ TECH CLASSES! 🎉</h4>
+                </div>
+                <span class="badge bg-white text-dark px-3 py-2 rounded-pill border shadow-sm"><i class="fa-solid fa-key text-warning me-1"></i> Save Your Login Credentials</span>
+            </div>
+            <p class="text-secondary mb-3">Your student account is now active! Please save your account username and password for logging in:</p>
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <div class="bg-white p-3 rounded-3 shadow-sm border border-success border-opacity-25 h-100">
+                        <small class="text-secondary d-block fw-bold text-uppercase" style="font-size: 11px;"><i class="fa-solid fa-user me-1 text-primary"></i> Username</small>
+                        <div class="d-flex align-items-center justify-content-between mt-1">
+                            <code class="fs-5 fw-bold text-dark user-select-all" id="credUsername">{{ welcome_creds.username }}</code>
+                            <button class="btn btn-sm btn-outline-secondary py-0 px-2" onclick="navigator.clipboard.writeText('{{ welcome_creds.username }}'); this.innerText='Copied!';"><i class="fa-regular fa-copy"></i></button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="bg-white p-3 rounded-3 shadow-sm border border-success border-opacity-25 h-100">
+                        <small class="text-secondary d-block fw-bold text-uppercase" style="font-size: 11px;"><i class="fa-solid fa-lock me-1 text-warning"></i> Password</small>
+                        <div class="d-flex align-items-center justify-content-between mt-1">
+                            <code class="fs-5 fw-bold text-primary user-select-all" id="credPassword">{{ welcome_creds.password }}</code>
+                            <button class="btn btn-sm btn-outline-secondary py-0 px-2" onclick="navigator.clipboard.writeText('{{ welcome_creds.password }}'); this.innerText='Copied!';"><i class="fa-regular fa-copy"></i></button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="bg-white p-3 rounded-3 shadow-sm border border-success border-opacity-25 h-100">
+                        <small class="text-secondary d-block fw-bold text-uppercase" style="font-size: 11px;"><i class="fa-solid fa-envelope me-1 text-danger"></i> Registered Email</small>
+                        <div class="mt-1">
+                            <span class="fs-6 fw-bold text-dark text-break">{{ welcome_creds.email }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
     {% if user.has_all_access %}
         {% if user.is_all_access_valid %}
             <div class="card border-0 shadow-sm rounded-4 p-3 mb-4 d-flex flex-row justify-content-between align-items-center flex-wrap gap-3" style="background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%); border-left: 5px solid #f59e0b !important;">

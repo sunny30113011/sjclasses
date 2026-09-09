@@ -169,6 +169,11 @@ EMAIL_HOST_PASSWORD = 'qnep owzh tznb baai'
 DEFAULT_FROM_EMAIL = 'SJ TECH CLASSES <sunnywaghmode8@gmail.com>'
 EMAIL_TIMEOUT = 5  # Prevents SMTP connections from hanging indefinitely
 
+# HTTP Email API Keys (Bypasses Render Free Tier SMTP port blocking over HTTPS port 443)
+BREVO_API_KEY = os.environ.get('BREVO_API_KEY', '')
+RESEND_API_KEY = os.environ.get('RESEND_API_KEY', '')
+
+
 
 # Gemini AI Settings
 GEMINI_API_KEY = 'AIzaSyD8a_I2ZDJMPkCro9OPnc7AWEhtx8h_so0'

@@ -23,6 +23,20 @@
 
                 <!-- Body Details -->
                 <div class="p-4 p-md-5">
+                    {% if welcome_creds %}
+                    <div class="alert alert-success border-0 rounded-3 p-3 mb-4 bg-success bg-opacity-10 border-start border-success border-4">
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <strong class="text-success fs-6"><i class="fa-solid fa-check-circle me-1"></i> Account Created Successfully!</strong>
+                            <span class="badge bg-success text-white">Save Credentials</span>
+                        </div>
+                        <p class="text-dark small mb-2">Keep your login credentials safe:</p>
+                        <div class="d-flex flex-wrap gap-3 bg-white p-2 rounded-2 border">
+                            <div><span class="text-muted small">Username:</span> <code class="fw-bold text-dark">{{ welcome_creds.username }}</code></div>
+                            <div><span class="text-muted small">Password:</span> <code class="fw-bold text-primary">{{ welcome_creds.password }}</code></div>
+                        </div>
+                    </div>
+                    {% endif %}
+
                     <div class="alert alert-warning border-0 rounded-3 p-3 mb-4 bg-warning bg-opacity-10 d-flex align-items-start gap-3">
                         <i class="fa-solid fa-shield-halved text-warning fs-3 mt-1"></i>
                         <div>
