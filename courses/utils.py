@@ -233,7 +233,7 @@ def generate_pdf_certificate(enrollment, force=False, notify_student=True):
     styles = getSampleStyleSheet()
 
     # QR Code Generation
-    site_url = getattr(settings, 'SITE_URL', 'http://10.243.185.186:8000')
+    site_url = getattr(settings, 'SITE_URL', 'https://sj-tech-classes.onrender.com').rstrip('/')
     qr = qrcode.QRCode(version=1, box_size=2, border=1)
     qr.add_data(f"{site_url}/certificate/{certificate.id}/verify/")
     qr.make(fit=True)

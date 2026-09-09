@@ -31,7 +31,8 @@ if RENDER_EXTERNAL_HOSTNAME:
 if RENDER_EXTERNAL_HOSTNAME:
     SITE_URL = f'https://{RENDER_EXTERNAL_HOSTNAME}'
 else:
-    SITE_URL = os.environ.get('SITE_URL', 'http://10.243.185.186:8000')
+    SITE_URL = os.environ.get('SITE_URL', 'https://sj-tech-classes.onrender.com').rstrip('/')
+
 
 # Application definition
 

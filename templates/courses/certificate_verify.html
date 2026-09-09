@@ -228,10 +228,16 @@
             <div style="text-align:center; color:#16a34a; font-size:13px; font-weight:600;">
                 ✅ This certificate is <strong>authentic</strong> and issued by SJ Tech Classes.
             </div>
+
+            <div style="text-align:center; margin-top:20px;">
+                <a href="{% url 'courses:home' %}" style="display:inline-block; background:linear-gradient(135deg, #1e3a8a, #0f172a); color:#ffffff; text-decoration:none; padding:12px 26px; border-radius:10px; font-weight:700; font-size:14px; box-shadow:0 4px 12px rgba(15,23,42,0.25);">
+                    🌐 Visit Official Website &rarr;
+                </a>
+            </div>
         </div>
 
         <div class="footer-bar">
-            <a href="http://10.243.185.186:8000/">Visit SJ Tech Classes</a> &nbsp;|&nbsp;
+            <a href="{% url 'courses:home' %}">Visit SJ Tech Classes Official Site</a> &nbsp;|&nbsp;
             Verified on {{ certificate.issued_at|date:"d M Y" }}
         </div>
     </div>
