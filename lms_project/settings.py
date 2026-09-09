@@ -61,8 +61,8 @@ AUTH_USER_MODEL = 'accounts.User'
 
 AUTHENTICATION_BACKENDS = [
     'accounts.backends.EmailOrUsernameBackend',
-    'django.contrib.auth.backends.ModelBackend',
 ]
+
 
 
 # Cloudinary Media & Video Configuration
