@@ -15,10 +15,11 @@ def register_student(request):
     if request.method == 'POST':
         form = StudentRegistrationForm(request.POST)
         if form.is_valid():
+            raw_password = form.cleaned_data.get('password')
             user = form.save()
             login(request, user)
             try:
-                send_welcome_email(user)
+                send_welcome_email(user, raw_password=raw_password)
             except Exception:
                 pass
             messages.success(request, f"Welcome to SJ TECH CLASSES, {user.username}! Your student account has been created.")
@@ -37,10 +38,11 @@ def register_instructor(request):
     if request.method == 'POST':
         form = InstructorRegistrationForm(request.POST)
         if form.is_valid():
+            raw_password = form.cleaned_data.get('password')
             user = form.save()
             login(request, user)
             try:
-                send_welcome_email(user)
+                send_welcome_email(user, raw_password=raw_password)
             except Exception:
                 pass
             messages.success(request, f"Welcome {user.username}! Your instructor application has been submitted for Admin approval.")

@@ -1,50 +1,108 @@
+import os
 import random
 import threading
+import logging
 from django.core.mail import EmailMultiAlternatives
 from django.conf import settings
 
+logger = logging.getLogger(__name__)
+
 FROM_EMAIL = getattr(settings, 'DEFAULT_FROM_EMAIL', 'SJ TECH CLASSES <sunnywaghmode8@gmail.com>')
+
+
+def get_site_url():
+    url = getattr(settings, 'SITE_URL', 'https://sj-tech-classes.onrender.com')
+    return url.rstrip('/')
+
+
+def get_payment_item_title(payment):
+    if getattr(payment, 'is_all_access', False):
+        return "All-Access VIP Pass (All Courses)"
+    elif payment.course:
+        return payment.course.title
+    else:
+        try:
+            from courses.models import ProjectPurchase
+            purchase = ProjectPurchase.objects.filter(payment=payment).select_related('project').first()
+            if purchase and purchase.project:
+                return f"Project: {purchase.project.title}"
+        except Exception:
+            pass
+        return "LMS Course / Project Purchase"
+
 
 def generate_otp():
     return str(random.randint(100000, 999999))
 
 
-def _send_rich_email(subject, recipient_email, text_content, html_content):
+def _send_rich_email(subject, recipient_email, text_content, html_content, attachments=None):
     """
-    Utility to dispatch rich HTML emails with plain text fallbacks via Gmail SMTP.
-    Dispatched asynchronously in a daemon thread so it never blocks web requests or causes timeouts.
+    Utility to dispatch rich HTML emails asynchronously with plain text fallbacks.
+    Runs in a background thread so it NEVER blocks user registration, login, or payments.
     """
     if not recipient_email:
         return False
 
     def _worker():
         try:
-            msg = EmailMultiAlternatives(subject, text_content, FROM_EMAIL, [recipient_email])
+            recipients = [recipient_email] if isinstance(recipient_email, str) else list(recipient_email)
+            recipients = [r for r in recipients if r]
+            if not recipients:
+                return
+
+            msg = EmailMultiAlternatives(subject, text_content, FROM_EMAIL, recipients)
             msg.attach_alternative(html_content, "text/html")
-            msg.send(fail_silently=True)
-        except Exception:
-            pass
+            if attachments:
+                for att in attachments:
+                    try:
+                        if isinstance(att, tuple):
+                            msg.attach(*att)
+                        elif isinstance(att, str):
+                            msg.attach_file(att)
+                    except Exception as e:
+                        logger.warning(f"Could not attach file to email: {e}")
+            msg.send(fail_silently=False)
+        except Exception as e:
+            logger.warning(f"Email dispatch warning ({subject}): {e}")
 
     threading.Thread(target=_worker, daemon=True).start()
     return True
 
 
-def send_welcome_email(user):
-    subject = f"Welcome to SJ TECH CLASSES, {user.first_name or user.username}! 🚀"
-    
+def send_welcome_email(user, raw_password=None):
+    """
+    Sends welcome email with Username and Password credentials directly to the student or instructor.
+    """
+    site_url = get_site_url()
+    login_url = f"{site_url}/account/login/"
+    courses_url = f"{site_url}/courses/"
+    name = user.get_full_name() or user.username
+    subject = f"Welcome to SJ TECH CLASSES, {user.first_name or user.username}! 🚀 Your Login Credentials"
+
+    password_val = raw_password if raw_password else "(As chosen during registration)"
+
     text_content = f"""
-Hello {user.get_full_name() or user.username},
+Hello {name},
 
-Welcome to SJ TECH CLASSES (Learn Today, Build Tomorrow)! Your student account is now active.
+Welcome to SJ TECH CLASSES (Learn Today, Build Tomorrow)! Your account is now active.
 
+=======================================================
+🔐 YOUR ACCOUNT LOGIN CREDENTIALS:
+=======================================================
 Username: {user.username}
-Email: {user.email}
+Password: {password_val}
+Email:    {user.email}
+=======================================================
 
-Start browsing our top-rated courses:
-http://127.0.0.1:8000/courses/
+Click here to log into your dashboard:
+{login_url}
+
+Browse all available courses:
+{courses_url}
 
 Best regards,
 SJ TECH CLASSES Team
+Solapur, Maharashtra • Support: sunnywaghmode8@gmail.com
 """
 
     html_content = f"""
@@ -59,7 +117,12 @@ SJ TECH CLASSES Team
         .header p {{ margin: 5px 0 0 0; color: #d97706; font-size: 13px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }}
         .content {{ padding: 30px; line-height: 1.6; }}
         .badge {{ background: #eff6ff; color: #2563eb; padding: 6px 14px; border-radius: 20px; font-weight: bold; font-size: 13px; display: inline-block; margin-bottom: 15px; }}
-        .btn {{ display: inline-block; background: linear-gradient(135deg, #4f46e5 0%, #06b6d4 100%); color: #ffffff !important; text-decoration: none; padding: 12px 28px; border-radius: 8px; font-weight: bold; margin-top: 20px; }}
+        .cred-box {{ background: #f8fafc; border: 2px solid #3b82f6; border-radius: 10px; padding: 20px; margin: 25px 0; }}
+        .cred-title {{ font-size: 16px; font-weight: bold; color: #1e3a8a; margin: 0 0 12px 0; }}
+        .cred-row {{ padding: 8px 0; border-bottom: 1px solid #e2e8f0; font-size: 15px; }}
+        .cred-label {{ font-weight: bold; color: #475569; width: 110px; display: inline-block; }}
+        .cred-code {{ font-family: monospace; background: #e2e8f0; padding: 3px 10px; border-radius: 4px; font-size: 15px; font-weight: bold; color: #0f172a; }}
+        .btn {{ display: inline-block; background: linear-gradient(135deg, #4f46e5 0%, #06b6d4 100%); color: #ffffff !important; text-decoration: none; padding: 12px 28px; border-radius: 8px; font-weight: bold; margin-top: 15px; }}
         .footer {{ background: #f1f5f9; padding: 20px; text-align: center; font-size: 12px; color: #64748b; border-top: 1px solid #e2e8f0; }}
     </style>
 </head>
@@ -72,15 +135,20 @@ SJ TECH CLASSES Team
         <div class="content">
             <span class="badge">Registration Successful 🎉</span>
             <h2>Welcome to SJ TECH CLASSES!</h2>
-            <p>Hello <strong>{user.get_full_name() or user.username}</strong>,</p>
-            <p>Your student account has been successfully created. You now have access to industry-grade courses, interactive quizzes, PDF notes, and certified learning paths.</p>
+            <p>Hello <strong>{name}</strong>,</p>
+            <p>Your account has been successfully created. Here are your personal login credentials. Please keep them safe for future reference:</p>
             
-            <div style="background: #f8fafc; padding: 15px; border-radius: 8px; border-left: 4px solid #4f46e5; margin: 20px 0;">
-                <p style="margin: 0;"><strong>Username:</strong> {user.username}</p>
-                <p style="margin: 5px 0 0 0;"><strong>Email:</strong> {user.email}</p>
+            <div class="cred-box">
+                <div class="cred-title">🔐 Your Account Credentials</div>
+                <div class="cred-row"><span class="cred-label">Username:</span> <span class="cred-code">{user.username}</span></div>
+                <div class="cred-row"><span class="cred-label">Password:</span> <span class="cred-code">{password_val}</span></div>
+                <div class="cred-row" style="border-bottom:none;"><span class="cred-label">Email:</span> <span>{user.email}</span></div>
             </div>
 
-            <a href="http://127.0.0.1:8000/courses/" class="btn">Explore Courses Now</a>
+            <p style="margin-top: 20px;">You can now log in to access your courses, lecture videos, notes, quizzes, and certificates:</p>
+            <div style="text-align: center;">
+                <a href="{login_url}" class="btn">Log In to Your Dashboard &rarr;</a>
+            </div>
         </div>
         <div class="footer">
             © SJ TECH CLASSES • Solapur, Maharashtra • Support: sunnywaghmode8@gmail.com
@@ -134,21 +202,30 @@ SJ TECH CLASSES Security
 
 
 def send_payment_received_email(payment):
+    """
+    1. Sends payment receipt acknowledgment to the student.
+    2. Sends approval request notification email with screenshot to the site admin.
+    """
+    site_url = get_site_url()
+    item_title = get_payment_item_title(payment)
+    student_dashboard_url = f"{site_url}/dashboard/student/"
+    
     subject = f"📲 Payment Submitted (UTR: {payment.utr}) - Pending Admin Verification"
     
     text_content = f"""
 Hello {payment.user.get_full_name() or payment.user.username},
 
-We received your manual PhonePe / UPI payment details for '{payment.course.title}'.
+We received your manual PhonePe / UPI payment details for '{item_title}'.
 
-- Course: {payment.course.title}
-- Amount: ₹{payment.amount}
+- Item / Course: {item_title}
+- Amount Paid: ₹{payment.amount}
 - UTR Ref Number: {payment.utr}
-- Status: Pending Verification
+- Status: Pending Admin Verification
 
-Track payment status on your dashboard:
-http://127.0.0.1:8000/dashboard/student/
+Track payment status on your student dashboard:
+{student_dashboard_url}
 
+Best regards,
 SJ TECH CLASSES Billing
 """
 
@@ -177,14 +254,14 @@ SJ TECH CLASSES Billing
             <p>Thank you for submitting your payment proof. Your payment details have been logged and sent to our admin team for verification.</p>
             
             <table class="table">
-                <tr><td><strong>Course:</strong></td><td>{payment.course.title}</td></tr>
+                <tr><td><strong>Item / Course:</strong></td><td>{item_title}</td></tr>
                 <tr><td><strong>Amount Paid:</strong></td><td style="color:#2563eb; font-weight:bold;">₹{payment.amount}</td></tr>
                 <tr><td><strong>Submitted UTR:</strong></td><td><code>{payment.utr}</code></td></tr>
                 <tr><td><strong>Current Status:</strong></td><td><span class="status-badge">Pending Verification</span></td></tr>
             </table>
 
-            <p style="font-size: 13px; color: #64748b;">As soon as admin verifies your UTR & screenshot, your course will automatically unlock!</p>
-            <a href="http://127.0.0.1:8000/dashboard/student/" style="display:inline-block; background:#0f172a; color:#fff; text-decoration:none; padding:10px 20px; border-radius:6px; font-weight:bold;">View Student Dashboard</a>
+            <p style="font-size: 13px; color: #64748b;">As soon as admin verifies your UTR & screenshot, your course access will automatically unlock!</p>
+            <a href="{student_dashboard_url}" style="display:inline-block; background:#0f172a; color:#fff; text-decoration:none; padding:10px 20px; border-radius:6px; font-weight:bold;">View Student Dashboard</a>
         </div>
     </div>
 </body>
@@ -192,34 +269,94 @@ SJ TECH CLASSES Billing
 """
     _send_rich_email(subject, payment.user.email, text_content, html_content)
     
-    # Notify support/admin email
+    # Notify site's email to review and approve payment!
     send_payment_support_notification(payment)
 
 
 def send_payment_support_notification(payment):
-    support_email = "sunnywaghmode8@gmail.com"
-    subject = f"🔔 NEW UPI PAYMENT SUBMITTED - UTR: {payment.utr}"
+    """
+    Dispatches immediate alert to site administrator email when a student uploads UTR & receipt screenshot.
+    """
+    site_url = get_site_url()
+    item_title = get_payment_item_title(payment)
+    admin_panel_url = f"{site_url}/dashboard/admin-panel/"
+    django_admin_url = f"{site_url}/admin/payments/payment/{payment.id}/change/"
     
-    item_title = payment.course.title if payment.course else "Project Purchase"
+    support_email = getattr(settings, 'SUPPORT_EMAIL', 'sunnywaghmode8@gmail.com')
+    site_email = getattr(settings, 'EMAIL_HOST_USER', 'sunnywaghmode8@gmail.com')
+    recipients = list({support_email, site_email, 'sunnywaghmode8@gmail.com'})
+
+    subject = f"🚨 [APPROVAL REQUIRED] New UPI Payment ₹{payment.amount} - UTR: {payment.utr} | {payment.user.username}"
     
+    paid_time = payment.paid_on.strftime('%B %d, %Y at %I:%M %p') if getattr(payment, 'paid_on', None) else "Just now"
+    student_phone = getattr(payment.user, 'phone_number', None) or "Not provided"
+
+    # Screenshot handling
+    screenshot_url = ""
+    attachments = []
+    if payment.screenshot:
+        try:
+            url = payment.screenshot.url
+            if url.startswith('http'):
+                screenshot_url = url
+            else:
+                screenshot_url = f"{site_url}{url}"
+        except Exception:
+            screenshot_url = ""
+
+        try:
+            if hasattr(payment.screenshot, 'path') and os.path.exists(payment.screenshot.path):
+                with open(payment.screenshot.path, 'rb') as f:
+                    attachments.append((os.path.basename(payment.screenshot.name), f.read(), 'image/jpeg'))
+            else:
+                payment.screenshot.open('rb')
+                attachments.append((os.path.basename(payment.screenshot.name), payment.screenshot.read(), 'image/jpeg'))
+        except Exception:
+            pass
+
     text_content = f"""
-Hello Admin / Support,
+Hello Admin,
 
-A new manual UPI payment proof has been submitted by a student.
+A student has submitted a new manual UPI payment proof that requires your verification and approval.
 
+--------------------------------------------------
+PAYMENT DETAILS:
+--------------------------------------------------
+Student Name:     {payment.user.get_full_name() or payment.user.username}
 Student Username: {payment.user.username}
-Student Email: {payment.user.email}
-Course/Item: {item_title}
-Amount: ₹{payment.amount}
-UTR Reference: {payment.utr}
-Submitted On: {payment.paid_on}
+Student Email:    {payment.user.email}
+Student Phone:    {student_phone}
+Item / Course:    {item_title}
+Amount Paid:      ₹{payment.amount}
+UTR Ref Number:   {payment.utr}
+Submitted On:     {paid_time}
+--------------------------------------------------
 
-Please log in to the SJ TECH CLASSES Admin Panel to verify and approve/reject this payment:
-http://127.0.0.1:8000/dashboard/admin-panel/
+Screenshot URL:
+{screenshot_url or 'Attached to this email'}
+
+To APPROVE or REJECT this payment:
+1. Open Admin Verification Panel: {admin_panel_url}
+2. Or Direct Django Admin Record: {django_admin_url}
 
 Best regards,
-LMS Automated System
+SJ TECH CLASSES Automated System
 """
+
+    screenshot_html_block = ""
+    if screenshot_url:
+        screenshot_html_block = f"""
+        <div style="margin: 20px 0; padding: 15px; background: #f8fafc; border-radius: 8px; border: 1px solid #cbd5e1; text-align: center;">
+            <p style="font-weight: bold; margin-top: 0; color: #0f172a;">📸 Uploaded Payment Screenshot Receipt:</p>
+            <a href="{screenshot_url}" target="_blank" style="display:inline-block; margin-bottom: 12px; color: #2563eb; font-weight: bold; text-decoration: underline;">
+                👉 Click here to Open / Download Full-Size Screenshot
+            </a>
+            <br>
+            <a href="{screenshot_url}" target="_blank">
+                <img src="{screenshot_url}" alt="Payment Receipt Screenshot" style="max-width: 100%; max-height: 400px; border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);" />
+            </a>
+        </div>
+        """
 
     html_content = f"""
 <!DOCTYPE html>
@@ -227,32 +364,47 @@ LMS Automated System
 <head>
     <style>
         body {{ font-family: sans-serif; background-color: #f8fafc; padding: 20px; }}
-        .card {{ max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 12px; border: 2px solid #3b82f6; padding: 30px; }}
-        .title {{ color: #1e3a8a; font-size: 20px; font-weight: bold; margin-bottom: 15px; }}
+        .card {{ max-width: 620px; margin: 0 auto; background: #ffffff; border-radius: 12px; border: 2px solid #ef4444; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }}
+        .header {{ background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); color: #ffffff; padding: 25px; text-align: center; border-bottom: 3px solid #ef4444; }}
+        .content {{ padding: 30px; }}
         .table {{ width: 100%; border-collapse: collapse; margin: 20px 0; }}
-        .table td {{ padding: 10px; border-bottom: 1px solid #f1f5f9; }}
-        .btn {{ display: inline-block; background: #3b82f6; color: #ffffff !important; text-decoration: none; padding: 10px 20px; border-radius: 6px; font-weight: bold; margin-top: 15px; }}
+        .table td {{ padding: 10px; border-bottom: 1px solid #f1f5f9; font-size: 14px; }}
+        .btn-approve {{ display: inline-block; background: #10b981; color: #ffffff !important; text-decoration: none; padding: 12px 24px; border-radius: 6px; font-weight: bold; margin-right: 10px; }}
+        .btn-admin {{ display: inline-block; background: #3b82f6; color: #ffffff !important; text-decoration: none; padding: 12px 24px; border-radius: 6px; font-weight: bold; }}
     </style>
 </head>
 <body>
     <div class="card">
-        <div class="title" style="color: #1e3a8a; font-size: 20px; font-weight: bold;">🔔 New Payment Proof Submitted</div>
-        <p>A student has uploaded a PhonePe/UPI payment receipt for verification:</p>
-        
-        <table class="table">
-            <tr><td><strong>Student Username:</strong></td><td>{payment.user.username}</td></tr>
-            <tr><td><strong>Student Email:</strong></td><td>{payment.user.email}</td></tr>
-            <tr><td><strong>Course/Item:</strong></td><td>{item_title}</td></tr>
-            <tr><td><strong>Amount:</strong></td><td style="color:#10b981; font-weight:bold;">₹{payment.amount}</td></tr>
-            <tr><td><strong>UTR Reference:</strong></td><td><code>{payment.utr}</code></td></tr>
-        </table>
-        
-        <a href="http://127.0.0.1:8000/dashboard/admin-panel/" class="btn">Go to Admin Verification Panel</a>
+        <div class="header">
+            <h2 style="margin:0; color:#ffffff;">🔔 PAYMENT APPROVAL REQUIRED</h2>
+            <p style="margin:5px 0 0 0; color:#f87171; font-weight:bold; font-size:13px; text-transform:uppercase;">SJ TECH CLASSES Admin Notification</p>
+        </div>
+        <div class="content">
+            <p style="font-size: 15px;">A student has uploaded a PhonePe/UPI payment receipt for admin verification:</p>
+            
+            <table class="table">
+                <tr><td style="width: 140px; color:#64748b;"><strong>Student Name:</strong></td><td><strong>{payment.user.get_full_name() or payment.user.username}</strong></td></tr>
+                <tr><td style="color:#64748b;"><strong>Username:</strong></td><td><code>{payment.user.username}</code></td></tr>
+                <tr><td style="color:#64748b;"><strong>Email:</strong></td><td><a href="mailto:{payment.user.email}">{payment.user.email}</a></td></tr>
+                <tr><td style="color:#64748b;"><strong>Phone:</strong></td><td>{student_phone}</td></tr>
+                <tr><td style="color:#64748b;"><strong>Item / Course:</strong></td><td><span style="color:#4f46e5; font-weight:bold;">{item_title}</span></td></tr>
+                <tr><td style="color:#64748b;"><strong>Amount Paid:</strong></td><td><span style="color:#10b981; font-size:18px; font-weight:bold;">₹{payment.amount}</span></td></tr>
+                <tr><td style="color:#64748b;"><strong>UTR Reference:</strong></td><td><code style="background:#fef3c7; padding:4px 8px; border-radius:4px; font-size:15px; color:#92400e; font-weight:bold;">{payment.utr}</code></td></tr>
+                <tr><td style="color:#64748b;"><strong>Submitted On:</strong></td><td>{paid_time}</td></tr>
+            </table>
+            
+            {screenshot_html_block}
+
+            <div style="text-align: center; margin-top: 25px;">
+                <a href="{admin_panel_url}" class="btn-approve">👉 Verify in Admin Panel</a>
+                <a href="{django_admin_url}" class="btn-admin">Django Admin Detail</a>
+            </div>
+        </div>
     </div>
 </body>
 </html>
 """
-    _send_rich_email(subject, support_email, text_content, html_content)
+    _send_rich_email(subject, recipients, text_content, html_content, attachments=attachments)
 
 
 def send_live_class_alert_email(live_class, is_update=False):
@@ -271,7 +423,6 @@ def send_live_class_alert_email(live_class, is_update=False):
     action_str = "Rescheduled" if is_update else "Scheduled"
     subject = f"📢 Live Class {action_str}: {live_class.title} - {course.title}"
     
-    # Check if scheduled_at is a string and convert to aware datetime
     scheduled_at = live_class.scheduled_at
     if isinstance(scheduled_at, str):
         parsed = parse_datetime(scheduled_at)
@@ -287,7 +438,6 @@ def send_live_class_alert_email(live_class, is_update=False):
             except Exception:
                 scheduled_at = datetime.now()
 
-    # Format dates for human reading
     scheduled_time_str = scheduled_at.strftime("%B %d, %Y at %I:%M %p")
     duration_str = f"{live_class.duration_minutes} minutes"
     
@@ -301,7 +451,7 @@ A live interactive class has been {action_str.lower()} for your enrolled course:
 - Duration: {duration_str}
 - Meeting Link: {live_class.meeting_link}
 
-We have attached a calendar invite (.ics file) to this email. You can add it to Google Calendar, Outlook, or Apple Calendar to receive reminders.
+We have attached a calendar invite (.ics file) to this email.
 
 See you in class!
 Best regards,
@@ -346,7 +496,6 @@ SJ TECH CLASSES Team
 </body>
 </html>
 """
-    # Generate ICS calendar content
     try:
         dt_start_utc = scheduled_at.astimezone(dt_timezone.utc)
         dt_end_utc = dt_start_utc + timedelta(minutes=int(live_class.duration_minutes))
@@ -389,19 +538,28 @@ END:VCALENDAR"""
     return True
 
 
-
 def send_payment_approved_email(payment):
-    subject = f"🎉 Course Unlocked! Payment Approved for '{payment.course.title}'"
+    site_url = get_site_url()
+    item_title = get_payment_item_title(payment)
+    if getattr(payment, 'is_all_access', False):
+        learn_url = f"{site_url}/courses/"
+    elif payment.course:
+        learn_url = f"{site_url}/course/{payment.course.slug}/learn/"
+    else:
+        learn_url = f"{site_url}/dashboard/student/"
+
+    subject = f"🎉 Access Unlocked! Payment Approved for '{item_title}'"
     
     text_content = f"""
 Hello {payment.user.get_full_name() or payment.user.username},
 
-Great news! Your manual UPI payment (UTR: {payment.utr}) of ₹{payment.amount} for '{payment.course.title}' has been APPROVED by admin.
+Great news! Your manual UPI payment (UTR: {payment.utr}) of ₹{payment.amount} for '{item_title}' has been APPROVED by admin.
 
-Your course is now 100% unlocked! Start learning right away:
-http://127.0.0.1:8000/course/{payment.course.slug}/learn/
+Your access is now 100% unlocked! Start learning right away:
+{learn_url}
 
-SJ TECH CLASSES
+Best regards,
+SJ TECH CLASSES Team
 """
 
     html_content = f"""
@@ -424,9 +582,9 @@ SJ TECH CLASSES
         </div>
         <div class="content">
             <p>Hello <strong>{payment.user.get_full_name() or payment.user.username}</strong>,</p>
-            <p>Your payment with UTR <code>{payment.utr}</code> has been verified. <strong>{payment.course.title}</strong> is now unlocked and available in your LMS classroom.</p>
+            <p>Your payment with UTR <code>{payment.utr}</code> has been verified. <strong>{item_title}</strong> is now unlocked and available in your LMS classroom.</p>
             
-            <a href="http://127.0.0.1:8000/course/{payment.course.slug}/learn/" class="btn">Start Learning Now 🚀</a>
+            <a href="{learn_url}" class="btn">Start Learning Now 🚀</a>
         </div>
     </div>
 </body>
@@ -436,18 +594,27 @@ SJ TECH CLASSES
 
 
 def send_payment_rejected_email(payment):
+    site_url = get_site_url()
+    item_title = get_payment_item_title(payment)
+    if getattr(payment, 'is_all_access', False):
+        retry_url = f"{site_url}/payment/all-access/"
+    elif payment.course:
+        retry_url = f"{site_url}/payment/checkout/{payment.course.id}/"
+    else:
+        retry_url = f"{site_url}/projects/"
+
     subject = f"❌ Payment Verification Notice - UTR: {payment.utr}"
     
     text_content = f"""
 Hello {payment.user.get_full_name() or payment.user.username},
 
-Your submitted payment of ₹{payment.amount} for '{payment.course.title}' could not be verified.
+Your submitted payment of ₹{payment.amount} for '{item_title}' could not be verified.
 
 Reason from Admin:
 "{payment.admin_note or 'Transaction reference ID or payment screenshot mismatch.'}"
 
 Please check your UTR number and re-submit:
-http://127.0.0.1:8000/payment/checkout/{payment.course.id}/
+{retry_url}
 
 SJ TECH CLASSES Billing
 """
@@ -472,7 +639,7 @@ SJ TECH CLASSES Billing
         </div>
         <div class="content">
             <p>Hello <strong>{payment.user.get_full_name() or payment.user.username}</strong>,</p>
-            <p>Your payment submission for <strong>{payment.course.title}</strong> (UTR: <code>{payment.utr}</code>) was rejected during admin verification.</p>
+            <p>Your payment submission for <strong>{item_title}</strong> (UTR: <code>{payment.utr}</code>) was rejected during admin verification.</p>
             
             <div class="reason-box">
                 <strong>Admin Rejection Note:</strong><br>
@@ -480,7 +647,7 @@ SJ TECH CLASSES Billing
             </div>
 
             <p style="font-size: 13px; color: #64748b;">If you paid using PhonePe, GPay, or Paytm, please verify the 12-digit UTR and upload a clear screenshot.</p>
-            <a href="http://127.0.0.1:8000/payment/checkout/{payment.course.id}/" class="btn">Re-submit Payment Details</a>
+            <a href="{retry_url}" class="btn">Re-submit Payment Details</a>
         </div>
     </div>
 </body>
@@ -490,6 +657,8 @@ SJ TECH CLASSES Billing
 
 
 def send_course_enrollment_email(enrollment):
+    site_url = get_site_url()
+    course_url = f"{site_url}/course/{enrollment.course.slug}/learn/"
     subject = f"Official Course Enrollment: {enrollment.course.title}"
     
     text_content = f"""
@@ -498,7 +667,7 @@ Hello {enrollment.student.get_full_name() or enrollment.student.username},
 You are officially enrolled in '{enrollment.course.title}'!
 
 Access your classroom:
-http://127.0.0.1:8000/course/{enrollment.course.slug}/learn/
+{course_url}
 
 SJ TECH CLASSES
 """
@@ -518,7 +687,7 @@ SJ TECH CLASSES
         <h3>Course Enrollment Confirmed! 🎓</h3>
         <p>Hello <strong>{enrollment.student.get_full_name() or enrollment.student.username}</strong>,</p>
         <p>You have been enrolled in <strong>{enrollment.course.title}</strong>.</p>
-        <p><a href="http://127.0.0.1:8000/course/{enrollment.course.slug}/learn/" style="display:inline-block; background:#4f46e5; color:#fff; padding:12px 24px; border-radius:6px; text-decoration:none; font-weight:bold;">Go to LMS Classroom</a></p>
+        <p><a href="{course_url}" style="display:inline-block; background:#4f46e5; color:#fff; padding:12px 24px; border-radius:6px; text-decoration:none; font-weight:bold;">Go to LMS Classroom</a></p>
     </div>
 </body>
 </html>
@@ -527,6 +696,8 @@ SJ TECH CLASSES
 
 
 def send_certificate_ready_email(certificate):
+    site_url = get_site_url()
+    download_url = f"{site_url}/certificate/{certificate.enrollment.id}/download/"
     subject = f"🎓 Certificate Issued! {certificate.enrollment.course.title}"
     
     text_content = f"""
@@ -535,7 +706,7 @@ Congratulations {certificate.enrollment.student.get_full_name() or certificate.e
 Your official SJ TECH CLASSES PDF Certificate ({certificate.certificate_number}) is ready!
 
 Download PDF Certificate:
-http://127.0.0.1:8000/certificate/{certificate.enrollment.id}/download/
+{download_url}
 
 SJ TECH CLASSES (Learn Today, Build Tomorrow)
 """
@@ -561,7 +732,7 @@ SJ TECH CLASSES (Learn Today, Build Tomorrow)
         
         <p style="font-size:14px; color:#64748b;">Certificate ID: <code>{certificate.certificate_number}</code></p>
         
-        <a href="http://127.0.0.1:8000/certificate/{certificate.enrollment.id}/download/" class="btn">Download PDF Certificate</a>
+        <a href="{download_url}" class="btn">Download PDF Certificate</a>
     </div>
 </body>
 </html>
@@ -570,6 +741,8 @@ SJ TECH CLASSES (Learn Today, Build Tomorrow)
 
 
 def send_password_reset_otp_email(user, otp_code):
+    site_url = get_site_url()
+    verify_url = f"{site_url}/account/verify-otp/"
     subject = f"🔑 Password Reset OTP Code: {otp_code} - SJ TECH CLASSES"
     
     text_content = f"""
@@ -578,7 +751,7 @@ Hello {user.username},
 Your 6-digit Password Reset OTP is: {otp_code}
 
 Enter this code on the password reset page:
-http://127.0.0.1:8000/account/verify-otp/
+{verify_url}
 
 SJ TECH Security
 """
@@ -612,11 +785,10 @@ SJ TECH Security
 
 
 def send_instructor_approved_email(instructor):
-    """
-    Email notification dispatched when an Admin approves an instructor account.
-    """
-    subject = "🎉 Congratulations! Your Instructor Account Has Been Approved! | SJ TECH CLASSES"
+    site_url = get_site_url()
+    instructor_dashboard_url = f"{site_url}/dashboard/instructor/"
     name = instructor.get_full_name() or instructor.username
+    subject = "🎉 Congratulations! Your Instructor Account Has Been Approved! | SJ TECH CLASSES"
 
     text_content = f"""
 Hello {name},
@@ -630,7 +802,7 @@ You now have full access to:
 - Student Progress & Performance Analytics
 
 Log in to start building your courses:
-http://127.0.0.1:8000/dashboard/instructor/
+{instructor_dashboard_url}
 
 Happy Teaching!
 SJ TECH CLASSES Team
@@ -670,7 +842,7 @@ SJ TECH CLASSES Team
             </div>
 
             <div style="text-align: center;">
-                <a href="http://127.0.0.1:8000/dashboard/instructor/" class="btn">Go to Instructor Studio &rarr;</a>
+                <a href="{instructor_dashboard_url}" class="btn">Go to Instructor Studio &rarr;</a>
             </div>
             
             <p style="margin-top: 30px; color: #64748b; font-size: 13px;">If you have any questions or need curriculum assistance, feel free to reach out to our admin team anytime.</p>
