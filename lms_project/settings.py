@@ -160,6 +160,8 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'sunnywaghmode8@gmail.com'
 EMAIL_HOST_PASSWORD = 'qnep owzh tznb baai'
 DEFAULT_FROM_EMAIL = 'SJ TECH CLASSES <sunnywaghmode8@gmail.com>'
+EMAIL_TIMEOUT = 5  # Prevents SMTP connections from hanging indefinitely
+
 
 # Gemini AI Settings
 GEMINI_API_KEY = 'AIzaSyD8a_I2ZDJMPkCro9OPnc7AWEhtx8h_so0'

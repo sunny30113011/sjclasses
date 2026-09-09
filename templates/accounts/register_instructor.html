@@ -10,8 +10,21 @@
                         <i class="fa-solid fa-chalkboard-user fs-2"></i>
                     </div>
                     <h3 class="fw-bold mb-1">Instructor Sign Up</h3>
-                    <p class="text-secondary small">Share your expertise and earn with EduLearn</p>
+                    <p class="text-secondary small">Share your expertise and earn with SJ TECH CLASSES</p>
                 </div>
+
+                {% if form.errors %}
+                <div class="alert alert-danger py-2 small mb-3">
+                    <div class="fw-bold mb-1"><i class="fa-solid fa-circle-exclamation me-1"></i> Please correct the following errors:</div>
+                    <ul class="mb-0 ps-3">
+                        {% for field, errors in form.errors.items %}
+                            {% for error in errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
 
                 <form method="POST">
                     {% csrf_token %}
@@ -19,40 +32,67 @@
                         <div class="col-6">
                             <label class="form-label small fw-bold">First Name</label>
                             {{ form.first_name }}
+                            {% if form.first_name.errors %}
+                                <div class="text-danger small mt-1">{{ form.first_name.errors.0 }}</div>
+                            {% endif %}
                         </div>
                         <div class="col-6">
                             <label class="form-label small fw-bold">Last Name</label>
                             {{ form.last_name }}
+                            {% if form.last_name.errors %}
+                                <div class="text-danger small mt-1">{{ form.last_name.errors.0 }}</div>
+                            {% endif %}
                         </div>
                     </div>
                     <div class="mb-3">
                         <label class="form-label small fw-bold">Username *</label>
                         {{ form.username }}
+                        {% if form.username.errors %}
+                            <div class="text-danger small mt-1">{{ form.username.errors.0 }}</div>
+                        {% endif %}
                     </div>
                     <div class="mb-3">
                         <label class="form-label small fw-bold">Email Address *</label>
                         {{ form.email }}
+                        {% if form.email.errors %}
+                            <div class="text-danger small mt-1">{{ form.email.errors.0 }}</div>
+                        {% endif %}
                     </div>
                     <div class="mb-3">
                         <label class="form-label small fw-bold">Headline / Title</label>
                         {{ form.headline }}
+                        {% if form.headline.errors %}
+                            <div class="text-danger small mt-1">{{ form.headline.errors.0 }}</div>
+                        {% endif %}
                     </div>
                     <div class="mb-3">
                         <label class="form-label small fw-bold">UPI ID (For Earnings Payout)</label>
                         {{ form.upi_id }}
+                        {% if form.upi_id.errors %}
+                            <div class="text-danger small mt-1">{{ form.upi_id.errors.0 }}</div>
+                        {% endif %}
                     </div>
                     <div class="mb-3">
                         <label class="form-label small fw-bold">Bio</label>
                         {{ form.bio }}
+                        {% if form.bio.errors %}
+                            <div class="text-danger small mt-1">{{ form.bio.errors.0 }}</div>
+                        {% endif %}
                     </div>
                     <div class="row g-2 mb-4">
                         <div class="col-6">
                             <label class="form-label small fw-bold">Password *</label>
                             {{ form.password }}
+                            {% if form.password.errors %}
+                                <div class="text-danger small mt-1">{{ form.password.errors.0 }}</div>
+                            {% endif %}
                         </div>
                         <div class="col-6">
                             <label class="form-label small fw-bold">Confirm Password *</label>
                             {{ form.confirm_password }}
+                            {% if form.confirm_password.errors %}
+                                <div class="text-danger small mt-1">{{ form.confirm_password.errors.0 }}</div>
+                            {% endif %}
                         </div>
                     </div>
                     <button type="submit" class="btn btn-info text-white fw-bold btn-lg w-100 mb-3">Join as Instructor</button>

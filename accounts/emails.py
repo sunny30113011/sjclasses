@@ -1,4 +1,5 @@
 import random
+import threading
 from django.core.mail import EmailMultiAlternatives
 from django.conf import settings
 
@@ -11,14 +12,21 @@ def generate_otp():
 def _send_rich_email(subject, recipient_email, text_content, html_content):
     """
     Utility to dispatch rich HTML emails with plain text fallbacks via Gmail SMTP.
+    Dispatched asynchronously in a daemon thread so it never blocks web requests or causes timeouts.
     """
-    try:
-        msg = EmailMultiAlternatives(subject, text_content, FROM_EMAIL, [recipient_email])
-        msg.attach_alternative(html_content, "text/html")
-        msg.send(fail_silently=True)
-        return True
-    except Exception:
+    if not recipient_email:
         return False
+
+    def _worker():
+        try:
+            msg = EmailMultiAlternatives(subject, text_content, FROM_EMAIL, [recipient_email])
+            msg.attach_alternative(html_content, "text/html")
+            msg.send(fail_silently=True)
+        except Exception:
+            pass
+
+    threading.Thread(target=_worker, daemon=True).start()
+    return True
 
 
 def send_welcome_email(user):
@@ -366,16 +374,20 @@ END:VCALENDAR"""
     except Exception:
         ics_content = ""
 
-    try:
-        from django.core.mail import EmailMultiAlternatives
-        msg = EmailMultiAlternatives(subject, text_content, FROM_EMAIL, recipient_emails)
-        msg.attach_alternative(html_content, "text/html")
-        if ics_content:
-            msg.attach(f"invite_{live_class.id}.ics", ics_content, "text/calendar")
-        msg.send(fail_silently=True)
-        return True
-    except Exception:
-        return False
+    def _worker():
+        try:
+            from django.core.mail import EmailMultiAlternatives
+            msg = EmailMultiAlternatives(subject, text_content, FROM_EMAIL, recipient_emails)
+            msg.attach_alternative(html_content, "text/html")
+            if ics_content:
+                msg.attach(f"invite_{live_class.id}.ics", ics_content, "text/calendar")
+            msg.send(fail_silently=True)
+        except Exception:
+            pass
+
+    threading.Thread(target=_worker, daemon=True).start()
+    return True
+
 
 
 def send_payment_approved_email(payment):

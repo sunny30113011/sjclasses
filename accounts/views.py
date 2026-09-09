@@ -17,9 +17,14 @@ def register_student(request):
         if form.is_valid():
             user = form.save()
             login(request, user)
-            send_welcome_email(user)
-            messages.success(request, f"Welcome to LMS, {user.username}! Your student account has been created.")
+            try:
+                send_welcome_email(user)
+            except Exception:
+                pass
+            messages.success(request, f"Welcome to SJ TECH CLASSES, {user.username}! Your student account has been created.")
             return redirect('dashboard:dashboard')
+        else:
+            messages.error(request, "Please check the form for errors below.")
     else:
         form = StudentRegistrationForm()
     return render(request, 'accounts/register_student.html', {'form': form})
@@ -34,12 +39,18 @@ def register_instructor(request):
         if form.is_valid():
             user = form.save()
             login(request, user)
-            send_welcome_email(user)
+            try:
+                send_welcome_email(user)
+            except Exception:
+                pass
             messages.success(request, f"Welcome {user.username}! Your instructor application has been submitted for Admin approval.")
             return redirect('accounts:instructor_pending_approval')
+        else:
+            messages.error(request, "Please check the form for errors below.")
     else:
         form = InstructorRegistrationForm()
     return render(request, 'accounts/register_instructor.html', {'form': form})
+
 
 
 @login_required
