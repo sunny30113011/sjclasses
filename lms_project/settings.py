@@ -154,6 +154,7 @@ STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 WHITENOISE_MANIFEST_STRICT = False
+WHITENOISE_MAX_AGE = 31536000  # 1 year static assets caching in user browser
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'

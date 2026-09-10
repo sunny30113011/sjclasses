@@ -15,7 +15,7 @@ from .utils import generate_pdf_certificate
 def home(request):
     from accounts.models import User
     from .models import StudentFeedback, CarouselSlide
-    featured_courses = Course.objects.filter(is_published=True).order_by('-created_at')[:8]
+    featured_courses = Course.objects.filter(is_published=True).select_related('instructor', 'category').prefetch_related('modules__lessons').order_by('-created_at')[:8]
     categories = Category.objects.all()[:6]
     total_students = Enrollment.objects.values('student').distinct().count() or 1200
     total_courses = Course.objects.filter(is_published=True).count() or 25
@@ -192,7 +192,7 @@ def apply_job(request, job_id):
 
 
 def course_list(request):
-    courses = Course.objects.filter(is_published=True)
+    courses = Course.objects.filter(is_published=True).select_related('instructor', 'category').prefetch_related('modules__lessons')
     categories = Category.objects.all()
 
     # Search filter
@@ -235,7 +235,7 @@ def course_list(request):
 
 
 def course_detail(request, slug):
-    course = get_object_or_404(Course, slug=slug)
+    course = get_object_or_404(Course.objects.select_related('instructor', 'category'), slug=slug)
     modules = course.modules.prefetch_related('lessons').all()
     reviews = course.reviews.select_related('student').all()
     
