@@ -11,7 +11,7 @@ bind = f"0.0.0.0:{port}"
 
 # Concurrency settings optimized for Render Free Tier (512MB RAM)
 workers = int(os.environ.get('WEB_CONCURRENCY', '2'))
-threads = 2
+threads = 4
 timeout = 120
 keepalive = 5
 
