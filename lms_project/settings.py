@@ -106,12 +106,33 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'lms_project.wsgi.application'
 
+# Database Configuration - Neon PostgreSQL (Cloud Permanent) with SQLite dev fallback
+RAW_DB_URL = (
+    os.environ.get('DATABASE_URL') or
+    os.environ.get('POSTGRES_URL') or
+    os.environ.get('NEON_DATABASE_URL')
+)
+
+if RAW_DB_URL:
+    RAW_DB_URL = RAW_DB_URL.strip()
+    if RAW_DB_URL.startswith('postgres://'):
+        RAW_DB_URL = RAW_DB_URL.replace('postgres://', 'postgresql://', 1)
+
 DATABASES = {
     'default': dj_database_url.config(
-        default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
-        conn_max_age=600
+        default=RAW_DB_URL or f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
+        conn_max_age=0,  # Recommended for serverless Neon Postgres to prevent stale closed connections
+        conn_health_checks=True,  # Django 4.1+ tests connection vitality before queries and auto-reconnects
+        ssl_require=True if (RAW_DB_URL and 'postgres' in RAW_DB_URL) else False,
     )
 }
+
+_active_engine = DATABASES['default'].get('ENGINE', '')
+if 'postgres' in _active_engine:
+    _db_host = DATABASES['default'].get('HOST', 'PostgreSQL Cloud')
+    print(f"==> [DATABASE PERSISTENCE]: Connected to PostgreSQL (Neon Cloud: {_db_host}). Data and videos will persist permanently across sleep mode!")
+else:
+    print("==> [DATABASE WARNING]: Running on SQLite (Local Ephemeral Disk). Changes will be wiped on Render sleep mode unless DATABASE_URL is set in Render!")
 
 AUTH_PASSWORD_VALIDATORS = [
     {

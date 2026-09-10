@@ -5,7 +5,18 @@
     <div class="container d-flex justify-content-between align-items-center">
         <div>
             <h2 class="fw-bold mb-1"><i class="fa-solid fa-shield-halved me-2 text-warning"></i> Admin Panel & Control Studio</h2>
-            <p class="text-secondary small mb-0">Verify manual UPI student payments, approve course access, and add instructors.</p>
+            <p class="text-secondary small mb-1">Verify manual UPI student payments, approve course access, and add instructors.</p>
+            <div>
+                {% if is_postgres_active %}
+                    <span class="badge bg-success bg-opacity-25 text-success border border-success px-3 py-1 rounded-pill" style="font-size: 11px;">
+                        <i class="fa-solid fa-cloud me-1"></i> <strong>Neon Cloud DB Active</strong> (Persistent & Sleep-Proof)
+                    </span>
+                {% else %}
+                    <span class="badge bg-danger bg-opacity-25 text-danger border border-danger px-3 py-1 rounded-pill" data-bs-toggle="modal" data-bs-target="#neonSetupModal" style="font-size: 11px; cursor: pointer;" title="Click for Render setup guide">
+                        <i class="fa-solid fa-triangle-exclamation me-1"></i> <strong>Running on Ephemeral SQLite</strong> — Click to connect Neon
+                    </span>
+                {% endif %}
+            </div>
         </div>
         <div class="d-flex gap-2 flex-wrap">
             <a href="{% url 'dashboard:broadcast_offer' %}" class="btn btn-warning fw-bold">
@@ -1455,6 +1466,51 @@
                     </button>
                 </div>
             </form>
+        </div>
+    </div>
+</div>
+
+<!-- Neon Database Setup Help Modal -->
+<div class="modal fade" id="neonSetupModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-dark text-white">
+                <h5 class="modal-header-title fw-bold"><i class="fa-solid fa-cloud text-info me-2"></i> How to Connect Neon Database Permanently in Render</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="alert alert-info py-2 px-3 mb-3">
+                    <i class="fa-solid fa-circle-info me-2"></i><strong>Why is this needed?</strong> Render Free Tier destroys container disk storage whenever the website sleeps after 15 minutes of inactivity. Neon PostgreSQL is an external cloud database that keeps all your courses, modules, video lessons, and student accounts safe forever.
+                </div>
+                <h6 class="fw-bold text-dark mb-2">3 Steps to make all data permanent:</h6>
+                <ol class="list-group list-group-numbered mb-3">
+                    <li class="list-group-item d-flex justify-content-between align-items-start">
+                        <div class="ms-2 me-auto">
+                            <div class="fw-bold">Copy your Neon PostgreSQL Connection String</div>
+                            Go to <a href="https://console.neon.tech" target="_blank" class="fw-bold">console.neon.tech</a> &rarr; Dashboard &rarr; <strong>Connection Details</strong> &rarr; copy the connection string starting with <code>postgresql://...</code>
+                        </div>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-start">
+                        <div class="ms-2 me-auto">
+                            <div class="fw-bold">Add it to Render Environment Variables</div>
+                            Open your Render Dashboard (<a href="https://dashboard.render.com" target="_blank">dashboard.render.com</a>) &rarr; Click your Web Service &rarr; Click <strong>Environment</strong> in the left menu &rarr; Click <strong>Add Environment Variable</strong>:
+                            <div class="mt-2 p-2 bg-light border rounded">
+                                <strong>Key:</strong> <code>DATABASE_URL</code><br>
+                                <strong>Value:</strong> <code>postgresql://neondb_owner:...@ep-...neon.tech/neondb?sslmode=require</code>
+                            </div>
+                        </div>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-start">
+                        <div class="ms-2 me-auto">
+                            <div class="fw-bold">Save Changes</div>
+                            Click <strong>Save Changes</strong> at the bottom of the Environment page. Render will automatically redeploy and permanently connect to Neon.
+                        </div>
+                    </li>
+                </ol>
+            </div>
+            <div class="modal-footer bg-light">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
         </div>
     </div>
 </div>

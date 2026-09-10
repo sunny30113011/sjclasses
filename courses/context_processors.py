@@ -15,6 +15,10 @@ def lms_context(request):
     # Active All-Access Pass Offer (None if offer is toggled off or inactive)
     active_all_access_plan = AllAccessPlan.get_active_plan()
 
+    from django.conf import settings
+    db_engine = settings.DATABASES['default'].get('ENGINE', '')
+    is_postgres_active = 'postgres' in db_engine
+
     return {
         'nav_categories': categories,
         'cart_count': cart_count,
@@ -22,4 +26,6 @@ def lms_context(request):
         'user_notifications': user_notifications,
         'all_access_plan': active_all_access_plan,
         'has_all_access_offer': active_all_access_plan is not None,
+        'is_postgres_active': is_postgres_active,
+        'db_engine_name': 'Neon PostgreSQL' if is_postgres_active else 'SQLite (Ephemeral)',
     }

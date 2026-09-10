@@ -20,6 +20,9 @@ python seed_student_feedback.py
 python seed_interview_questions.py
 python seed_carousel_slides.py
 
+echo "==> Seeding production courses, video lessons, modules & projects..."
+python seed_courses_and_videos.py
+
 echo "==> Build completed successfully!"
 
 
