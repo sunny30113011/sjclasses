@@ -3,7 +3,7 @@ services:
     name: sj-tech-classes-lms
     runtime: python
     buildCommand: "bash build.sh"
-    startCommand: "python manage.py migrate && python create_admin_superuser.py && python seed_courses_and_videos.py && gunicorn lms_project.wsgi:application"
+    startCommand: "python manage.py migrate && python create_admin_superuser.py && python seed_courses_and_videos.py && gunicorn lms_project.wsgi:application --bind 0.0.0.0:$PORT"
     envVars:
       - key: PYTHON_VERSION
         value: 3.13.0

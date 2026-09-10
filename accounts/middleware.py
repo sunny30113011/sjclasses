@@ -41,3 +41,19 @@ class SingleDeviceLoginMiddleware:
 
         response = self.get_response(request)
         return response
+
+
+class HeadRequestMiddleware:
+    """
+    Ensures HEAD requests return an empty body per RFC 9110,
+    preventing Gunicorn warnings during Render health check polling.
+    """
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        response = self.get_response(request)
+        if request.method == 'HEAD':
+            response.content = b''
+        return response
+
