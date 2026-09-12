@@ -10,8 +10,9 @@ port = os.environ.get('PORT', '10000')
 bind = f"0.0.0.0:{port}"
 
 # Concurrency settings optimized for Render Free Tier (512MB RAM)
-workers = int(os.environ.get('WEB_CONCURRENCY', '2'))
-threads = 4
+# 1 worker with 4 threads consumes ~180MB RAM, leaving plenty of room for PDF generation & media
+workers = int(os.environ.get('WEB_CONCURRENCY', '1'))
+threads = int(os.environ.get('GUNICORN_THREADS', '4'))
 timeout = 120
 keepalive = 5
 
