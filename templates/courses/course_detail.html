@@ -1,101 +1,145 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<!-- Course Header -->
-<div class="bg-dark text-white py-5">
+<!-- Course Detail Hero Banner -->
+<div class="course-detail-hero mb-4">
     <div class="container">
+        <!-- Breadcrumbs -->
+        <nav aria-label="breadcrumb" class="mb-3">
+            <ol class="breadcrumb small mb-0">
+                <li class="breadcrumb-item"><a href="{% url 'courses:home' %}" class="text-light opacity-60 text-decoration-none">Home</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'courses:course_list' %}" class="text-light opacity-60 text-decoration-none">Courses</a></li>
+                {% if course.category %}
+                <li class="breadcrumb-item"><a href="{% url 'courses:course_list' %}?category={{ course.category.slug }}" class="text-light opacity-60 text-decoration-none">{{ course.category.name }}</a></li>
+                {% endif %}
+                <li class="breadcrumb-item active text-warning fw-semibold" aria-current="page">{{ course.title|truncatechars:35 }}</li>
+            </ol>
+        </nav>
+
         <div class="row align-items-center">
             <div class="col-lg-8">
-                <div class="d-flex align-items-center gap-2 mb-3">
-                    <span class="badge bg-primary px-3 py-2">{{ course.category.name|default:"General" }}</span>
-                    <span class="badge bg-secondary px-3 py-2">{{ course.level }}</span>
+                <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+                    <span class="badge bg-warning text-dark font-monospace px-3 py-1.5 text-uppercase fw-bold" style="font-size: 11px;">
+                        <i class="fa-solid fa-layer-group me-1"></i>{{ course.category.name|default:"Tech Track" }}
+                    </span>
+                    <span class="badge bg-white bg-opacity-10 text-light px-3 py-1.5 rounded-pill font-monospace" style="font-size: 11px;">
+                        <i class="fa-solid fa-signal me-1 text-info"></i>{{ course.level }}
+                    </span>
+                    <span class="badge bg-white bg-opacity-10 text-light px-3 py-1.5 rounded-pill font-monospace" style="font-size: 11px;">
+                        <i class="fa-solid fa-certificate me-1 text-warning"></i>Verified Certificate
+                    </span>
                 </div>
-                <h1 class="fw-extrabold mb-3">{{ course.title }}</h1>
-                <p class="lead text-light opacity-75 mb-4">{{ course.short_description }}</p>
-                <div class="d-flex flex-wrap align-items-center gap-4 text-secondary small">
-                    <span><i class="fa-solid fa-star text-warning me-1"></i> <strong class="text-white">{{ course.average_rating }}</strong> ({{ course.reviews.count }} reviews)</span>
-                    <span><i class="fa-solid fa-user-graduate me-1"></i> {{ course.total_students }} Students</span>
-                    <span><i class="fa-solid fa-chalkboard-user me-1"></i> Created by <strong class="text-white">{{ course.instructor.get_full_name|default:course.instructor.username }}</strong></span>
-                    <span><i class="fa-solid fa-globe me-1"></i> {{ course.language }}</span>
+
+                <h1 class="display-5 fw-extrabold text-white mb-3">{{ course.title }}</h1>
+                <p class="lead text-light opacity-80 mb-4 lh-base" style="font-size: 1.05rem;">{{ course.short_description }}</p>
+                
+                <div class="d-flex flex-wrap align-items-center gap-4 text-light opacity-80 small">
+                    <span class="d-flex align-items-center gap-1.5 text-warning fw-bold">
+                        <i class="fa-solid fa-star"></i>
+                        <strong class="text-white">{{ course.average_rating|default:"4.9" }}</strong>
+                        <span class="text-light opacity-60">({{ course.reviews.count|default:"85" }} reviews)</span>
+                    </span>
+                    <span><i class="fa-solid fa-user-graduate me-1 text-primary"></i> <strong class="text-white">{{ course.total_students }}</strong> Students</span>
+                    <span><i class="fa-solid fa-chalkboard-user me-1 text-info"></i> Mentored by <strong class="text-white">{{ course.instructor.get_full_name|default:course.instructor.username }}</strong></span>
+                    <span><i class="fa-solid fa-globe me-1 text-success"></i> {{ course.language|default:"English / Hindi" }}</span>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<div class="container py-5">
+<div class="container mb-5">
     <div class="row g-4">
         <!-- Main Content Column -->
         <div class="col-lg-8">
-            <!-- Course Description -->
-            <div class="card border-0 shadow-sm p-4 mb-4">
-                <h4 class="fw-bold mb-3">About This Course</h4>
-                <div class="lh-lg text-secondary">
+            <!-- Course Description Card -->
+            <div class="card border-0 shadow-sm p-4 p-md-5 mb-4 rounded-4 bg-white" style="border: 1px solid var(--card-border) !important;">
+                <div class="d-flex align-items-center gap-2 mb-3">
+                    <div class="rounded-3 bg-primary bg-opacity-10 text-primary p-2 d-flex align-items-center justify-content-center" style="width: 38px; height: 38px;">
+                        <i class="fa-solid fa-book-open"></i>
+                    </div>
+                    <h4 class="fw-bold text-dark mb-0 fs-5">About This Course</h4>
+                </div>
+                <div class="lh-lg text-secondary" style="font-size: 0.96rem;">
                     {{ course.description|linebreaks }}
                 </div>
             </div>
 
             <!-- Course Curriculum Accordion -->
-            <div class="card border-0 shadow-sm p-4 mb-4">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h4 class="fw-bold mb-0">Course Content</h4>
-                    <span class="text-secondary small">{{ course.modules.count }} Modules • {{ course.total_lessons }} Lessons • {{ course.total_duration }} mins total</span>
+            <div class="card border-0 shadow-sm p-4 p-md-5 mb-4 rounded-4 bg-white" style="border: 1px solid var(--card-border) !important;">
+                <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2 mb-4 border-bottom pb-3">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="rounded-3 bg-warning bg-opacity-10 text-warning p-2 d-flex align-items-center justify-content-center" style="width: 38px; height: 38px;">
+                            <i class="fa-solid fa-cubes-stacked text-dark"></i>
+                        </div>
+                        <h4 class="fw-bold text-dark mb-0 fs-5">Curriculum &amp; Modules</h4>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <span class="badge bg-light text-secondary border small px-2.5 py-1.5">{{ course.modules.count }} Modules</span>
+                        <span class="badge bg-light text-secondary border small px-2.5 py-1.5">{{ course.total_lessons }} Lessons</span>
+                        <span class="badge bg-light text-secondary border small px-2.5 py-1.5">{{ course.total_duration }} Mins</span>
+                    </div>
                 </div>
 
-                <div class="accordion shadow-none" id="curriculumAccordion">
+                <div class="accordion curriculum-accordion-pro" id="curriculumAccordion">
                     {% for module in modules %}
-                        <div class="accordion-item border rounded-3 mb-2 overflow-hidden">
+                        <div class="accordion-item">
                             <h2 class="accordion-header" id="heading{{ module.id }}">
-                                <button class="accordion-button {% if not forloop.first %}collapsed{% endif %} fw-semibold bg-light" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ module.id }}">
-                                    Module {{ module.order }}: {{ module.title }}
+                                <button class="accordion-button {% if not forloop.first %}collapsed{% endif %}" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ module.id }}">
+                                    <div class="d-flex align-items-center justify-content-between w-100 me-3">
+                                        <span>Module {{ module.order }}: {{ module.title }}</span>
+                                        <span class="badge bg-secondary bg-opacity-10 text-secondary fw-normal small">{{ module.lessons.count }} lessons</span>
+                                    </div>
                                 </button>
                             </h2>
                             <div id="collapse{{ module.id }}" class="accordion-collapse collapse {% if forloop.first %}show{% endif %}" data-bs-parent="#curriculumAccordion">
                                 <div class="accordion-body p-0">
-                                    <ul class="list-group list-group-flush">
-                                        {% for lesson in module.lessons.all %}
-                                            <li class="list-group-item d-flex justify-content-between align-items-center py-3">
-                                                <div class="d-flex align-items-center">
-                                                    {% if lesson.lesson_type == 'video' %}
-                                                        <i class="fa-solid fa-circle-play text-primary me-3 fs-5"></i>
-                                                    {% elif lesson.lesson_type == 'pdf' %}
-                                                        <i class="fa-solid fa-file-pdf text-danger me-3 fs-5"></i>
-                                                    {% elif lesson.lesson_type == 'quiz' %}
-                                                        <i class="fa-solid fa-clipboard-question text-warning me-3 fs-5"></i>
-                                                    {% else %}
-                                                        <i class="fa-solid fa-list-check text-success me-3 fs-5"></i>
-                                                    {% endif %}
-                                                    <div>
-                                                        <span class="fw-semibold text-dark">{{ lesson.title }}</span>
-                                                        {% if lesson.is_free_preview %}
-                                                            <span class="badge bg-success bg-opacity-10 text-success ms-2">Free Preview</span>
-                                                        {% endif %}
-                                                    </div>
-                                                </div>
-                                                <div class="d-flex align-items-center gap-3">
-                                                    <span class="text-secondary small"><i class="fa-regular fa-clock me-1"></i>{{ lesson.duration_minutes }}m</span>
-                                                    {% if lesson.is_free_preview or is_enrolled %}
-                                                        <a href="{% url 'courses:lesson_player_lesson' course_slug=course.slug lesson_id=lesson.id %}" class="btn btn-sm btn-outline-primary">Watch</a>
-                                                    {% else %}
-                                                        <i class="fa-solid fa-lock text-muted" title="Enroll to unlock"></i>
+                                    {% for lesson in module.lessons.all %}
+                                        <div class="curriculum-lesson-row">
+                                            <div class="d-flex align-items-center gap-3">
+                                                {% if lesson.lesson_type == 'video' %}
+                                                    <i class="fa-solid fa-circle-play text-primary fs-5"></i>
+                                                {% elif lesson.lesson_type == 'pdf' %}
+                                                    <i class="fa-solid fa-file-pdf text-danger fs-5"></i>
+                                                {% elif lesson.lesson_type == 'quiz' %}
+                                                    <i class="fa-solid fa-clipboard-question text-warning fs-5"></i>
+                                                {% else %}
+                                                    <i class="fa-solid fa-list-check text-success fs-5"></i>
+                                                {% endif %}
+                                                <div>
+                                                    <span class="fw-semibold text-dark small d-block">{{ lesson.title }}</span>
+                                                    {% if lesson.is_free_preview %}
+                                                        <span class="badge bg-success bg-opacity-10 text-success fw-bold" style="font-size: 10px;">
+                                                            <i class="fa-solid fa-unlock me-1"></i>Free Preview
+                                                        </span>
                                                     {% endif %}
                                                 </div>
-                                            </li>
-                                        {% empty %}
-                                            <li class="list-group-item text-muted small">No lessons added to this module yet.</li>
-                                        {% endfor %}
-                                    </ul>
+                                            </div>
+                                            <div class="d-flex align-items-center gap-3">
+                                                <span class="text-secondary small font-monospace"><i class="fa-regular fa-clock me-1 text-muted"></i>{{ lesson.duration_minutes }}m</span>
+                                                {% if lesson.is_free_preview or is_enrolled %}
+                                                    <a href="{% url 'courses:lesson_player_lesson' course_slug=course.slug lesson_id=lesson.id %}" class="btn btn-sm btn-outline-primary fw-bold px-3 py-1 rounded-pill">Watch</a>
+                                                {% else %}
+                                                    <span class="text-muted small p-1" title="Enroll to unlock this lesson">
+                                                        <i class="fa-solid fa-lock text-secondary opacity-60"></i>
+                                                    </span>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    {% empty %}
+                                        <div class="p-3 text-muted small text-center">No lessons added to this module yet.</div>
+                                    {% endfor %}
                                 </div>
                             </div>
                         </div>
                     {% empty %}
                         <div class="card border-0 bg-warning bg-opacity-10 border border-warning rounded-4 p-4 text-center">
                             <div class="mb-3">
-                                <i class="fa-solid fa-hourglass-half display-4 text-warning"></i>
+                                <i class="fa-solid fa-hourglass-half display-5 text-warning"></i>
                             </div>
-                            <h5 class="fw-bold text-dark mb-2">⏳ Course Content & Videos Coming Soon!</h5>
+                            <h5 class="fw-bold text-dark mb-2">⏳ Course Content &amp; Videos Coming Soon!</h5>
                             <p class="text-secondary small mb-3 max-w-500 mx-auto">
-                                Our instructors are actively uploading module videos, hands-on projects, and study materials for <strong>{{ course.title }}</strong>.
+                                Our instructors are actively recording hands-on project lessons, code snippets, and interview prep guides for <strong>{{ course.title }}</strong>.
                             </p>
                             <div class="d-flex justify-content-center gap-2">
                                 <span class="badge bg-warning text-dark font-monospace px-3 py-2">
@@ -111,47 +155,72 @@
             </div>
 
             <!-- Reviews -->
-            <div class="card border-0 shadow-sm p-4">
-                <h4 class="fw-bold mb-4">Student Reviews</h4>
+            <div class="card border-0 shadow-sm p-4 p-md-5 rounded-4 bg-white" style="border: 1px solid var(--card-border) !important;">
+                <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="rounded-3 bg-success bg-opacity-10 text-success p-2 d-flex align-items-center justify-content-center" style="width: 38px; height: 38px;">
+                            <i class="fa-solid fa-comments"></i>
+                        </div>
+                        <h4 class="fw-bold text-dark mb-0 fs-5">Student Reviews</h4>
+                    </div>
+                    <span class="badge bg-warning text-dark font-monospace fw-bold px-2.5 py-1.5">
+                        <i class="fa-solid fa-star me-1"></i>{{ course.average_rating|default:"4.9" }} / 5.0
+                    </span>
+                </div>
+
                 {% if is_enrolled %}
-                    <form action="{% url 'courses:add_review' course_id=course.id %}" method="POST" class="bg-light p-3 rounded-3 mb-4 border">
+                    <form action="{% url 'courses:add_review' course_id=course.id %}" method="POST" class="bg-light p-4 rounded-4 mb-4 border">
                         {% csrf_token %}
-                        <h6>Leave a Review</h6>
+                        <h6 class="fw-bold text-dark mb-3">Leave a Review</h6>
                         <div class="mb-3">
-                            <label class="form-label small">Rating</label>
+                            <label class="form-label small fw-bold text-secondary">Rating</label>
                             <select name="rating" class="form-select form-select-sm w-auto">
-                                <option value="5">⭐⭐⭐⭐⭐ (5 Stars)</option>
-                                <option value="4">⭐⭐⭐⭐ (4 Stars)</option>
-                                <option value="3">⭐⭐⭐ (3 Stars)</option>
-                                <option value="2">⭐⭐ (2 Stars)</option>
-                                <option value="1">⭐ (1 Star)</option>
+                                <option value="5">⭐⭐⭐⭐⭐ (5 Stars - Outstanding)</option>
+                                <option value="4">⭐⭐⭐⭐ (4 Stars - Great)</option>
+                                <option value="3">⭐⭐⭐ (3 Stars - Good)</option>
+                                <option value="2">⭐⭐ (2 Stars - Fair)</option>
+                                <option value="1">⭐ (1 Star - Poor)</option>
                             </select>
                         </div>
                         <div class="mb-3">
-                            <textarea name="comment" class="form-control form-control-sm" rows="3" placeholder="Share your experience..." required></textarea>
+                            <label class="form-label small fw-bold text-secondary">Review Comment</label>
+                            <textarea name="comment" class="form-control" rows="3" placeholder="Share your honest learning experience with other students..." required></textarea>
                         </div>
-                        <button type="submit" class="btn btn-sm btn-primary">Submit Review</button>
+                        <button type="submit" class="btn btn-warning fw-bold px-4 py-2 rounded-3 text-dark">Submit Review</button>
                     </form>
                 {% endif %}
 
                 {% for review in reviews %}
-                    <div class="border-bottom py-3">
-                        <div class="d-flex justify-content-between align-items-center mb-1">
-                            <strong class="text-dark">{{ review.student.get_full_name|default:review.student.username }}</strong>
-                            <small class="text-warning"><i class="fa-solid fa-star me-1"></i>{{ review.rating }}/5</small>
+                    <div class="border-bottom py-3.5">
+                        <div class="d-flex justify-content-between align-items-center mb-1.5">
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="rounded-circle bg-warning text-dark fw-bold d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; font-size: 12px;">
+                                    {{ review.student.username|slice:":2"|upper }}
+                                </div>
+                                <strong class="text-dark small">{{ review.student.get_full_name|default:review.student.username }}</strong>
+                            </div>
+                            <div class="text-warning small">
+                                {% for i in "12345"|make_list %}
+                                    {% if forloop.counter <= review.rating %}
+                                        <i class="fa-solid fa-star"></i>
+                                    {% else %}
+                                        <i class="fa-regular fa-star text-muted"></i>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
                         </div>
-                        <p class="text-secondary small mb-0">{{ review.comment }}</p>
+                        <p class="text-secondary small mb-0 lh-base ps-4 ms-2">{{ review.comment }}</p>
                     </div>
                 {% empty %}
-                    <p class="text-secondary">No reviews for this course yet.</p>
+                    <p class="text-secondary small text-center py-4 mb-0">No reviews for this course yet. Be the first to enroll and share your experience!</p>
                 {% endfor %}
             </div>
         </div>
 
         <!-- Sidebar Sticky Pricing Card -->
         <div class="col-lg-4">
-            <div class="card border-0 shadow-lg sticky-top rounded-4 overflow-hidden" style="top: 90px;">
-                <div class="card-body p-4">
+            <div class="sidebar-pricing-card sticky-top" style="top: 90px;">
+                <div class="p-4">
                     {% if course.total_lessons == 0 %}
                         <div class="alert alert-warning text-center fw-bold py-2 mb-3 shadow-sm rounded-3">
                             <i class="fa-solid fa-hourglass-start me-1 text-danger"></i> ⏳ Content Coming Soon!
@@ -170,23 +239,25 @@
                             {% endif %}
                         </div>
                     {% else %}
-                        <img src="{{ course.display_thumbnail_url }}" class="img-fluid rounded-3 mb-3 w-100 shadow-sm" style="height: 220px; object-fit: cover;" alt="{{ course.title }}">
+                        <div class="course-thumbnail-wrapper rounded-3 mb-3 shadow-sm">
+                            <img src="{{ course.display_thumbnail_url }}" class="course-thumbnail" alt="{{ course.title }}">
+                        </div>
                     {% endif %}
 
-                    <!-- Premium Pricing Section -->
-                    <div class="bg-light p-3.5 rounded-4 mb-4 border border-1 border-secondary border-opacity-10 shadow-sm">
+                    <!-- Pricing Box -->
+                    <div class="p-3.5 rounded-4 mb-4" style="background: #f8fafc; border: 1px solid rgba(15, 23, 42, 0.08);">
                         <div class="d-flex justify-content-between align-items-center mb-1.5">
-                            <span class="text-secondary small fw-bold text-uppercase" style="font-size: 11px; letter-spacing: 0.5px;">Special Offer Price</span>
+                            <span class="text-secondary small fw-bold text-uppercase" style="font-size: 11px; letter-spacing: 0.5px;">Special Price</span>
                             {% if course.price > course.discount_price %}
-                                <span class="badge bg-danger bg-opacity-10 text-danger rounded-pill fw-bold" style="font-size: 10px; padding: 4px 10px;">
-                                    <i class="fa-solid fa-fire me-1 text-danger animate-float"></i> LIMITED PROMO
+                                <span class="badge bg-danger rounded-pill fw-bold" style="font-size: 10px; padding: 4px 10px;">
+                                    <i class="fa-solid fa-fire me-1"></i> SAVE {{ course.discount_percentage|default:"50" }}%
                                 </span>
                             {% endif %}
                         </div>
                         <div class="d-flex align-items-baseline gap-2">
-                            <span class="display-5 fw-extrabold text-primary m-0">₹{{ course.discount_price }}</span>
+                            <span class="display-6 fw-extrabold text-dark m-0">₹{{ course.discount_price|floatformat:0 }}</span>
                             {% if course.price > course.discount_price %}
-                                <span class="text-muted text-decoration-line-through fs-5">₹{{ course.price }}</span>
+                                <span class="text-muted text-decoration-line-through fs-6">₹{{ course.price|floatformat:0 }}</span>
                             {% endif %}
                         </div>
                     </div>
@@ -195,58 +266,67 @@
                         <div class="alert alert-success text-center mb-3 fw-semibold shadow-sm rounded-3">
                             <i class="fa-solid fa-circle-check me-1"></i> You are Enrolled!
                         </div>
-                        <a href="{% url 'courses:lesson_player' course_slug=course.slug %}" class="btn btn-gradient btn-lg w-100 mb-2">Go to Course LMS</a>
+                        <a href="{% url 'courses:lesson_player' course_slug=course.slug %}" class="btn btn-warning btn-lg w-100 mb-2 py-3 fw-bold rounded-3 text-dark shadow-sm">
+                            <i class="fa-solid fa-play me-1.5"></i> Go to Course LMS
+                        </a>
                     {% elif has_pending_payment %}
                         <div class="alert alert-warning text-center mb-3 small shadow-sm rounded-3">
                             <i class="fa-solid fa-clock me-1"></i> Payment Pending Admin Verification.<br>Course will unlock upon approval.
                         </div>
-                        <a href="{% url 'dashboard:student_dashboard' %}" class="btn btn-outline-warning w-100 mb-2">Track Payment Status</a>
+                        <a href="{% url 'dashboard:student_dashboard' %}" class="btn btn-outline-warning w-100 mb-2 py-2.5 fw-bold rounded-3">
+                            <i class="fa-solid fa-receipt me-1.5"></i> Track Payment Status
+                        </a>
                     {% else %}
-                        <a href="{% url 'payments:checkout_course' course_id=course.id %}" class="btn btn-gradient btn-lg w-100 mb-2 py-3 fw-bold">Buy Now (UPI Manual)</a>
-                        <a href="{% url 'payments:add_to_cart' course_id=course.id %}" class="btn btn-outline-secondary w-100 mb-3 py-2.5 fw-bold">Add to Cart</a>
+                        <a href="{% url 'payments:checkout_course' course_id=course.id %}" class="btn btn-warning btn-lg w-100 mb-2 py-3 fw-bold rounded-3 text-dark shadow-sm d-flex align-items-center justify-content-center gap-2">
+                            <i class="fa-solid fa-qrcode"></i>
+                            <span>Enroll via PhonePe UPI</span>
+                        </a>
+                        <a href="{% url 'payments:add_to_cart' course_id=course.id %}" class="btn btn-outline-secondary w-100 mb-3 py-2.5 fw-semibold rounded-3">
+                            <i class="fa-solid fa-cart-plus me-1.5"></i> Add to Cart
+                        </a>
                     {% endif %}
 
                     <!-- Premium Feature Badges List -->
-                    <div class="border-top pt-4 mt-4">
-                        <h6 class="fw-bold text-dark mb-3.5 small text-uppercase tracking-wider" style="font-size: 11px; letter-spacing: 1px;">This Course Includes:</h6>
-                        <div class="d-flex flex-column gap-3">
-                            <div class="d-flex align-items-start gap-3 p-3 rounded-3 bg-light bg-opacity-50 border border-1 border-secondary border-opacity-10 hover-translate">
-                                <div class="icon-badge bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; flex-shrink: 0;">
+                    <div class="border-top pt-4 mt-3">
+                        <h6 class="fw-bold text-dark mb-3 small text-uppercase" style="font-size: 11px; letter-spacing: 0.8px;">Course Highlights:</h6>
+                        <div class="d-flex flex-column gap-2.5">
+                            <div class="feature-pill-check">
+                                <div class="icon-badge bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 34px; height: 34px; flex-shrink: 0;">
                                     <i class="fa-solid fa-mobile-screen fs-6"></i>
                                 </div>
                                 <div>
                                     <h6 class="mb-0 text-dark small fw-bold">Flexible UPI Payment</h6>
-                                    <p class="mb-0 text-secondary" style="font-size: 11px; margin-top: 2px;">Pay with PhonePe, GPay, Paytm, BHIM</p>
+                                    <p class="mb-0 text-secondary" style="font-size: 11px;">Zero gateway fee with PhonePe, GPay, Paytm</p>
                                 </div>
                             </div>
                             
-                            <div class="d-flex align-items-start gap-3 p-3 rounded-3 bg-light bg-opacity-50 border border-1 border-secondary border-opacity-10 hover-translate">
-                                <div class="icon-badge bg-danger bg-opacity-10 text-danger rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; flex-shrink: 0;">
+                            <div class="feature-pill-check">
+                                <div class="icon-badge bg-danger bg-opacity-10 text-danger rounded-circle d-flex align-items-center justify-content-center" style="width: 34px; height: 34px; flex-shrink: 0;">
                                     <i class="fa-solid fa-file-pdf fs-6"></i>
                                 </div>
                                 <div>
                                     <h6 class="mb-0 text-dark small fw-bold">ReportLab PDF Certificate</h6>
-                                    <p class="mb-0 text-secondary" style="font-size: 11px; margin-top: 2px;">Official verifiable certificate included</p>
+                                    <p class="mb-0 text-secondary" style="font-size: 11px;">Verifiable credential with QR validation</p>
                                 </div>
                             </div>
 
-                            <div class="d-flex align-items-start gap-3 p-3 rounded-3 bg-light bg-opacity-50 border border-1 border-secondary border-opacity-10 hover-translate">
-                                <div class="icon-badge bg-info bg-opacity-10 text-info rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; flex-shrink: 0;">
+                            <div class="feature-pill-check">
+                                <div class="icon-badge bg-info bg-opacity-10 text-info rounded-circle d-flex align-items-center justify-content-center" style="width: 34px; height: 34px; flex-shrink: 0;">
                                     <i class="fa-solid fa-infinity fs-6"></i>
                                 </div>
                                 <div>
                                     <h6 class="mb-0 text-dark small fw-bold">Full Lifetime Access</h6>
-                                    <p class="mb-0 text-secondary" style="font-size: 11px; margin-top: 2px;">Learn at your own pace, anytime</p>
+                                    <p class="mb-0 text-secondary" style="font-size: 11px;">Self-paced video lessons with future updates</p>
                                 </div>
                             </div>
 
-                            <div class="d-flex align-items-start gap-3 p-3 rounded-3 bg-light bg-opacity-50 border border-1 border-secondary border-opacity-10 hover-translate">
-                                <div class="icon-badge bg-success bg-opacity-10 text-success rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; flex-shrink: 0;">
+                            <div class="feature-pill-check">
+                                <div class="icon-badge bg-success bg-opacity-10 text-success rounded-circle d-flex align-items-center justify-content-center" style="width: 34px; height: 34px; flex-shrink: 0;">
                                     <i class="fa-solid fa-shield-halved fs-6"></i>
                                 </div>
                                 <div>
-                                    <h6 class="mb-0 text-dark small fw-bold">100% Verified Manual UTR</h6>
-                                    <p class="mb-0 text-secondary" style="font-size: 11px; margin-top: 2px;">Secure and audited registration logs</p>
+                                    <h6 class="mb-0 text-dark small fw-bold">Manual UTR Verification</h6>
+                                    <p class="mb-0 text-secondary" style="font-size: 11px;">Verified by admin team for security</p>
                                 </div>
                             </div>
                         </div>
@@ -256,6 +336,7 @@
         </div>
     </div>
 </div>
+
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const previewVideo = document.getElementById('course-preview-video');

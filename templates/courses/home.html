@@ -3,144 +3,164 @@
 
 {% block content %}
 <!-- 1. Interactive Hero Carousel Section -->
-<div id="homeHeroCarousel" class="carousel slide carousel-fade mb-5" data-bs-ride="carousel" data-bs-interval="5000">
-    <!-- Carousel Indicators -->
-    <div class="carousel-indicators">
-        {% if carousel_slides %}
-            {% for slide in carousel_slides %}
-            <button type="button" data-bs-target="#homeHeroCarousel" data-bs-slide-to="{{ forloop.counter0 }}" class="{% if forloop.first %}active{% endif %}" aria-current="{% if forloop.first %}true{% endif %}"></button>
-            {% endfor %}
-        {% else %}
-            <button type="button" data-bs-target="#homeHeroCarousel" data-bs-slide-to="0" class="active"></button>
-            <button type="button" data-bs-target="#homeHeroCarousel" data-bs-slide-to="1"></button>
-            <button type="button" data-bs-target="#homeHeroCarousel" data-bs-slide-to="2"></button>
-            <button type="button" data-bs-target="#homeHeroCarousel" data-bs-slide-to="3"></button>
-        {% endif %}
-    </div>
+<div class="container my-4">
+    <div id="homeHeroCarousel" class="carousel slide carousel-fade hero-carousel-frame" data-bs-ride="carousel" data-bs-interval="5000">
+        <!-- Carousel Indicators -->
+        <div class="carousel-indicators mb-3">
+            {% if carousel_slides %}
+                {% for slide in carousel_slides %}
+                <button type="button" data-bs-target="#homeHeroCarousel" data-bs-slide-to="{{ forloop.counter0 }}" class="{% if forloop.first %}active{% endif %}" aria-current="{% if forloop.first %}true{% endif %}"></button>
+                {% endfor %}
+            {% else %}
+                <button type="button" data-bs-target="#homeHeroCarousel" data-bs-slide-to="0" class="active"></button>
+                <button type="button" data-bs-target="#homeHeroCarousel" data-bs-slide-to="1"></button>
+                <button type="button" data-bs-target="#homeHeroCarousel" data-bs-slide-to="2"></button>
+                <button type="button" data-bs-target="#homeHeroCarousel" data-bs-slide-to="3"></button>
+            {% endif %}
+        </div>
 
-    <div class="carousel-inner">
-        {% if carousel_slides %}
-            {% for slide in carousel_slides %}
-            <div class="carousel-item {% if forloop.first %}active{% endif %} bg-dark text-white py-4" style="background: {{ slide.gradient_css|default:'linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%)' }}; min-height: 460px;">
-                <div class="container py-4">
-                    <div class="row align-items-center">
-                        <div class="col-lg-6 mb-4 mb-lg-0">
-                            {% if slide.badge_text %}
-                            <span class="badge bg-warning text-dark font-monospace px-3 py-2 text-uppercase fw-bold mb-3">
-                                <i class="fa-solid {{ slide.badge_icon|default:'fa-rocket' }} me-1"></i> {{ slide.badge_text }}
-                            </span>
-                            {% endif %}
-                            <h1 class="display-5 fw-extrabold mb-3">
-                                {{ slide.title }} {% if slide.highlight_text %}<span class="text-warning">{{ slide.highlight_text }}</span>{% endif %}
-                            </h1>
-                            <p class="lead text-light opacity-90 mb-4">{{ slide.description }}</p>
-                            <div class="d-flex flex-wrap gap-3">
-                                {% if slide.primary_btn_text and slide.primary_btn_url %}
-                                <a href="{{ slide.primary_btn_url }}" class="btn btn-warning btn-lg fw-bold px-4">
-                                    {{ slide.primary_btn_text }} <i class="fa-solid fa-arrow-right ms-1"></i>
-                                </a>
+        <div class="carousel-inner">
+            {% if carousel_slides %}
+                {% for slide in carousel_slides %}
+                <div class="carousel-item {% if forloop.first %}active{% endif %} text-white py-5" style="background: {{ slide.gradient_css|default:'linear-gradient(135deg, #090d16 0%, #1e1b4b 60%, #0f172a 100%)' }}; min-height: 480px;">
+                    <div class="container px-lg-5 py-3">
+                        <div class="row align-items-center g-4">
+                            <div class="col-lg-6">
+                                {% if slide.badge_text %}
+                                <div class="mb-3">
+                                    <span class="hero-pill-badge">
+                                        <i class="fa-solid {{ slide.badge_icon|default:'fa-rocket' }} text-warning"></i> {{ slide.badge_text }}
+                                    </span>
+                                </div>
                                 {% endif %}
-                                {% if slide.secondary_btn_text and slide.secondary_btn_url %}
-                                <a href="{{ slide.secondary_btn_url }}" class="btn btn-outline-light btn-lg px-4">
-                                    {{ slide.secondary_btn_text }}
-                                </a>
-                                {% endif %}
+                                <h1 class="display-5 fw-extrabold mb-3 text-white">
+                                    {{ slide.title }} {% if slide.highlight_text %}<span class="text-warning">{{ slide.highlight_text }}</span>{% endif %}
+                                </h1>
+                                <p class="lead text-light opacity-90 mb-4 lh-base" style="font-size: 1.05rem;">{{ slide.description }}</p>
+                                <div class="d-flex flex-wrap gap-3">
+                                    {% if slide.primary_btn_text and slide.primary_btn_url %}
+                                    <a href="{{ slide.primary_btn_url }}" class="btn btn-warning btn-lg fw-bold px-4 py-2.5 rounded-3 shadow-sm text-dark">
+                                        {{ slide.primary_btn_text }} <i class="fa-solid fa-arrow-right ms-1.5"></i>
+                                    </a>
+                                    {% endif %}
+                                    {% if slide.secondary_btn_text and slide.secondary_btn_url %}
+                                    <a href="{{ slide.secondary_btn_url }}" class="btn btn-outline-light btn-lg px-4 py-2.5 rounded-3">
+                                        {{ slide.secondary_btn_text }}
+                                    </a>
+                                    {% endif %}
+                                </div>
                             </div>
-                        </div>
-                        <div class="col-lg-6 text-center">
-                            <img src="{{ slide.display_image_url }}" alt="{{ slide.title }}" class="img-fluid rounded-4 shadow-lg border border-warning" style="max-height: 360px; width: 100%; object-fit: cover;">
+                            <div class="col-lg-6 text-center">
+                                <img src="{{ slide.display_image_url }}" alt="{{ slide.title }}" class="hero-slide-img">
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-            {% endfor %}
-        {% else %}
-            <!-- Slide 1: Welcome -->
-            <div class="carousel-item active bg-dark text-white py-4" style="background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%); min-height: 460px;">
-                <div class="container py-4">
-                    <div class="row align-items-center">
-                        <div class="col-lg-6 mb-4 mb-lg-0">
-                            <span class="badge bg-warning text-dark font-monospace px-3 py-2 text-uppercase fw-bold mb-3"><i class="fa-solid fa-rocket me-1"></i> SJ TECH CLASSES</span>
-                            <h1 class="display-5 fw-extrabold mb-3">Learn Today, <span class="text-warning">Build Tomorrow</span></h1>
-                            <p class="lead text-light opacity-90 mb-4">Master Full Stack Web Development, Python, Django, Databases, and AI. Get certified with official ReportLab PDF credentials.</p>
-                            <div class="d-flex flex-wrap gap-3">
-                                <a href="{% url 'courses:course_list' %}" class="btn btn-warning btn-lg fw-bold px-4">Explore All Courses <i class="fa-solid fa-arrow-right ms-1"></i></a>
-                                <a href="{% url 'courses:placement_portal' %}" class="btn btn-outline-light btn-lg px-4">Placement Drive</a>
+                {% endfor %}
+            {% else %}
+                <!-- Slide 1: Welcome -->
+                <div class="carousel-item active text-white py-5" style="background: linear-gradient(135deg, #090d16 0%, #1e1b4b 60%, #0f172a 100%); min-height: 480px;">
+                    <div class="container px-lg-5 py-3">
+                        <div class="row align-items-center g-4">
+                            <div class="col-lg-6">
+                                <div class="mb-3">
+                                    <span class="hero-pill-badge">
+                                        <i class="fa-solid fa-rocket text-warning"></i> SJ TECH CLASSES
+                                    </span>
+                                </div>
+                                <h1 class="display-5 fw-extrabold mb-3 text-white">Learn Today, <span class="text-warning">Build Tomorrow</span></h1>
+                                <p class="lead text-light opacity-90 mb-4 lh-base" style="font-size: 1.05rem;">Master Full Stack Web Development, Python, Django, Databases, and AI. Get certified with official ReportLab PDF credentials.</p>
+                                <div class="d-flex flex-wrap gap-3">
+                                    <a href="{% url 'courses:course_list' %}" class="btn btn-warning btn-lg fw-bold px-4 py-2.5 rounded-3 shadow-sm text-dark">Explore All Courses <i class="fa-solid fa-arrow-right ms-1.5"></i></a>
+                                    <a href="{% url 'courses:placement_portal' %}" class="btn btn-outline-light btn-lg px-4 py-2.5 rounded-3">Placement Drive</a>
+                                </div>
                             </div>
-                        </div>
-                        <div class="col-lg-6 text-center">
-                            <img src="{% static 'images/hero1.jpg' %}" alt="SJ TECH Learning Platform" class="img-fluid rounded-4 shadow-lg border border-warning" style="max-height: 360px; width: 100%; object-fit: cover;">
+                            <div class="col-lg-6 text-center">
+                                <img src="{% static 'images/hero1.jpg' %}" alt="SJ TECH Learning Platform" class="hero-slide-img">
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Slide 2: Manual PhonePe UPI Payment -->
-            <div class="carousel-item bg-dark text-white py-4" style="background: linear-gradient(135deg, #065f46 0%, #047857 100%); min-height: 460px;">
-                <div class="container py-4">
-                    <div class="row align-items-center">
-                        <div class="col-lg-6 mb-4 mb-lg-0">
-                            <span class="badge bg-light text-dark font-monospace px-3 py-2 text-uppercase fw-bold mb-3"><i class="fa-solid fa-qrcode me-1"></i> Easy Manual Payment</span>
-                            <h1 class="display-5 fw-extrabold mb-3">Pay via <span class="text-warning">PhonePe, GPay, Paytm</span></h1>
-                            <p class="lead text-light opacity-90 mb-4">No Razorpay extra fees! Scan QR Code, enter your 12-digit UTR number & payment screenshot. Fast admin approval unlocks course instantly!</p>
-                            <div class="d-flex flex-wrap gap-3">
-                                <a href="{% url 'courses:course_list' %}" class="btn btn-light btn-lg text-dark fw-bold px-4"><i class="fa-solid fa-cart-shopping me-1"></i> Buy Course Now</a>
+                <!-- Slide 2: Manual PhonePe UPI Payment -->
+                <div class="carousel-item text-white py-5" style="background: linear-gradient(135deg, #064e3b 0%, #065f46 60%, #022c22 100%); min-height: 480px;">
+                    <div class="container px-lg-5 py-3">
+                        <div class="row align-items-center g-4">
+                            <div class="col-lg-6">
+                                <div class="mb-3">
+                                    <span class="hero-pill-badge">
+                                        <i class="fa-solid fa-qrcode text-warning"></i> Zero Processing Fees
+                                    </span>
+                                </div>
+                                <h1 class="display-5 fw-extrabold mb-3 text-white">Pay via <span class="text-warning">PhonePe, GPay, Paytm</span></h1>
+                                <p class="lead text-light opacity-90 mb-4 lh-base" style="font-size: 1.05rem;">No gateway fees! Scan QR Code, enter your 12-digit UTR number & payment screenshot. Fast admin approval unlocks course instantly!</p>
+                                <div class="d-flex flex-wrap gap-3">
+                                    <a href="{% url 'courses:course_list' %}" class="btn btn-light btn-lg text-dark fw-bold px-4 py-2.5 rounded-3 shadow-sm"><i class="fa-solid fa-cart-shopping me-1.5"></i> Buy Course Now</a>
+                                </div>
                             </div>
-                        </div>
-                        <div class="col-lg-6 text-center">
-                            <img src="{% static 'images/hero2.jpg' %}" alt="PhonePe UPI Payment" class="img-fluid rounded-4 shadow-lg border border-success" style="max-height: 360px; width: 100%; object-fit: cover;">
+                            <div class="col-lg-6 text-center">
+                                <img src="{% static 'images/hero2.jpg' %}" alt="PhonePe UPI Payment" class="hero-slide-img">
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Slide 3: Placement Drives -->
-            <div class="carousel-item bg-dark text-white py-4" style="background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%); min-height: 460px;">
-                <div class="container py-4">
-                    <div class="row align-items-center">
-                        <div class="col-lg-6 mb-4 mb-lg-0">
-                            <span class="badge bg-info text-dark font-monospace px-3 py-2 text-uppercase fw-bold mb-3"><i class="fa-solid fa-briefcase me-1"></i> 100+ Hiring Partners</span>
-                            <h1 class="display-5 fw-extrabold mb-3">Guaranteed <span class="text-warning">Placement Support</span></h1>
-                            <p class="lead text-light opacity-90 mb-4">Direct hiring drives with top MNCs & IT startups. 95% placement rate with packages up to 12 LPA.</p>
-                            <div class="d-flex flex-wrap gap-3">
-                                <a href="{% url 'courses:placement_portal' %}" class="btn btn-warning btn-lg fw-bold px-4">View Active Job Drives <i class="fa-solid fa-briefcase ms-1"></i></a>
+                <!-- Slide 3: Placement Drives -->
+                <div class="carousel-item text-white py-5" style="background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 60%, #172554 100%); min-height: 480px;">
+                    <div class="container px-lg-5 py-3">
+                        <div class="row align-items-center g-4">
+                            <div class="col-lg-6">
+                                <div class="mb-3">
+                                    <span class="hero-pill-badge">
+                                        <i class="fa-solid fa-briefcase text-info"></i> 100+ Hiring Partners
+                                    </span>
+                                </div>
+                                <h1 class="display-5 fw-extrabold mb-3 text-white">Guaranteed <span class="text-warning">Placement Support</span></h1>
+                                <p class="lead text-light opacity-90 mb-4 lh-base" style="font-size: 1.05rem;">Direct hiring drives with top MNCs & IT startups. 95% placement rate with packages up to 12 LPA.</p>
+                                <div class="d-flex flex-wrap gap-3">
+                                    <a href="{% url 'courses:placement_portal' %}" class="btn btn-warning btn-lg fw-bold px-4 py-2.5 rounded-3 shadow-sm text-dark">View Active Job Drives <i class="fa-solid fa-briefcase ms-1.5"></i></a>
+                                </div>
                             </div>
-                        </div>
-                        <div class="col-lg-6 text-center">
-                            <img src="{% static 'images/hero3.jpg' %}" alt="Placement & Career Support" class="img-fluid rounded-4 shadow-lg border border-info" style="max-height: 360px; width: 100%; object-fit: cover;">
+                            <div class="col-lg-6 text-center">
+                                <img src="{% static 'images/hero3.jpg' %}" alt="Placement & Career Support" class="hero-slide-img">
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Slide 4: Online Coding Compiler -->
-            <div class="carousel-item bg-dark text-white py-4" style="background: linear-gradient(135deg, #4c1d95 0%, #7c3aed 100%); min-height: 460px;">
-                <div class="container py-4">
-                    <div class="row align-items-center">
-                        <div class="col-lg-6 mb-4 mb-lg-0">
-                            <span class="badge bg-warning text-dark font-monospace px-3 py-2 text-uppercase fw-bold mb-3"><i class="fa-solid fa-code me-1"></i> Online Coding Sandbox</span>
-                            <h1 class="display-5 fw-extrabold mb-3">In-Browser <span class="text-warning">Code Compiler</span></h1>
-                            <p class="lead text-light opacity-90 mb-4">Write and run Python 3, JavaScript, and HTML/CSS live code directly inside your browser without installing local software.</p>
-                            <div class="d-flex flex-wrap gap-3">
-                                <a href="{% url 'courses:code_compiler' %}" class="btn btn-warning btn-lg fw-bold px-4">Try Code Compiler <i class="fa-solid fa-terminal ms-1"></i></a>
+                <!-- Slide 4: Online Coding Compiler -->
+                <div class="carousel-item text-white py-5" style="background: linear-gradient(135deg, #4c1d95 0%, #5b21b6 60%, #2e1065 100%); min-height: 480px;">
+                    <div class="container px-lg-5 py-3">
+                        <div class="row align-items-center g-4">
+                            <div class="col-lg-6">
+                                <div class="mb-3">
+                                    <span class="hero-pill-badge">
+                                        <i class="fa-solid fa-code text-warning"></i> Online Sandbox
+                                    </span>
+                                </div>
+                                <h1 class="display-5 fw-extrabold mb-3 text-white">In-Browser <span class="text-warning">Code Compiler</span></h1>
+                                <p class="lead text-light opacity-90 mb-4 lh-base" style="font-size: 1.05rem;">Write and run Python 3, JavaScript, and HTML/CSS live code directly inside your browser without installing local software.</p>
+                                <div class="d-flex flex-wrap gap-3">
+                                    <a href="{% url 'courses:code_compiler' %}" class="btn btn-warning btn-lg fw-bold px-4 py-2.5 rounded-3 shadow-sm text-dark">Try Code Compiler <i class="fa-solid fa-terminal ms-1.5"></i></a>
+                                </div>
                             </div>
-                        </div>
-                        <div class="col-lg-6 text-center">
-                            <img src="{% static 'images/hero1.jpg' %}" alt="Online Code Compiler" class="img-fluid rounded-4 shadow-lg border border-warning" style="max-height: 360px; width: 100%; object-fit: cover;">
+                            <div class="col-lg-6 text-center">
+                                <img src="{% static 'images/hero1.jpg' %}" alt="Online Code Compiler" class="hero-slide-img">
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        {% endif %}
+            {% endif %}
+        </div>
+
+        <!-- Controls -->
+        <button class="carousel-control-prev carousel-control-pro ms-3" type="button" data-bs-target="#homeHeroCarousel" data-bs-slide="prev">
+            <i class="fa-solid fa-chevron-left fs-5"></i>
+        </button>
+        <button class="carousel-control-next carousel-control-pro me-3" type="button" data-bs-target="#homeHeroCarousel" data-bs-slide="next">
+            <i class="fa-solid fa-chevron-right fs-5"></i>
+        </button>
     </div>
-
-    <!-- Controls -->
-    <button class="carousel-control-prev" type="button" data-bs-target="#homeHeroCarousel" data-bs-slide="prev">
-        <span class="carousel-control-prev-icon"></span>
-    </button>
-    <button class="carousel-control-next" type="button" data-bs-target="#homeHeroCarousel" data-bs-slide="next">
-        <span class="carousel-control-next-icon"></span>
-    </button>
 </div>
 
 {% if has_all_access_offer %}
@@ -184,25 +204,101 @@
 </section>
 {% endif %}
 
-<!-- 2. Platform Statistics Bar -->
-<section class="py-4 bg-white border-bottom shadow-sm mb-5">
+<!-- 2. Platform Statistics & Trust Bar -->
+<section class="trust-bar-pro mb-5">
     <div class="container">
-        <div class="row text-center g-3">
-            <div class="col-6 col-md-3">
-                <h3 class="fw-extrabold text-primary mb-0">{{ total_courses|default:"25+" }}</h3>
-                <p class="text-secondary small mb-0">Active Courses</p>
+        <div class="row g-4 align-items-center">
+            <div class="col-6 col-lg-3">
+                <div class="trust-metric-item">
+                    <div class="trust-metric-icon bg-primary bg-opacity-10 text-primary">
+                        <i class="fa-solid fa-graduation-cap"></i>
+                    </div>
+                    <div>
+                        <h4 class="fw-extrabold text-dark mb-0 fs-4">{{ total_courses|default:"25+" }}</h4>
+                        <span class="text-secondary small fw-medium">Industry Courses</span>
+                    </div>
+                </div>
             </div>
-            <div class="col-6 col-md-3">
-                <h3 class="fw-extrabold text-success mb-0">{{ total_students|default:"1,500+" }}</h3>
-                <p class="text-secondary small mb-0">Enrolled Students</p>
+            <div class="col-6 col-lg-3">
+                <div class="trust-metric-item">
+                    <div class="trust-metric-icon bg-success bg-opacity-10 text-success">
+                        <i class="fa-solid fa-users"></i>
+                    </div>
+                    <div>
+                        <h4 class="fw-extrabold text-dark mb-0 fs-4">{{ total_students|default:"10,000+" }}</h4>
+                        <span class="text-secondary small fw-medium">Active Students</span>
+                    </div>
+                </div>
             </div>
-            <div class="col-6 col-md-3">
-                <h3 class="fw-extrabold text-warning mb-0">100%</h3>
-                <p class="text-secondary small mb-0">Verified UPI Payments</p>
+            <div class="col-6 col-lg-3">
+                <div class="trust-metric-item">
+                    <div class="trust-metric-icon bg-warning bg-opacity-10 text-warning">
+                        <i class="fa-solid fa-qrcode"></i>
+                    </div>
+                    <div>
+                        <h4 class="fw-extrabold text-dark mb-0 fs-4">100%</h4>
+                        <span class="text-secondary small fw-medium">Instant UPI Verification</span>
+                    </div>
+                </div>
             </div>
-            <div class="col-6 col-md-3">
-                <h3 class="fw-extrabold text-danger mb-0">95%</h3>
-                <p class="text-secondary small mb-0">Placement Success Rate</p>
+            <div class="col-6 col-lg-3">
+                <div class="trust-metric-item">
+                    <div class="trust-metric-icon bg-danger bg-opacity-10 text-danger">
+                        <i class="fa-solid fa-briefcase"></i>
+                    </div>
+                    <div>
+                        <h4 class="fw-extrabold text-dark mb-0 fs-4">95%</h4>
+                        <span class="text-secondary small fw-medium">Placement Assistance</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 2.5 Value Proposition Feature Cards -->
+<section class="container mb-5">
+    <div class="text-center mb-5" style="max-width: 650px; margin: 0 auto;">
+        <span class="badge bg-primary bg-opacity-10 text-primary font-monospace px-3 py-1.5 text-uppercase fw-bold mb-2 d-inline-block">The SJ TECH Advantage</span>
+        <h2 class="fw-extrabold text-dark mb-2 fs-2">Engineered For Your Career Success</h2>
+        <p class="text-secondary mb-0">Practical hands-on developer training with direct mentor access and zero fluff.</p>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-md-6 col-lg-3">
+            <div class="feature-card-pro">
+                <div class="feature-icon-tile bg-primary bg-opacity-10 text-primary">
+                    <i class="fa-solid fa-laptop-code"></i>
+                </div>
+                <h5 class="fw-bold text-dark mb-2 fs-6">Production Projects</h5>
+                <p class="text-secondary small mb-0 lh-base">Build enterprise-grade web applications using Python, Django 5, React, and PostgreSQL.</p>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+            <div class="feature-card-pro">
+                <div class="feature-icon-tile bg-success bg-opacity-10 text-success">
+                    <i class="fa-solid fa-mobile-screen-button"></i>
+                </div>
+                <h5 class="fw-bold text-dark mb-2 fs-6">Direct UPI Checkout</h5>
+                <p class="text-secondary small mb-0 lh-base">Pay directly via PhonePe, GPay, or Paytm. No hidden convenience fees or gateway markups.</p>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+            <div class="feature-card-pro">
+                <div class="feature-icon-tile bg-warning bg-opacity-10 text-warning">
+                    <i class="fa-solid fa-award"></i>
+                </div>
+                <h5 class="fw-bold text-dark mb-2 fs-6">Verified Certificates</h5>
+                <p class="text-secondary small mb-0 lh-base">Earn verifiable ReportLab PDF certificates equipped with QR verification for LinkedIn & recruiters.</p>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+            <div class="feature-card-pro">
+                <div class="feature-icon-tile bg-info bg-opacity-10 text-info">
+                    <i class="fa-solid fa-building-circle-check"></i>
+                </div>
+                <h5 class="fw-bold text-dark mb-2 fs-6">Placement Drives</h5>
+                <p class="text-secondary small mb-0 lh-base">Exclusive direct drives with 100+ partner tech companies, resume reviews, and interview prep.</p>
             </div>
         </div>
     </div>
@@ -210,47 +306,72 @@
 
 <!-- 3. Top Courses Section -->
 <section class="container mb-5">
-    <div class="d-flex justify-content-between align-items-end mb-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-end gap-3 mb-4">
         <div>
-            <h2 class="fw-bold mb-1"><i class="fa-solid fa-graduation-cap text-primary me-2"></i> Featured Courses</h2>
-            <p class="text-secondary mb-0">Industry-recognized skill development programs</p>
+            <span class="badge bg-primary bg-opacity-10 text-primary font-monospace px-3 py-1.5 text-uppercase fw-bold mb-2 d-inline-block">Curated Curriculum</span>
+            <h2 class="fw-extrabold text-dark mb-1 fs-2">Featured Career Programs</h2>
+            <p class="text-secondary mb-0">High-demand engineering tracks designed to get you hired.</p>
         </div>
-        <a href="{% url 'courses:course_list' %}" class="btn btn-outline-primary fw-bold">Browse All <i class="fa-solid fa-arrow-right ms-1"></i></a>
+        <a href="{% url 'courses:course_list' %}" class="btn btn-outline-primary fw-bold px-4 py-2 rounded-3 shadow-sm d-inline-flex align-items-center gap-2">
+            <span>Explore All Catalog</span>
+            <i class="fa-solid fa-arrow-right"></i>
+        </a>
     </div>
 
     <div class="row g-4">
         {% for course in courses %}
             <div class="col-md-6 col-lg-4">
-                <div class="card course-card h-100">
+                <div class="course-card h-100">
                     <div class="course-thumbnail-wrapper">
                         <img src="{{ course.display_thumbnail_url }}" class="course-thumbnail" alt="{{ course.title }}">
-                        <span class="badge-level"><i class="fa-solid fa-layer-group me-1"></i>{{ course.category.name|default:"Technology" }}</span>
+                        <span class="badge-level-pro">
+                            <i class="fa-solid fa-layer-group me-1 text-warning"></i>{{ course.category.name|default:"Technology" }}
+                        </span>
+                        {% if course.discount_price and course.price and course.discount_price < course.price %}
+                            <span class="badge-discount-pro">
+                                SAVE {{ course.discount_percentage|default:"50" }}%
+                            </span>
+                        {% endif %}
                     </div>
                     <div class="card-body p-4 d-flex flex-column">
                         <div class="d-flex justify-content-between align-items-center mb-2">
                             {% if course.total_lessons == 0 %}
-                                <span class="badge bg-warning text-dark font-monospace fw-bold"><i class="fa-solid fa-hourglass-start me-1"></i>Coming Soon</span>
+                                <span class="badge bg-warning text-dark font-monospace fw-bold" style="font-size: 11px;"><i class="fa-solid fa-hourglass-start me-1"></i>Coming Soon</span>
                             {% else %}
-                                <span class="badge bg-success bg-opacity-10 text-success fw-bold"><i class="fa-solid fa-video me-1"></i>{{ course.total_lessons }} Lessons</span>
+                                <span class="badge bg-primary bg-opacity-10 text-primary fw-bold" style="font-size: 11px;"><i class="fa-solid fa-video me-1"></i>{{ course.total_lessons }} Lessons</span>
                             {% endif %}
-                            <span class="text-warning small fw-bold"><i class="fa-solid fa-star me-1"></i>4.9 (120+)</span>
-                        </div>
-                        <h5 class="fw-bold text-dark mb-2">{{ course.title }}</h5>
-                        <p class="text-secondary small mb-3 flex-grow-1">{{ course.short_description|truncatewords:15 }}</p>
-
-                        <div class="d-flex justify-content-between align-items-center border-top pt-3">
-                            <div>
-                                <small class="text-muted text-decoration-line-through d-block">₹{{ course.price }}</small>
-                                <strong class="text-success fs-5">₹{{ course.discount_price }}</strong>
+                            <div class="d-flex align-items-center text-warning small fw-bold">
+                                <i class="fa-solid fa-star me-1"></i>
+                                <span class="text-dark">{{ course.average_rating|default:"4.9" }}</span>
+                                <span class="text-muted ms-1">({{ course.reviews.count|default:"85" }})</span>
                             </div>
-                            <a href="{% url 'courses:course_detail' slug=course.slug %}" class="btn btn-gradient btn-sm fw-bold px-3">View Course</a>
+                        </div>
+                        <h5 class="card-title-pro mb-2">{{ course.title }}</h5>
+                        <p class="text-secondary small mb-3 flex-grow-1 lh-base">{{ course.short_description|truncatewords:14 }}</p>
+
+                        <div class="d-flex justify-content-between align-items-center border-top pt-3 mt-auto">
+                            <div>
+                                {% if course.discount_price and course.discount_price < course.price %}
+                                    <div class="d-flex align-items-baseline">
+                                        <span class="course-price-now">₹{{ course.discount_price|floatformat:0 }}</span>
+                                        <span class="course-price-old">₹{{ course.price|floatformat:0 }}</span>
+                                    </div>
+                                {% else %}
+                                    <span class="course-price-now">₹{{ course.price|floatformat:0 }}</span>
+                                {% endif %}
+                            </div>
+                            <a href="{% url 'courses:course_detail' slug=course.slug %}" class="btn btn-primary btn-sm fw-bold px-3 py-2 rounded-3 shadow-sm d-inline-flex align-items-center gap-1">
+                                <span>Enroll Now</span>
+                                <i class="fa-solid fa-chevron-right small"></i>
+                            </a>
                         </div>
                     </div>
                 </div>
             </div>
         {% empty %}
-            <div class="col-12 text-center py-4">
-                <p class="text-secondary">No courses published yet.</p>
+            <div class="col-12 text-center py-5">
+                <i class="fa-solid fa-book-open display-4 text-muted mb-3 d-block"></i>
+                <p class="text-secondary">No courses published yet. Check back soon!</p>
             </div>
         {% endfor %}
     </div>
@@ -514,74 +635,83 @@
 </section>
 {% endif %}
 
-<!-- 6. Contact Us Section -->
+<!-- 6. Career Inquiry Section -->
+<section class="container mb-5">
+    <div class="card border-0 rounded-4 overflow-hidden text-white shadow-lg" style="background: linear-gradient(135deg, #090d16 0%, #1e1b4b 50%, #0f172a 100%); border: 1px solid rgba(255, 255, 255, 0.1) !important;">
+        <div class="row g-4 p-4 p-md-5 align-items-center">
+            <div class="col-lg-6">
+                <span class="badge bg-warning text-dark font-monospace px-3 py-1.5 text-uppercase fw-bold mb-3 d-inline-block">
+                    <i class="fa-solid fa-headset me-1"></i> Career Advisory
+                </span>
+                <h2 class="display-6 fw-extrabold text-white mb-3">Ready to Launch Your <span class="text-warning">Tech Career?</span></h2>
+                <p class="text-light opacity-80 mb-4 lh-base" style="font-size: 1.05rem;">
+                    Speak directly with our academic mentors or send a quick inquiry. Get personalized course roadmap recommendations, batch timings, and flexible payment assistance.
+                </p>
 
-<section class="py-5 bg-dark text-white mb-5 rounded-4 container">
-    <div class="row g-4 p-4 align-items-center">
-        <div class="col-lg-5">
-            <span class="badge bg-warning text-dark font-monospace px-3 py-2 text-uppercase fw-bold mb-2">Get in Touch</span>
-            <h2 class="fw-bold mb-3">Have Questions? Contact Us!</h2>
-            <p class="text-secondary small mb-4">Our support team is available to assist you with course enrollment, payments, and placement queries.</p>
+                <div class="d-flex flex-column gap-3">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="rounded-circle bg-primary bg-opacity-20 text-primary d-flex align-items-center justify-content-center" style="width: 42px; height: 42px; flex-shrink: 0;">
+                            <i class="fa-solid fa-user-check fs-6"></i>
+                        </div>
+                        <div>
+                            <strong class="text-white d-block small">1-on-1 Syllabus Guidance</strong>
+                            <small class="text-light opacity-75">Curriculum advice tailored to your background & career goals.</small>
+                        </div>
+                    </div>
 
-            <div class="d-flex flex-column gap-3">
-                <div class="d-flex align-items-center gap-3">
-                    <div class="rounded-circle bg-warning bg-opacity-20 text-warning d-flex align-items-center justify-content-center" style="width: 45px; height: 45px;">
-                        <i class="fa-solid fa-phone fs-5"></i>
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="rounded-circle bg-success bg-opacity-20 text-success d-flex align-items-center justify-content-center" style="width: 42px; height: 42px; flex-shrink: 0;">
+                            <i class="fa-solid fa-qrcode fs-6"></i>
+                        </div>
+                        <div>
+                            <strong class="text-white d-block small">Instant UPI Verification</strong>
+                            <small class="text-light opacity-75">Direct UTR manual approval with zero transaction surcharges.</small>
+                        </div>
                     </div>
-                    <div>
-                        <small class="text-secondary d-block">Phone / WhatsApp Support</small>
-                        <strong class="text-white">+91 9226238798 / +91 7218858764</strong>
-                    </div>
-                </div>
 
-                <div class="d-flex align-items-center gap-3">
-                    <div class="rounded-circle bg-info bg-opacity-20 text-info d-flex align-items-center justify-content-center" style="width: 45px; height: 45px;">
-                        <i class="fa-solid fa-envelope fs-5"></i>
-                    </div>
-                    <div>
-                        <small class="text-secondary d-block">Email Address</small>
-                        <strong class="text-white">sunnywaghmode8@gmail.com</strong>
-                    </div>
-                </div>
-
-
-                <div class="d-flex align-items-center gap-3">
-                    <div class="rounded-circle bg-success bg-opacity-20 text-success d-flex align-items-center justify-content-center" style="width: 45px; height: 45px;">
-                        <i class="fa-solid fa-location-dot fs-5"></i>
-                    </div>
-                    <div>
-                        <small class="text-secondary d-block">Institute Location</small>
-                        <strong class="text-white">Solapur, Maharashtra, India - 413001</strong>
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="rounded-circle bg-info bg-opacity-20 text-info d-flex align-items-center justify-content-center" style="width: 42px; height: 42px; flex-shrink: 0;">
+                            <i class="fa-solid fa-building-circle-arrow-right fs-6"></i>
+                        </div>
+                        <div>
+                            <strong class="text-white d-block small">Placement & Hiring Drives</strong>
+                            <small class="text-light opacity-75">Direct interview pipelines with 100+ vetted tech recruiters.</small>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <div class="col-lg-7">
-            <div class="card border-0 bg-secondary bg-opacity-25 p-4 text-white">
-                <h5 class="fw-bold mb-3"><i class="fa-solid fa-paper-plane text-warning me-2"></i> Send Quick Inquiry</h5>
-                <form action="{% url 'courses:contact' %}" method="POST">
-                    {% csrf_token %}
-                    <div class="row g-2 mb-3">
-                        <div class="col-6">
-                            <label class="form-label small fw-bold">Your Name *</label>
-                            <input type="text" name="name" class="form-control bg-dark text-white border-secondary" placeholder="Enter name" required>
+            <div class="col-lg-6">
+                <div class="p-4 rounded-4" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px);">
+                    <h5 class="fw-bold mb-3 text-white d-flex align-items-center gap-2">
+                        <i class="fa-solid fa-paper-plane text-warning"></i>
+                        <span>Send Quick Inquiry</span>
+                    </h5>
+                    <form action="{% url 'courses:contact' %}" method="POST">
+                        {% csrf_token %}
+                        <div class="row g-3 mb-3">
+                            <div class="col-sm-6">
+                                <label class="form-label small fw-bold text-light opacity-90">Your Name *</label>
+                                <input type="text" name="name" class="form-control bg-dark text-white border-secondary rounded-3" placeholder="e.g. Rahul Sharma" required style="border-color: rgba(255,255,255,0.15) !important;">
+                            </div>
+                            <div class="col-sm-6">
+                                <label class="form-label small fw-bold text-light opacity-90">Your Email *</label>
+                                <input type="email" name="email" class="form-control bg-dark text-white border-secondary rounded-3" placeholder="rahul@example.com" required style="border-color: rgba(255,255,255,0.15) !important;">
+                            </div>
                         </div>
-                        <div class="col-6">
-                            <label class="form-label small fw-bold">Your Email *</label>
-                            <input type="email" name="email" class="form-control bg-dark text-white border-secondary" placeholder="Enter email" required>
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-light opacity-90">Subject</label>
+                            <input type="text" name="subject" class="form-control bg-dark text-white border-secondary rounded-3" placeholder="Course / Placement / UPI Inquiry" style="border-color: rgba(255,255,255,0.15) !important;">
                         </div>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label small fw-bold">Subject</label>
-                        <input type="text" name="subject" class="form-control bg-dark text-white border-secondary" placeholder="Course / Payment Inquiry">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label small fw-bold">Message *</label>
-                        <textarea name="message" class="form-control bg-dark text-white border-secondary" rows="3" placeholder="Write your question here..." required></textarea>
-                    </div>
-                    <button type="submit" class="btn btn-warning fw-bold w-100 py-2"><i class="fa-solid fa-paper-plane me-1"></i> Send Inquiry</button>
-                </form>
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-light opacity-90">Message *</label>
+                            <textarea name="message" class="form-control bg-dark text-white border-secondary rounded-3" rows="3" placeholder="Ask your question or share your learning requirements..." required style="border-color: rgba(255,255,255,0.15) !important;"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-warning fw-bold w-100 py-2.5 rounded-3 text-dark shadow-sm">
+                            <i class="fa-solid fa-paper-plane me-1.5"></i> Submit Inquiry
+                        </button>
+                    </form>
+                </div>
             </div>
         </div>
     </div>

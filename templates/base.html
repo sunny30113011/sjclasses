@@ -12,7 +12,7 @@
     <link rel="preconnect" href="https://cdnjs.cloudflare.com">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- FontAwesome 6 -->
@@ -34,7 +34,7 @@
             left: 0;
             height: 3px;
             width: 0%;
-            background: linear-gradient(90deg, #f59e0b, #ef4444, #3b82f6);
+            background: linear-gradient(90deg, #4f46e5, #0ea5e9, #f59e0b);
             z-index: 999999;
             transition: width 0.25s ease-out, opacity 0.3s ease;
             pointer-events: none;
@@ -50,8 +50,8 @@
     <nav class="navbar navbar-expand-xl navbar-dark glass-navbar sticky-top">
         <div class="container px-lg-4">
             <!-- Corporate Brand Logo -->
-            <a class="navbar-brand d-flex align-items-center me-4 text-decoration-none" href="{% url 'courses:home' %}">
-                <div class="rounded-3 bg-warning text-dark d-flex align-items-center justify-content-center me-2 shadow-sm" style="width: 36px; height: 36px; font-size: 1.1rem; font-weight: 900;">
+            <a class="navbar-brand d-flex align-items-center me-3 text-decoration-none" href="{% url 'courses:home' %}">
+                <div class="brand-emblem me-2">
                     <i class="fa-solid fa-code"></i>
                 </div>
                 <div class="lh-1">
@@ -66,10 +66,11 @@
             <div class="collapse navbar-collapse" id="navbarContent">
                 <!-- Search Box -->
                 <form class="d-flex me-auto my-2 my-xl-0 search-form-pro" action="{% url 'courses:course_list' %}" method="GET">
-                    <div class="input-group search-box-pro align-items-center w-100" style="padding-right: 3px;">
-                        <input class="form-control search-input-pro ps-2" type="search" name="q" placeholder="Search courses or skills..." value="{{ request.GET.q|default:'' }}">
-                        <button class="btn btn-warning btn-sm search-btn-pro d-flex align-items-center justify-content-center" type="submit" style="border-radius: 6px !important; padding: 4px 10px; font-size: 0.85rem; height: calc(100% - 6px);">
-                            <i class="fa-solid fa-magnifying-glass"></i>
+                    <div class="input-group search-box-pro align-items-center w-100">
+                        <span class="text-secondary ps-2 pe-1" style="font-size: 0.80rem;"><i class="fa-solid fa-magnifying-glass"></i></span>
+                        <input class="form-control search-input-pro ps-1" type="search" name="q" placeholder="Search Python, React, AWS..." value="{{ request.GET.q|default:'' }}">
+                        <button class="btn btn-warning btn-sm search-btn-pro fw-bold px-2 py-1 rounded-2" type="submit" style="font-size: 0.75rem;">
+                            Search
                         </button>
                     </div>
                 </form>
@@ -260,61 +261,85 @@
     </main>
 
     <!-- Global About & Contact Section -->
-    <section class="border-top py-5 bg-white">
-        <div class="container">
-            <div class="row g-5 align-items-center">
+    <section class="border-top py-5" style="background: #f8fafc;">
+        <div class="container py-2">
+            <div class="row g-4 align-items-stretch">
                 <!-- About / Founder Card -->
                 <div class="col-lg-7">
-                    <div class="p-4 rounded-4 bg-dark text-white shadow-sm border border-secondary">
-                        <div class="d-flex align-items-center gap-3 mb-3">
-                            <div class="rounded-circle overflow-hidden border border-2 border-warning shadow-sm" style="width: 64px; height: 64px; flex-shrink: 0;">
-                                <img src="/static/images/founder.jpg" alt="SUNNY SIR" class="w-100 h-100" style="object-fit: cover;">
+                    <div class="founder-card-pro h-100 d-flex flex-column justify-content-between">
+                        <div>
+                            <div class="d-flex align-items-center gap-3 mb-3">
+                                <div class="founder-avatar-wrap">
+                                    <img src="/static/images/founder.jpg" alt="SUNNY SIR" class="w-100 h-100" style="object-fit: cover;">
+                                </div>
+                                <div>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <h5 class="fw-bold text-white mb-0 fs-5">SUNNY SIR</h5>
+                                        <span class="badge bg-warning text-dark px-2 py-0.5 rounded-pill fw-bold" style="font-size: 10px;">
+                                            <i class="fa-solid fa-circle-check me-1"></i>VERIFIED INSTRUCTOR
+                                        </span>
+                                    </div>
+                                    <p class="text-warning small mb-0 fw-semibold" style="font-size: 11px; letter-spacing: 0.5px;">FOUNDER & EXECUTIVE DIRECTOR • SJ TECH CLASSES</p>
+                                </div>
                             </div>
-                            <div>
-                                <h5 class="fw-bold text-white mb-0">SUNNY SIR</h5>
-                                <p class="text-warning small mb-0" style="font-size: 11px; font-weight: bold; letter-spacing: 0.5px;">FOUNDER & LEAD INSTRUCTOR • SJ TECH CLASSES</p>
-                            </div>
+                            <p class="text-light opacity-80 small mb-4 lh-lg" style="font-size: 13.5px;">
+                                "Our core mission is to bridge the college-to-corporate gap. We train students on production Python, Django, React, AWS, and AI architectures with real industry assignments, manual instant UPI payment approvals, certified PDF credentials, and direct campus placement drives."
+                            </p>
                         </div>
-                        <p class="text-light opacity-75 small mb-0 lh-lg" style="font-size: 13px;">
-                            "Our mission is to empower every student with practical, job-oriented programming skills. We build real-world software applications, provide manual hassle-free UPI payments, live webinars, verified PDF credentials, and direct placement opportunities."
-                        </p>
+                        <div class="d-flex flex-wrap gap-2 pt-3 border-top border-secondary border-opacity-25">
+                            <span class="badge bg-white bg-opacity-10 text-light px-3 py-2 rounded-pill small">
+                                <i class="fa-solid fa-graduation-cap text-warning me-1"></i> 10,000+ Students Mentored
+                            </span>
+                            <span class="badge bg-white bg-opacity-10 text-light px-3 py-2 rounded-pill small">
+                                <i class="fa-solid fa-briefcase text-success me-1"></i> 100+ Placement Partners
+                            </span>
+                            <span class="badge bg-white bg-opacity-10 text-light px-3 py-2 rounded-pill small">
+                                <i class="fa-solid fa-award text-info me-1"></i> ISO 9001:2015 Verified
+                            </span>
+                        </div>
                     </div>
                 </div>
                 
                 <!-- Contact / Support Card -->
                 <div class="col-lg-5">
-                    <div class="p-4 rounded-4 bg-light border border-1 border-secondary border-opacity-10 shadow-sm">
-                        <span class="badge bg-primary bg-opacity-10 text-primary font-monospace px-3 py-1.5 text-uppercase fw-bold mb-3" style="font-size: 11px;">Connect With Us</span>
-                        <h4 class="fw-bold text-dark mb-3.5 fs-5">Empowering Tech Learners</h4>
-                        
-                        <div class="d-flex flex-column gap-3">
-                            <div class="d-flex align-items-center gap-3">
-                                <div class="icon-badge bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; flex-shrink: 0;">
-                                    <i class="fa-solid fa-envelope fs-6"></i>
-                                </div>
-                                <div>
-                                    <small class="text-secondary d-block" style="font-size: 10px; font-weight: bold; text-transform: uppercase;">Email Support</small>
-                                    <a href="mailto:sunnywaghmode8@gmail.com" class="text-decoration-none text-dark fw-semibold small">sunnywaghmode8@gmail.com</a>
-                                </div>
+                    <div class="support-card-pro h-100 d-flex flex-column justify-content-between">
+                        <div>
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <span class="badge bg-primary bg-opacity-10 text-primary font-monospace px-3 py-1.5 text-uppercase fw-bold" style="font-size: 11px;">24/7 Student Desk</span>
+                                <span class="text-success small fw-semibold"><i class="fa-solid fa-circle me-1" style="font-size: 8px;"></i>Online Support</span>
                             </div>
+                            <h4 class="fw-bold text-dark mb-2 fs-5">Empowering Tech Learners</h4>
+                            <p class="text-secondary small mb-3">Have questions about courses, placement drives, or payments? Talk directly with our academic team.</p>
                             
-                            <div class="d-flex align-items-center gap-3">
-                                <div class="icon-badge bg-success bg-opacity-10 text-success rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; flex-shrink: 0;">
-                                    <i class="fa-solid fa-phone fs-6"></i>
-                                </div>
-                                <div>
-                                    <small class="text-secondary d-block" style="font-size: 10px; font-weight: bold; text-transform: uppercase;">Phone / WhatsApp</small>
-                                    <a href="tel:9226238798" class="text-decoration-none text-dark fw-semibold small">+91 9226238798</a> <span class="text-muted small">/ +91 7218858764</span>
-                                </div>
-                            </div>
+                            <div class="d-flex flex-column gap-2.5">
+                                <a href="mailto:sunnywaghmode8@gmail.com" class="contact-pill-item text-decoration-none">
+                                    <div class="icon-badge bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 38px; height: 38px; flex-shrink: 0;">
+                                        <i class="fa-solid fa-envelope fs-6"></i>
+                                    </div>
+                                    <div class="text-truncate">
+                                        <small class="text-secondary d-block" style="font-size: 10px; font-weight: bold; text-transform: uppercase;">Direct Email</small>
+                                        <span class="text-dark fw-semibold small">sunnywaghmode8@gmail.com</span>
+                                    </div>
+                                </a>
+                                
+                                <a href="tel:9226238798" class="contact-pill-item text-decoration-none">
+                                    <div class="icon-badge bg-success bg-opacity-10 text-success rounded-circle d-flex align-items-center justify-content-center" style="width: 38px; height: 38px; flex-shrink: 0;">
+                                        <i class="fa-solid fa-phone fs-6"></i>
+                                    </div>
+                                    <div>
+                                        <small class="text-secondary d-block" style="font-size: 10px; font-weight: bold; text-transform: uppercase;">Call / WhatsApp Helpline</small>
+                                        <span class="text-dark fw-semibold small">+91 9226238798 / 7218858764</span>
+                                    </div>
+                                </a>
 
-                            <div class="d-flex align-items-center gap-3">
-                                <div class="icon-badge bg-warning bg-opacity-10 text-warning rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; flex-shrink: 0;">
-                                    <i class="fa-solid fa-location-dot fs-6"></i>
-                                </div>
-                                <div>
-                                    <small class="text-secondary d-block" style="font-size: 10px; font-weight: bold; text-transform: uppercase;">Institute Address</small>
-                                    <span class="text-dark fw-semibold small">SJ TECH CLASSES, Solapur, Maharashtra - 413001</span>
+                                <div class="contact-pill-item">
+                                    <div class="icon-badge bg-warning bg-opacity-10 text-warning rounded-circle d-flex align-items-center justify-content-center" style="width: 38px; height: 38px; flex-shrink: 0;">
+                                        <i class="fa-solid fa-location-dot fs-6"></i>
+                                    </div>
+                                    <div>
+                                        <small class="text-secondary d-block" style="font-size: 10px; font-weight: bold; text-transform: uppercase;">Campus Location</small>
+                                        <span class="text-dark fw-semibold small">SJ TECH CLASSES, Solapur, Maharashtra - 413001</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -324,40 +349,78 @@
         </div>
     </section>
 
-    <!-- Footer -->
-    <footer class="bg-dark text-light py-5 border-top border-secondary">
+    <!-- Enterprise Footer -->
+    <footer class="footer-pro">
         <div class="container">
-            <div class="row g-4">
-                <div class="col-md-4">
-                    <h5 class="navbar-brand-gradient mb-3"><i class="fa-solid fa-graduation-cap me-2"></i>SJ TECH CLASSES</h5>
-                    <p class="text-secondary small">Learn Today, Build Tomorrow. Empowering learners with hands-on coding courses, PhonePe UPI payments, live webinars, and placement support.</p>
+            <div class="row g-4 mb-4">
+                <div class="col-lg-4 col-md-6">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="brand-emblem me-2">
+                            <i class="fa-solid fa-code"></i>
+                        </div>
+                        <span class="navbar-brand-text fs-5">SJ TECH <span class="navbar-brand-accent">CLASSES</span></span>
+                    </div>
+                    <p class="text-secondary small mb-3 lh-base">
+                        India's premier practical engineering academy. Empowering students with hands-on coding courses, PhonePe UPI payments, live mentorship webinars, and placement support.
+                    </p>
+                    <div class="d-flex gap-2 flex-wrap">
+                        <span class="payment-badge-pill"><i class="fa-solid fa-qrcode text-info"></i> PhonePe UPI</span>
+                        <span class="payment-badge-pill"><i class="fa-brands fa-google-pay text-primary"></i> GPay</span>
+                        <span class="payment-badge-pill"><i class="fa-solid fa-shield-halved text-success"></i> 100% Secure</span>
+                    </div>
                 </div>
-                <div class="col-md-2 offset-md-1">
+                <div class="col-lg-2 col-md-3 col-6">
                     <h6>Quick Links</h6>
-                    <ul class="list-unstyled text-secondary small">
-                        <li><a href="{% url 'courses:course_list' %}" class="text-decoration-none text-secondary">All Courses</a></li>
-                        <li><a href="{% url 'courses:projects_portal' %}" class="text-decoration-none text-secondary">Projects Hub</a></li>
-                        <li><a href="{% url 'courses:placement_portal' %}" class="text-decoration-none text-secondary">Placements</a></li>
-                        <li><a href="{% url 'accounts:register_instructor' %}" class="text-decoration-none text-secondary">Become Instructor</a></li>
+                    <ul class="list-unstyled">
+                        <li><a href="{% url 'courses:course_list' %}" class="footer-link-pro">All Courses</a></li>
+                        <li><a href="{% url 'courses:projects_portal' %}" class="footer-link-pro">Projects Hub</a></li>
+                        <li><a href="{% url 'courses:placement_portal' %}" class="footer-link-pro">Placement Drives</a></li>
+                        <li><a href="{% url 'courses:interview_questions_list' %}" class="footer-link-pro">Interview Q&A</a></li>
+                        <li><a href="{% url 'courses:code_compiler' %}" class="footer-link-pro">Online Compiler</a></li>
                     </ul>
                 </div>
-                <div class="col-md-2">
-                    <h6>Payment Methods</h6>
-                    <p class="text-secondary small mb-2"><i class="fa-solid fa-qrcode text-info me-1"></i> PhonePe / GPay / Paytm</p>
-                    <p class="text-secondary small mb-0"><i class="fa-solid fa-mobile-screen text-warning me-1"></i> sunnywaghmode8@axl</p>
+                <div class="col-lg-2 col-md-3 col-6">
+                    <h6>Programs</h6>
+                    <ul class="list-unstyled">
+                        <li><a href="{% url 'courses:course_list' %}?category=web-development" class="footer-link-pro">Python Django</a></li>
+                        <li><a href="{% url 'courses:course_list' %}?category=full-stack-development" class="footer-link-pro">Full Stack React</a></li>
+                        <li><a href="{% url 'courses:course_list' %}?category=cloud-and-devops" class="footer-link-pro">AWS & DevOps</a></li>
+                        <li><a href="{% url 'courses:course_list' %}?category=data-science-and-ai" class="footer-link-pro">Data Science & AI</a></li>
+                        <li><a href="{% url 'payments:all_access_checkout' %}" class="footer-link-pro text-warning fw-bold">All-Access Pass</a></li>
+                    </ul>
                 </div>
-                <div class="col-md-3">
-                    <h6>Contact & Support</h6>
-                    <p class="text-secondary small mb-1"><i class="fa-solid fa-envelope me-2"></i> sunnywaghmode8@gmail.com</p>
-                    <p class="text-secondary small mb-1"><i class="fa-solid fa-phone me-2"></i> +91 9226238798 / 7218858764</p>
-                    <p class="text-secondary small mb-0"><i class="fa-solid fa-location-dot me-2"></i> Solapur, Maharashtra - 413001</p>
+                <div class="col-lg-4 col-md-6">
+                    <h6>Official Payment Details</h6>
+                    <div class="p-3 rounded-3 mb-3" style="background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08);">
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <span class="small text-secondary">Verified UPI ID:</span>
+                            <span class="badge bg-success bg-opacity-20 text-success border border-success border-opacity-30">Active</span>
+                        </div>
+                        <div class="font-monospace text-warning fw-bold small p-2 rounded bg-dark border border-secondary border-opacity-25 d-flex justify-content-between align-items-center">
+                            <span>sunnywaghmode8@axl</span>
+                            <i class="fa-solid fa-copy text-secondary" style="cursor: pointer;" title="Copy UPI ID" onclick="navigator.clipboard.writeText('sunnywaghmode8@axl'); alert('UPI ID copied!');"></i>
+                        </div>
+                        <small class="text-secondary d-block mt-2" style="font-size: 11px;">Pay via PhonePe / GPay / Paytm & upload screenshot in checkout.</small>
+                    </div>
+                    <div class="text-secondary small">
+                        <i class="fa-solid fa-envelope me-2 text-warning"></i> sunnywaghmode8@gmail.com<br>
+                        <i class="fa-solid fa-phone me-2 text-success"></i> +91 9226238798 / 7218858764
+                    </div>
                 </div>
             </div>
-            <hr class="border-secondary my-4">
-            <div class="text-center text-secondary small">
-                © {% now "Y" %} SJ TECH CLASSES • Learn Today, Build Tomorrow. All Rights Reserved.
+            <hr class="border-secondary border-opacity-25 my-4">
+            <div class="d-flex flex-wrap justify-content-between align-items-center small text-secondary">
+                <div>
+                    © {% now "Y" %} SJ TECH CLASSES • Learn Today, Build Tomorrow. All Rights Reserved.
+                </div>
+                <div class="d-flex gap-3 mt-2 mt-sm-0">
+                    <a href="{% url 'courses:contact' %}" class="text-secondary text-decoration-none hover-white">Contact Us</a>
+                    <span>•</span>
+                    <a href="{% url 'accounts:register_instructor' %}" class="text-secondary text-decoration-none hover-white">Become Instructor</a>
+                    <span>•</span>
+                    <a href="{% url 'courses:categories_list' %}" class="text-secondary text-decoration-none hover-white">Categories</a>
+                </div>
             </div>
-
         </div>
     </footer>
 
