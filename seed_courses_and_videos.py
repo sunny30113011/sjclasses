@@ -82,45 +82,105 @@ def seed_all_courses():
             'category': cat_dev,
             'price': Decimal('2999.00'),
             'discount_price': Decimal('499.00'),
-            'level': 'Beginner',
+            'level': 'Beginner to Advanced',
             'preview_video_url': cloudinary_demo,
             'short_description': 'Master Python and Django 5 from scratch with real-world projects, authentication, and manual UPI payment integration.',
             'description': 'In this complete masterclass, you will build full-stack web applications using Django 5, Bootstrap 5, PostgreSQL, and custom payment engines with direct mentor support.',
             'modules': [
                 {
-                    'title': 'Introduction & Environment Setup',
+                    'title': 'Module 1: Introduction & Environment Setup',
                     'order': 1,
                     'lessons': [
-                        {'title': 'Welcome & Course Overview', 'type': 'video', 'video_url': cloudinary_demo, 'is_free': True, 'duration': 8},
-                        {'title': 'Installing Python & Virtual Environment', 'type': 'video', 'video_url': cloudinary_demo, 'is_free': True, 'duration': 12},
+                        {'title': '1. Welcome & Complete Django 5 Roadmap', 'type': 'video', 'video_url': cloudinary_demo, 'is_free': True, 'duration': 10},
+                        {'title': '2. Installing Python 3.13, VS Code & Virtual Environments', 'type': 'video', 'video_url': cloudinary_demo, 'is_free': True, 'duration': 15},
+                        {'title': '3. Understanding Pip, Requirements & Project Isolation', 'type': 'video', 'video_url': cloudinary_demo, 'is_free': False, 'duration': 12},
                     ]
                 },
                 {
-                    'title': 'Django Models & Database',
+                    'title': 'Module 2: Django Architecture & MVT Core',
                     'order': 2,
                     'lessons': [
-                        {'title': 'Creating Models & Migrations', 'type': 'video', 'video_url': cloudinary_demo, 'is_free': False, 'duration': 25},
-                        {'title': 'Django ORM & Relationships', 'type': 'video', 'video_url': cloudinary_demo, 'is_free': False, 'duration': 20},
-                        {'title': 'Django Core Knowledge Quiz', 'type': 'quiz', 'video_url': '', 'is_free': False, 'duration': 15},
-                        {'title': 'template', 'type': 'video', 'video_url': cloudinary_template, 'is_free': True, 'duration': 10},
-                        {'title': 'template1', 'type': 'video', 'video_url': cloudinary_demo, 'is_free': True, 'duration': 10},
+                        {'title': '1. Django Architecture: Model-View-Template (MVT) Pattern', 'type': 'video', 'video_url': cloudinary_demo, 'is_free': True, 'duration': 15},
+                        {'title': '2. Initializing Project with django-admin & Understanding Structure', 'type': 'video', 'video_url': cloudinary_demo, 'is_free': False, 'duration': 20},
+                        {'title': '3. Creating Apps, URL Routing & First HttpResponse View', 'type': 'video', 'video_url': cloudinary_demo, 'is_free': False, 'duration': 20},
+                    ]
+                },
+                {
+                    'title': 'Module 3: Django Models, Database & Migrations',
+                    'order': 3,
+                    'lessons': [
+                        {'title': '1. Defining Models, Field Types & Table Design', 'type': 'video', 'video_url': cloudinary_demo, 'is_free': False, 'duration': 25},
+                        {'title': '2. Makemigrations, Migrate & Inspecting Database Tables', 'type': 'video', 'video_url': cloudinary_demo, 'is_free': False, 'duration': 20},
+                        {'title': '3. Mastering Django ORM: Filtering, Lookups & QuerySets', 'type': 'video', 'video_url': cloudinary_demo, 'is_free': False, 'duration': 25},
+                        {'title': '4. Model Relationships: ForeignKey, OneToOne & ManyToMany', 'type': 'video', 'video_url': cloudinary_demo, 'is_free': False, 'duration': 30},
+                        {'title': '5. Django Models & ORM Mastery Quiz', 'type': 'quiz', 'video_url': '', 'is_free': False, 'duration': 15},
                     ],
                     'quiz': {
-                        'title': 'Django Core Knowledge Quiz',
+                        'title': 'Django Models & ORM Mastery Quiz',
                         'questions': [
                             {
                                 'text': 'Which command is used to start a new Django application inside a project?',
                                 'a': 'python manage.py startapp app_name', 'b': 'django-admin createapp app_name',
                                 'c': 'python manage.py create app_name', 'd': 'django start app_name',
-                                'ans': 'A', 'exp': 'django-admin startapp or python manage.py startapp is the standard command.'
+                                'ans': 'A', 'exp': 'python manage.py startapp app_name is the standard command to create an app.'
                             },
                             {
                                 'text': 'What is the default database engine in Django settings.py?',
                                 'a': 'PostgreSQL', 'b': 'MySQL', 'c': 'SQLite3', 'd': 'MongoDB',
-                                'ans': 'C', 'exp': 'SQLite3 is configured as the default database for Django projects.'
+                                'ans': 'C', 'exp': 'SQLite3 is configured as the default database for new Django projects.'
+                            },
+                            {
+                                'text': 'Which relationship field represents a Many-to-One connection in Django models?',
+                                'a': 'models.OneToOneField', 'b': 'models.ForeignKey', 'c': 'models.ManyToManyField', 'd': 'models.RelationField',
+                                'ans': 'B', 'exp': 'models.ForeignKey creates a Many-to-One database relationship.'
                             }
                         ]
                     }
+                },
+                {
+                    'title': 'Module 4: Templates, Static Files & Bootstrap 5',
+                    'order': 4,
+                    'lessons': [
+                        {'title': '1. Django Template Language (DTL): Variables, Tags & Filters', 'type': 'video', 'video_url': cloudinary_demo, 'is_free': False, 'duration': 25},
+                        {'title': '2. Template Inheritance: Master Layouts, Blocks & Includes', 'type': 'video', 'video_url': cloudinary_demo, 'is_free': False, 'duration': 20},
+                        {'title': '3. Integrating Bootstrap 5, FontAwesome & Static Assets', 'type': 'video', 'video_url': cloudinary_demo, 'is_free': False, 'duration': 25},
+                        {'title': '4. Configuring Cloudinary Media Storage for Uploads', 'type': 'video', 'video_url': cloudinary_demo, 'is_free': False, 'duration': 25},
+                    ]
+                },
+                {
+                    'title': 'Module 5: User Authentication & Role-Based Security',
+                    'order': 5,
+                    'lessons': [
+                        {'title': '1. Custom User Models vs Default auth.User', 'type': 'video', 'video_url': cloudinary_demo, 'is_free': False, 'duration': 30},
+                        {'title': '2. User Registration, Login, Logout & Session Management', 'type': 'video', 'video_url': cloudinary_demo, 'is_free': False, 'duration': 30},
+                        {'title': '3. Role-Based Access Control, Permissions & @login_required', 'type': 'video', 'video_url': cloudinary_demo, 'is_free': False, 'duration': 25},
+                        {'title': '4. Authentication & Security Quiz', 'type': 'quiz', 'video_url': '', 'is_free': False, 'duration': 15},
+                    ],
+                    'quiz': {
+                        'title': 'Authentication & Security Quiz',
+                        'questions': [
+                            {
+                                'text': 'Which setting specifies the custom user model in Django settings.py?',
+                                'a': 'USER_MODEL', 'b': 'CUSTOM_USER_MODEL', 'c': 'AUTH_USER_MODEL', 'd': 'DJANGO_USER_MODEL',
+                                'ans': 'C', 'exp': 'AUTH_USER_MODEL specifies the custom model to use for authentication.'
+                            },
+                            {
+                                'text': 'Which decorator restricts view access only to authenticated users?',
+                                'a': '@auth_required', 'b': '@login_required', 'c': '@user_passes_test', 'd': '@permission_required',
+                                'ans': 'B', 'exp': '@login_required ensures only logged-in users can access the view.'
+                            }
+                        ]
+                    }
+                },
+                {
+                    'title': 'Module 6: Django REST Framework (DRF) & Deployment',
+                    'order': 6,
+                    'lessons': [
+                        {'title': '1. Introduction to RESTful APIs & Installing DRF', 'type': 'video', 'video_url': cloudinary_demo, 'is_free': False, 'duration': 20},
+                        {'title': '2. Serializers & ModelSerializers with Validation', 'type': 'video', 'video_url': cloudinary_demo, 'is_free': False, 'duration': 25},
+                        {'title': '3. ViewSets, Routers & API Endpoint Testing', 'type': 'video', 'video_url': cloudinary_demo, 'is_free': False, 'duration': 30},
+                        {'title': '4. Production Deployment on Render with PostgreSQL & Gunicorn', 'type': 'video', 'video_url': cloudinary_demo, 'is_free': False, 'duration': 35},
+                    ]
                 }
             ]
         },
