@@ -210,6 +210,35 @@ def admin_dashboard(request):
     students = User.objects.filter(role=User.ROLE_STUDENT).order_by('username')
     courses = Course.objects.all().order_by('title')
 
+    # Registered Students Management queries & search
+    student_query = request.GET.get('student_query', '').strip()
+    student_status = request.GET.get('student_status', 'ALL').strip()
+
+    students_qs = User.objects.filter(role=User.ROLE_STUDENT).annotate(
+        enrollments_count=Count('enrollments', distinct=True)
+    ).order_by('-date_joined')
+
+    if student_query:
+        students_qs = students_qs.filter(
+            Q(username__icontains=student_query) |
+            Q(first_name__icontains=student_query) |
+            Q(last_name__icontains=student_query) |
+            Q(email__icontains=student_query) |
+            Q(phone_number__icontains=student_query)
+        )
+
+    if student_status == 'ACTIVE':
+        students_qs = students_qs.filter(is_active=True)
+    elif student_status == 'INACTIVE':
+        students_qs = students_qs.filter(is_active=False)
+    elif student_status == 'ALL_ACCESS':
+        students_qs = students_qs.filter(has_all_access=True)
+
+    registered_students = students_qs
+    active_students_count = User.objects.filter(role=User.ROLE_STUDENT, is_active=True).count()
+    inactive_students_count = User.objects.filter(role=User.ROLE_STUDENT, is_active=False).count()
+    all_access_students_badge_count = User.objects.filter(role=User.ROLE_STUDENT, has_all_access=True).count()
+
     # Analytics aggregates for graphs
     from django.db.models.functions import TruncMonth
     monthly_revenue = Payment.objects.filter(payment_status='Approved').annotate(month=TruncMonth('paid_on')).values('month').annotate(total=Sum('amount')).order_by('month')
@@ -243,6 +272,12 @@ def admin_dashboard(request):
         'cert_query': cert_query,
         'students': students,
         'courses': courses,
+        'registered_students': registered_students,
+        'student_query': student_query,
+        'student_status': student_status,
+        'active_students_count': active_students_count,
+        'inactive_students_count': inactive_students_count,
+        'all_access_students_badge_count': all_access_students_badge_count,
         'monthly_revenue': monthly_revenue,
         'course_enrollments': course_enrollments,
         'course_revenue': course_revenue,
@@ -845,6 +880,152 @@ def reject_instructor(request, instructor_id):
     )
 
     messages.warning(request, f"Instructor access for '{instructor.username}' has been revoked.")
+    return redirect('dashboard:admin_dashboard')
+
+
+@admin_required
+def admin_add_student(request):
+    """
+    Admin directly adds a new registered student with full profile details.
+    """
+    if request.method == 'POST':
+        username = request.POST.get('username', '').strip()
+        email = request.POST.get('email', '').strip()
+        first_name = request.POST.get('first_name', '').strip()
+        last_name = request.POST.get('last_name', '').strip()
+        password = request.POST.get('password', '').strip()
+        phone_number = request.POST.get('phone_number', '').strip()
+        headline = request.POST.get('headline', '').strip()
+        bio = request.POST.get('bio', '').strip()
+        has_all_access = request.POST.get('has_all_access') in ['on', 'true', 'True', '1', True]
+        is_active = request.POST.get('is_active', 'on') in ['on', 'true', 'True', '1', True]
+
+        if not username or not email or not password:
+            messages.error(request, "Username, email, and password are required fields.")
+            return redirect('dashboard:admin_dashboard')
+
+        if User.objects.filter(username=username).exists():
+            messages.error(request, f"Username '{username}' is already taken.")
+        elif User.objects.filter(email=email).exists():
+            messages.error(request, f"Email '{email}' is already registered.")
+        else:
+            student = User.objects.create_user(
+                username=username,
+                email=email,
+                password=password,
+                first_name=first_name,
+                last_name=last_name,
+                role=User.ROLE_STUDENT,
+                phone_number=phone_number,
+                headline=headline or "Student at SJ TECH CLASSES",
+                bio=bio or "",
+                is_active=is_active,
+                has_all_access=has_all_access,
+                email_verified=True
+            )
+            if has_all_access:
+                student.all_access_valid_until = timezone.now() + timedelta(days=365)
+                student.save(update_fields=['all_access_valid_until'])
+
+            messages.success(request, f"🎉 Student account '{student.username}' created successfully!")
+    return redirect('dashboard:admin_dashboard')
+
+
+@admin_required
+def admin_edit_student(request, student_id):
+    """
+    Admin updates a registered student's profile details, credentials, active status, or role.
+    """
+    student = get_object_or_404(User, id=student_id)
+    if request.method == 'POST':
+        first_name = request.POST.get('first_name', '').strip()
+        last_name = request.POST.get('last_name', '').strip()
+        email = request.POST.get('email', '').strip()
+        username = request.POST.get('username', '').strip()
+        phone_number = request.POST.get('phone_number', '').strip()
+        headline = request.POST.get('headline', '').strip()
+        bio = request.POST.get('bio', '').strip()
+        new_password = request.POST.get('new_password', '').strip()
+        role = request.POST.get('role', student.role).strip()
+        is_active_val = request.POST.get('is_active') in ['1', 'true', 'True', 'on', True]
+        has_all_access_val = request.POST.get('has_all_access') in ['1', 'true', 'True', 'on', True]
+        email_verified_val = request.POST.get('email_verified') in ['1', 'true', 'True', 'on', True]
+
+        # Check username uniqueness if changed
+        if username and username != student.username:
+            if User.objects.filter(username=username).exclude(id=student.id).exists():
+                messages.error(request, f"Username '{username}' is already in use by another account.")
+                return redirect('dashboard:admin_dashboard')
+            student.username = username
+
+        # Check email uniqueness if changed
+        if email and email != student.email:
+            if User.objects.filter(email=email).exclude(id=student.id).exists():
+                messages.error(request, f"Email '{email}' is already registered to another account.")
+                return redirect('dashboard:admin_dashboard')
+            student.email = email
+
+        # Prevent admin from deactivating or demoting their own admin account
+        if student.id == request.user.id:
+            if not is_active_val:
+                messages.warning(request, "You cannot deactivate your own admin account.")
+                is_active_val = True
+            if role != User.ROLE_ADMIN and request.user.role == User.ROLE_ADMIN:
+                messages.warning(request, "You cannot demote your own admin account.")
+                role = User.ROLE_ADMIN
+
+        student.first_name = first_name
+        student.last_name = last_name
+        student.phone_number = phone_number
+        student.headline = headline
+        student.bio = bio
+        student.is_active = is_active_val
+        student.email_verified = email_verified_val
+        
+        if role in [User.ROLE_STUDENT, User.ROLE_INSTRUCTOR, User.ROLE_ADMIN]:
+            student.role = role
+            if role == User.ROLE_INSTRUCTOR:
+                student.is_instructor_approved = True
+
+        # Handle All-Access pass toggle
+        if has_all_access_val and not student.has_all_access:
+            student.has_all_access = True
+            if not student.all_access_valid_until or student.all_access_valid_until <= timezone.now():
+                student.all_access_valid_until = timezone.now() + timedelta(days=365)
+        elif not has_all_access_val and student.has_all_access:
+            student.has_all_access = False
+
+        if new_password:
+            student.set_password(new_password)
+
+        student.save()
+        messages.success(request, f"✅ Student '{student.username}' details updated successfully!")
+    return redirect('dashboard:admin_dashboard')
+
+
+@admin_required
+def admin_delete_student(request, student_id):
+    """
+    Admin deletes a registered student account safely.
+    """
+    if request.method == 'POST':
+        student = get_object_or_404(User, id=student_id)
+        
+        # Prevent self deletion
+        if student.id == request.user.id:
+            messages.error(request, "⚠️ You cannot delete your own admin account.")
+            return redirect('dashboard:admin_dashboard')
+
+        username = student.username
+        
+        # If user is also an instructor with courses, reassign courses to current admin
+        courses_reassigned = Course.objects.filter(instructor=student).update(instructor=request.user)
+
+        student.delete()
+        msg = f"🗑️ Registered student '{username}' has been deleted successfully."
+        if courses_reassigned > 0:
+            msg += f" {courses_reassigned} authored course(s) were safely reassigned to your admin account."
+        messages.success(request, msg)
     return redirect('dashboard:admin_dashboard')
 
 

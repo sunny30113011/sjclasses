@@ -261,7 +261,38 @@ def test_admin_management_operations():
         cert.refresh_from_db()
         assert cert.student_name == 'Super Student'
 
-run_test("Admin Management Operations (Plans, Feedback, Certificates)", test_admin_management_operations)
+    # 5. Registered Student Management (Add, Update, Delete)
+    test_std_uname = "temp_std_test_01"
+    User.objects.filter(username=test_std_uname).delete()
+    resp_add_std = client.post(reverse('dashboard:admin_add_student'), {
+        'username': test_std_uname,
+        'email': 'temp_std@sjclasses.com',
+        'first_name': 'Sample',
+        'last_name': 'Student',
+        'password': 'SecurePassword123!',
+        'is_active': 'on'
+    })
+    assert resp_add_std.status_code == 302
+    created_std = User.objects.filter(username=test_std_uname).first()
+    assert created_std is not None
+
+    resp_edit_std = client.post(reverse('dashboard:admin_edit_student', args=[created_std.id]), {
+        'username': test_std_uname,
+        'email': 'temp_std_updated@sjclasses.com',
+        'first_name': 'UpdatedSample',
+        'last_name': 'Student',
+        'role': 'STUDENT',
+        'is_active': 'on'
+    })
+    assert resp_edit_std.status_code == 302
+    created_std.refresh_from_db()
+    assert created_std.first_name == 'UpdatedSample'
+
+    resp_del_std = client.post(reverse('dashboard:admin_delete_student', args=[created_std.id]))
+    assert resp_del_std.status_code == 302
+    assert not User.objects.filter(username=test_std_uname).exists()
+
+run_test("Admin Management Operations (Plans, Feedback, Certificates, Student Register List)", test_admin_management_operations)
 
 # =====================================================================
 # SECTION 5: SECURITY & ACCESS CONTROL RESTRICTIONS
