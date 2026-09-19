@@ -95,11 +95,17 @@ class Course(models.Model):
         return self.enrollments.count()
 
     @property
-    def is_preview_direct_video(self):
+    def is_cloudinary_console(self):
         if not self.preview_video_url:
             return False
+        return 'console.cloudinary.com' in self.preview_video_url.lower()
+
+    @property
+    def is_preview_direct_video(self):
+        if not self.preview_video_url or self.is_cloudinary_console:
+            return False
         url = self.preview_video_url.lower().strip()
-        return 'res.cloudinary.com' in url or url.endswith('.mp4') or url.endswith('.webm') or url.endswith('.mov') or url.endswith('.m3u8')
+        return 'res.cloudinary.com' in url or url.endswith('.mp4') or url.endswith('.webm') or url.endswith('.mov') or url.endswith('.m3u8') or url.endswith('.ogg')
 
     @property
     def get_preview_embed_url(self):
@@ -117,8 +123,20 @@ class Course(models.Model):
             video_id = url.split('youtu.be/')[-1].split('?')[0].split('/')[0]
             if video_id:
                 return f"https://www.youtube.com/embed/{video_id}?rel=0&modestbranding=1"
+        elif 'youtube.com/shorts/' in url:
+            video_id = url.split('youtube.com/shorts/')[-1].split('?')[0].split('/')[0]
+            if video_id:
+                return f"https://www.youtube.com/embed/{video_id}?rel=0&modestbranding=1"
         elif 'youtube.com/embed/' in url:
             return url
+        elif 'vimeo.com/' in url:
+            vimeo_id = url.split('vimeo.com/')[-1].split('?')[0].split('/')[0]
+            if vimeo_id.isdigit():
+                return f"https://player.vimeo.com/video/{vimeo_id}"
+        elif 'drive.google.com/file/d/' in url:
+            file_id = url.split('drive.google.com/file/d/')[-1].split('/')[0]
+            if file_id:
+                return f"https://drive.google.com/file/d/{file_id}/preview"
         return url
 
     def __str__(self):
@@ -166,17 +184,17 @@ class Lesson(models.Model):
         return 'youtube.com' in url or 'youtu.be' in url
 
     @property
-    def is_cloudinary_or_direct_video(self):
-        if not self.video_url:
-            return False
-        url = self.video_url.lower()
-        return 'res.cloudinary.com' in url or url.endswith('.mp4') or url.endswith('.webm') or url.endswith('.mov') or url.endswith('.m3u8')
-
-    @property
     def is_cloudinary_console(self):
         if not self.video_url:
             return False
         return 'console.cloudinary.com' in self.video_url.lower()
+
+    @property
+    def is_cloudinary_or_direct_video(self):
+        if not self.video_url or self.is_cloudinary_console:
+            return False
+        url = self.video_url.lower()
+        return 'res.cloudinary.com' in url or url.endswith('.mp4') or url.endswith('.webm') or url.endswith('.mov') or url.endswith('.m3u8') or url.endswith('.ogg')
 
     @property
     def get_embed_video_url(self):
@@ -196,8 +214,20 @@ class Lesson(models.Model):
             video_id = url.split('youtu.be/')[-1].split('?')[0].split('/')[0]
             if video_id:
                 return f"https://www.youtube.com/embed/{video_id}?rel=0&modestbranding=1"
+        elif 'youtube.com/shorts/' in url:
+            video_id = url.split('youtube.com/shorts/')[-1].split('?')[0].split('/')[0]
+            if video_id:
+                return f"https://www.youtube.com/embed/{video_id}?rel=0&modestbranding=1"
         elif 'youtube.com/embed/' in url:
             return url
+        elif 'vimeo.com/' in url:
+            vimeo_id = url.split('vimeo.com/')[-1].split('?')[0].split('/')[0]
+            if vimeo_id.isdigit():
+                return f"https://player.vimeo.com/video/{vimeo_id}"
+        elif 'drive.google.com/file/d/' in url:
+            file_id = url.split('drive.google.com/file/d/')[-1].split('/')[0]
+            if file_id:
+                return f"https://drive.google.com/file/d/{file_id}/preview"
             
         return url
 

@@ -221,6 +221,7 @@
                                 {% endif %}
                                 {% if user.is_lms_admin %}
                                     <li><a class="dropdown-item text-light py-2 rounded-2" href="{% url 'dashboard:admin_dashboard' %}"><i class="fa-solid fa-shield-halved me-2 text-warning"></i> Admin Panel</a></li>
+                                    <li><a class="dropdown-item text-light py-2 rounded-2" href="{% url 'dashboard:admin_student_list' %}"><i class="fa-solid fa-user-graduate me-2 text-primary"></i> Students Register List</a></li>
                                     <li><a class="dropdown-item text-light py-2 rounded-2" href="{% url 'dashboard:broadcast_offer' %}"><i class="fa-solid fa-bullhorn me-2 text-info"></i> Broadcast Offers</a></li>
                                     <li><a class="dropdown-item text-light py-2 rounded-2" href="{% url 'dashboard:manage_placements' %}"><i class="fa-solid fa-briefcase me-2 text-success"></i> Manage Placements</a></li>
                                 {% endif %}

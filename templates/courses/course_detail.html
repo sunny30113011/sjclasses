@@ -229,8 +229,21 @@
 
                     {% if course.preview_video_url %}
                         <div class="ratio ratio-16x9 rounded-3 mb-3 overflow-hidden bg-black shadow-sm position-relative video-secure-container" id="preview-video-container">
-                            {% if course.is_preview_direct_video %}
-                                <video id="course-preview-video" controls class="w-100 h-100" style="object-fit: contain;" controlsList="nodownload noplaybackrate" disablePictureInPicture="true" disableRemotePlayback="true" oncontextmenu="return false;" ondragstart="return false;" playsinline>
+                            {% if course.is_cloudinary_console %}
+                                {# console.cloudinary.com blocks iframes — show guidance instead #}
+                                <div class="d-flex align-items-center justify-content-center text-white flex-column p-4 text-center">
+                                    <i class="fa-solid fa-triangle-exclamation display-4 text-danger mb-3"></i>
+                                    <h5 class="text-warning fw-bold mb-2">Invalid Cloudinary URL</h5>
+                                    <p class="text-secondary small mb-3">The video URL points to the Cloudinary <strong>Console</strong> which cannot be embedded.<br>Please use the direct CDN video link instead.</p>
+                                    <div class="bg-dark border border-warning rounded-3 px-3 py-2 small font-monospace text-warning text-break">
+                                        https://res.cloudinary.com/&lt;cloud_name&gt;/video/upload/&lt;filename&gt;.mp4
+                                    </div>
+                                    <a href="https://console.cloudinary.com" target="_blank" class="btn btn-outline-warning btn-sm mt-3">
+                                        <i class="fa-solid fa-arrow-up-right-from-square me-1"></i> Open Cloudinary to Copy URL
+                                    </a>
+                                </div>
+                            {% elif course.is_preview_direct_video %}
+                                <video id="course-preview-video" src="{{ course.preview_video_url }}" controls preload="metadata" class="w-100 h-100" style="object-fit: contain;" controlsList="nodownload noplaybackrate" disablePictureInPicture="true" disableRemotePlayback="true" oncontextmenu="return false;" ondragstart="return false;" playsinline>
                                     <source src="{{ course.preview_video_url }}" type="video/mp4">
                                     Your browser does not support HTML5 video playback.
                                 </video>
@@ -346,6 +359,31 @@
             previewVideo.setAttribute('disableRemotePlayback', 'true');
             previewVideo.oncontextmenu = function(e) { e.preventDefault(); return false; };
             previewVideo.ondragstart = function(e) { e.preventDefault(); return false; };
+
+            const showErrorNotice = function() {
+                const container = document.getElementById('preview-video-container');
+                if (container && !document.getElementById('video-error-banner')) {
+                    const banner = document.createElement('div');
+                    banner.id = 'video-error-banner';
+                    banner.className = 'position-absolute top-0 start-0 w-100 h-100 d-flex flex-column align-items-center justify-content-center bg-dark bg-opacity-90 text-white p-3 text-center';
+                    banner.style.zIndex = '5';
+                    banner.innerHTML = `
+                        <i class="fa-solid fa-triangle-exclamation text-warning display-6 mb-2"></i>
+                        <h6 class="fw-bold mb-1">Preview Video Unavailable</h6>
+                        <p class="text-secondary small mb-3">The direct video stream could not be loaded. Please ensure the link is a public MP4 CDN URL.</p>
+                        <a href="${previewVideo.src}" target="_blank" class="btn btn-outline-warning btn-sm">
+                            <i class="fa-solid fa-arrow-up-right-from-square me-1"></i> Try Direct Link
+                        </a>
+                    `;
+                    container.appendChild(banner);
+                }
+            };
+
+            previewVideo.addEventListener('error', showErrorNotice);
+            const source = previewVideo.querySelector('source');
+            if (source) {
+                source.addEventListener('error', showErrorNotice);
+            }
         }
 
         const previewContainer = document.getElementById('preview-video-container');

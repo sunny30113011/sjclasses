@@ -51,7 +51,7 @@
                                     </a>
                                 </div>
                             {% elif active_lesson.is_cloudinary_or_direct_video %}
-                                <video id="lesson-html5-video" controls class="w-100 h-100" style="object-fit: contain;" controlsList="nodownload noplaybackrate" disablePictureInPicture oncontextmenu="return false;" ondragstart="return false;" playsinline>
+                                <video id="lesson-html5-video" src="{{ active_lesson.video_url }}" controls preload="metadata" class="w-100 h-100" style="object-fit: contain;" controlsList="nodownload noplaybackrate" disablePictureInPicture oncontextmenu="return false;" ondragstart="return false;" playsinline>
                                     <source src="{{ active_lesson.video_url }}" type="video/mp4">
                                     Your browser does not support HTML5 video playback.
                                 </video>
@@ -283,15 +283,39 @@
 </div>
 
 <script>
-    // Helper function to submit mark-complete form
+    // Helper function to submit mark-complete form via non-reloading AJAX
     function submitMarkComplete() {
         const form = document.getElementById('mark-complete-form');
         const btn = document.getElementById('mark-complete-btn');
         if (form && btn && !btn.disabled) {
-            console.log("Automatically marking lesson as complete...");
+            console.log("Automatically marking lesson as complete via AJAX...");
             btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-1"></i> Completing...';
             btn.disabled = true;
-            form.submit();
+
+            const formData = new FormData(form);
+            fetch(form.action || window.location.href, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(res => {
+                if (!res.ok) throw new Error("HTTP error " + res.status);
+                return res.json().catch(() => ({}));
+            })
+            .then(data => {
+                btn.innerHTML = '<i class="fa-solid fa-circle-check me-1"></i> Completed';
+                btn.className = 'btn btn-success';
+                // If course was just 100% completed, refresh so certificate button appears
+                if (data && data.progress === 100) {
+                    window.location.reload();
+                }
+            })
+            .catch(err => {
+                console.warn("AJAX mark complete failed, falling back to form submission:", err);
+                form.submit();
+            });
         }
     }
 
@@ -307,8 +331,11 @@
             video.ondragstart = function(e) { e.preventDefault(); return false; };
 
             video.addEventListener('ended', function() {
-                console.log("HTML5 video ended.");
-                submitMarkComplete();
+                // Ensure video actually played and has a valid duration before auto-completing
+                if (video.duration && video.duration > 1) {
+                    console.log("HTML5 video ended successfully.");
+                    submitMarkComplete();
+                }
             });
         }
 

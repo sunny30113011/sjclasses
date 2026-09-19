@@ -22,8 +22,8 @@
             <a href="{% url 'dashboard:broadcast_offer' %}" class="btn btn-warning fw-bold">
                 <i class="fa-solid fa-bullhorn me-1"></i> Broadcast Prize Offer
             </a>
-            <a href="#students-management-section" class="btn btn-primary fw-bold shadow-sm">
-                <i class="fa-solid fa-users me-1"></i> Students List ({{ total_students }})
+            <a href="{% url 'dashboard:admin_student_list' %}" class="btn btn-primary fw-bold shadow-sm">
+                <i class="fa-solid fa-user-graduate me-1"></i> Students Register List ({{ total_students }})
             </a>
             <button type="button" class="btn btn-outline-light fw-bold shadow-sm" data-bs-toggle="modal" data-bs-target="#addStudentModal">
                 <i class="fa-solid fa-user-plus me-1"></i> Add Student
@@ -260,6 +260,35 @@
 
 
 <div class="container mb-5">
+    <!-- Admin Studio Quick Navigation Bar -->
+    <div class="card border-0 shadow-sm rounded-4 p-2 mb-4 bg-dark">
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+            <div class="d-flex flex-wrap gap-1">
+                <a href="{% url 'dashboard:admin_student_list' %}" class="btn btn-sm btn-primary fw-bold px-3">
+                    <i class="fa-solid fa-user-graduate me-1"></i> Students Register List ({{ total_students }})
+                </a>
+                <a href="#students-management-section" class="btn btn-sm btn-outline-light fw-bold px-3">
+                    <i class="fa-solid fa-arrow-down me-1"></i> Scroll to Students
+                </a>
+                <a href="#instructors-management-section" class="btn btn-sm btn-outline-light fw-bold px-3">
+                    <i class="fa-solid fa-chalkboard-user me-1 text-info"></i> Instructors ({{ total_instructors }})
+                </a>
+                <a href="#pending-payments-section" class="btn btn-sm btn-outline-light fw-bold px-3">
+                    <i class="fa-solid fa-clock-rotate-left me-1 text-warning"></i> Pending Payments ({{ pending_payments.count }})
+                </a>
+                <a href="#cert-search-section" class="btn btn-sm btn-outline-light fw-bold px-3">
+                    <i class="fa-solid fa-award me-1 text-success"></i> Certificates
+                </a>
+                <a href="#student-feedback-section" class="btn btn-sm btn-outline-light fw-bold px-3">
+                    <i class="fa-solid fa-comments me-1 text-warning"></i> Reviews
+                </a>
+            </div>
+            <a href="{% url 'dashboard:admin_student_list' %}" class="btn btn-sm btn-warning fw-bold text-dark px-3">
+                <i class="fa-solid fa-arrow-up-right-from-square me-1"></i> Open Dedicated Students List
+            </a>
+        </div>
+    </div>
+
     <!-- All-Access Offer Live Controller Bar -->
     <div class="card border-0 shadow-sm rounded-4 p-3 mb-4 {% if all_access_plan.is_active %}bg-warning bg-opacity-10 border-start border-warning border-4{% else %}bg-light border{% endif %}">
         <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
@@ -504,10 +533,29 @@
                 <p class="text-secondary small mb-0">View all registered students, search accounts, update profile credentials and All-Access passes, or delete student accounts.</p>
             </div>
             <div class="d-flex gap-2 flex-wrap">
+                <a href="{% url 'dashboard:admin_student_list' %}" class="btn btn-outline-primary btn-sm fw-bold shadow-sm">
+                    <i class="fa-solid fa-arrow-up-right-from-square me-1"></i> Fullscreen Page
+                </a>
                 <button type="button" class="btn btn-primary btn-sm fw-bold px-3 text-white shadow-sm" data-bs-toggle="modal" data-bs-target="#addStudentModal">
                     <i class="fa-solid fa-user-plus me-1"></i> Add New Student
                 </button>
             </div>
+        </div>
+
+        <!-- Role Filter Tabs -->
+        <div class="d-flex flex-wrap gap-2 mb-3 pb-2 border-bottom">
+            <a href="{% url 'dashboard:admin_dashboard' %}?role=STUDENT{% if student_query %}&student_query={{ student_query }}{% endif %}#students-management-section" class="btn btn-sm {% if role_filter == 'STUDENT' %}btn-primary active fw-bold{% else %}btn-light border text-dark{% endif %}">
+                <i class="fa-solid fa-user-graduate me-1"></i> Students ({{ total_students }})
+            </a>
+            <a href="{% url 'dashboard:admin_dashboard' %}?role=ALL{% if student_query %}&student_query={{ student_query }}{% endif %}#students-management-section" class="btn btn-sm {% if role_filter == 'ALL' %}btn-primary active fw-bold{% else %}btn-light border text-dark{% endif %}">
+                <i class="fa-solid fa-users me-1"></i> All Registered ({{ total_all_users_count }})
+            </a>
+            <a href="{% url 'dashboard:admin_dashboard' %}?role=INSTRUCTOR{% if student_query %}&student_query={{ student_query }}{% endif %}#students-management-section" class="btn btn-sm {% if role_filter == 'INSTRUCTOR' %}btn-primary active fw-bold{% else %}btn-light border text-dark{% endif %}">
+                <i class="fa-solid fa-chalkboard-user me-1"></i> Instructors ({{ total_instructors }})
+            </a>
+            <a href="{% url 'dashboard:admin_dashboard' %}?role=ADMIN{% if student_query %}&student_query={{ student_query }}{% endif %}#students-management-section" class="btn btn-sm {% if role_filter == 'ADMIN' %}btn-primary active fw-bold{% else %}btn-light border text-dark{% endif %}">
+                <i class="fa-solid fa-shield me-1"></i> Admins
+            </a>
         </div>
 
         <!-- Search & Filter Controls -->

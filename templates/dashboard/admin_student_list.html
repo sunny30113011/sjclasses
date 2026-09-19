@@ -1,0 +1,464 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="bg-dark text-white py-4 mb-4">
+    <div class="container d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-1 small">
+                    <li class="breadcrumb-item"><a href="{% url 'dashboard:admin_dashboard' %}" class="text-warning text-decoration-none"><i class="fa-solid fa-shield-halved me-1"></i> Admin Panel</a></li>
+                    <li class="breadcrumb-item active text-white opacity-75" aria-current="page">Students Register List</li>
+                </ol>
+            </nav>
+            <h2 class="fw-bold mb-1"><i class="fa-solid fa-user-graduate text-primary me-2"></i> Students Register List &amp; Management</h2>
+            <p class="text-secondary small mb-0">View all registered students, search accounts, update profile credentials, manage All-Access passes, or delete accounts.</p>
+        </div>
+        <div class="d-flex gap-2 flex-wrap">
+            <a href="{% url 'dashboard:admin_dashboard' %}" class="btn btn-outline-light fw-bold shadow-sm">
+                <i class="fa-solid fa-arrow-left me-1"></i> Back to Admin Panel
+            </a>
+            <button type="button" class="btn btn-primary fw-bold shadow-sm" data-bs-toggle="modal" data-bs-target="#addStudentModal">
+                <i class="fa-solid fa-user-plus me-1"></i> Add New Student
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Add Student Modal -->
+<div class="modal fade" id="addStudentModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content text-start">
+            <div class="modal-header bg-dark text-white">
+                <h5 class="modal-title fw-bold"><i class="fa-solid fa-user-graduate text-primary me-2"></i> Register New Student</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{% url 'dashboard:admin_add_student' %}" method="POST">
+                {% csrf_token %}
+                <input type="hidden" name="next_url" value="{% url 'dashboard:admin_student_list' %}">
+                <div class="modal-body p-4 text-dark">
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Username *</label>
+                        <input type="text" name="username" class="form-control" placeholder="e.g. rohit_sharma" required>
+                    </div>
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <label class="form-label small fw-bold">First Name</label>
+                            <input type="text" name="first_name" class="form-control" placeholder="Rohit">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small fw-bold">Last Name</label>
+                            <input type="text" name="last_name" class="form-control" placeholder="Sharma">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Email Address *</label>
+                        <input type="email" name="email" class="form-control" placeholder="student@example.com" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Password *</label>
+                        <input type="password" name="password" class="form-control" placeholder="Create secure password" required minlength="6">
+                    </div>
+                    <div class="row g-2 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Phone Number</label>
+                            <input type="text" name="phone_number" class="form-control" placeholder="+91 9876543210">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">College / Headline</label>
+                            <input type="text" name="headline" class="form-control" placeholder="e.g. CS Student, Pune">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Bio / Notes</label>
+                        <textarea name="bio" class="form-control" rows="2" placeholder="Optional notes or student bio..."></textarea>
+                    </div>
+                    <div class="form-check form-switch bg-light p-3 rounded-3 border mb-2">
+                        <input class="form-check-input ms-0 me-2" type="checkbox" name="has_all_access" id="addStudentAllAccess">
+                        <label class="form-check-label small fw-bold text-dark" for="addStudentAllAccess">
+                            <i class="fa-solid fa-crown text-warning me-1"></i> Grant 1-Year All-Access VIP Pass
+                        </label>
+                        <small class="text-muted d-block ms-4">Unlocks all current and future courses instantly for 365 days.</small>
+                    </div>
+                    <div class="form-check form-switch bg-light p-3 rounded-3 border">
+                        <input class="form-check-input ms-0 me-2" type="checkbox" name="is_active" id="addStudentActive" checked>
+                        <label class="form-check-label small fw-bold text-dark" for="addStudentActive">
+                            <i class="fa-solid fa-circle-check text-success me-1"></i> Account Active
+                        </label>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary btn-sm fw-bold px-4">Register Student</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="container mb-5">
+    <!-- Registration Metrics Summary -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3 col-6">
+            <div class="card border-0 shadow-sm p-3 text-center border-start border-primary border-4 bg-white rounded-3">
+                <span class="text-secondary small text-uppercase fw-bold">Registered Students</span>
+                <h3 class="fw-extrabold text-primary mb-0 mt-1">{{ total_students }}</h3>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="card border-0 shadow-sm p-3 text-center border-start border-success border-4 bg-white rounded-3">
+                <span class="text-secondary small text-uppercase fw-bold">Active Students</span>
+                <h3 class="fw-extrabold text-success mb-0 mt-1">{{ active_students_count }}</h3>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="card border-0 shadow-sm p-3 text-center border-start border-warning border-4 bg-white rounded-3">
+                <span class="text-secondary small text-uppercase fw-bold">VIP All-Access Pass</span>
+                <h3 class="fw-extrabold text-warning mb-0 mt-1">{{ all_access_students_badge_count }}</h3>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="card border-0 shadow-sm p-3 text-center border-start border-info border-4 bg-white rounded-3">
+                <span class="text-secondary small text-uppercase fw-bold">Total Platform Users</span>
+                <h3 class="fw-extrabold text-info mb-0 mt-1">{{ total_all_users_count }}</h3>
+            </div>
+        </div>
+    </div>
+
+    <!-- Role Filter Navigation Pills -->
+    <div class="card border-0 shadow-sm p-3 mb-4 bg-white rounded-4">
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+            <div class="nav nav-pills" role="tablist">
+                <a href="{% url 'dashboard:admin_student_list' %}?role=STUDENT{% if student_query %}&student_query={{ student_query }}{% endif %}{% if student_status %}&student_status={{ student_status }}{% endif %}" class="nav-link {% if role_filter == 'STUDENT' %}active bg-primary{% else %}text-dark{% endif %} fw-bold me-1">
+                    <i class="fa-solid fa-user-graduate me-1"></i> Students ({{ total_students }})
+                </a>
+                <a href="{% url 'dashboard:admin_student_list' %}?role=ALL{% if student_query %}&student_query={{ student_query }}{% endif %}{% if student_status %}&student_status={{ student_status }}{% endif %}" class="nav-link {% if role_filter == 'ALL' %}active bg-primary{% else %}text-dark{% endif %} fw-bold me-1">
+                    <i class="fa-solid fa-users me-1"></i> All Users ({{ total_all_users_count }})
+                </a>
+                <a href="{% url 'dashboard:admin_student_list' %}?role=INSTRUCTOR{% if student_query %}&student_query={{ student_query }}{% endif %}{% if student_status %}&student_status={{ student_status }}{% endif %}" class="nav-link {% if role_filter == 'INSTRUCTOR' %}active bg-primary{% else %}text-dark{% endif %} fw-bold me-1">
+                    <i class="fa-solid fa-chalkboard-user me-1"></i> Instructors ({{ total_instructors }})
+                </a>
+                <a href="{% url 'dashboard:admin_student_list' %}?role=ADMIN{% if student_query %}&student_query={{ student_query }}{% endif %}{% if student_status %}&student_status={{ student_status }}{% endif %}" class="nav-link {% if role_filter == 'ADMIN' %}active bg-primary{% else %}text-dark{% endif %} fw-bold">
+                    <i class="fa-solid fa-shield me-1"></i> Admins ({{ total_admins }})
+                </a>
+            </div>
+
+            <!-- Status Filter Pills -->
+            <div class="btn-group btn-group-sm" role="group">
+                <a href="{% url 'dashboard:admin_student_list' %}?role={{ role_filter }}&student_status=ALL{% if student_query %}&student_query={{ student_query }}{% endif %}" class="btn {% if not student_status or student_status == 'ALL' %}btn-primary active fw-bold{% else %}btn-outline-secondary{% endif %}">
+                    All
+                </a>
+                <a href="{% url 'dashboard:admin_student_list' %}?role={{ role_filter }}&student_status=ACTIVE{% if student_query %}&student_query={{ student_query }}{% endif %}" class="btn {% if student_status == 'ACTIVE' %}btn-success active fw-bold{% else %}btn-outline-secondary{% endif %}">
+                    Active
+                </a>
+                <a href="{% url 'dashboard:admin_student_list' %}?role={{ role_filter }}&student_status=ALL_ACCESS{% if student_query %}&student_query={{ student_query }}{% endif %}" class="btn {% if student_status == 'ALL_ACCESS' %}btn-warning text-dark active fw-bold{% else %}btn-outline-secondary{% endif %}">
+                    VIP Pass
+                </a>
+                {% if inactive_students_count > 0 %}
+                <a href="{% url 'dashboard:admin_student_list' %}?role={{ role_filter }}&student_status=INACTIVE{% if student_query %}&student_query={{ student_query }}{% endif %}" class="btn {% if student_status == 'INACTIVE' %}btn-danger active fw-bold{% else %}btn-outline-secondary{% endif %}">
+                    Suspended
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Register List Card -->
+    <div class="card border-0 shadow-lg p-4 mb-5 border-top border-primary border-4 bg-white rounded-4">
+        <!-- Search Controls -->
+        <div class="row g-3 align-items-center justify-content-between mb-4">
+            <div class="col-lg-6 col-md-8">
+                <form method="GET" action="{% url 'dashboard:admin_student_list' %}" class="d-flex gap-2">
+                    <input type="hidden" name="role" value="{{ role_filter }}">
+                    {% if student_status and student_status != 'ALL' %}
+                        <input type="hidden" name="student_status" value="{{ student_status }}">
+                    {% endif %}
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-magnifying-glass text-muted"></i></span>
+                        <input type="text" name="student_query" class="form-control border-start-0 ps-0" placeholder="Search student by name, username, email, phone..." value="{{ student_query }}">
+                    </div>
+                    <button type="submit" class="btn btn-primary fw-bold px-4">Search</button>
+                    {% if student_query or student_status != 'ALL' and student_status %}
+                        <a href="{% url 'dashboard:admin_student_list' %}?role={{ role_filter }}" class="btn btn-outline-secondary" title="Clear Filters">Clear</a>
+                    {% endif %}
+                </form>
+            </div>
+            <div class="col-lg-6 col-md-4 text-md-end">
+                <span class="text-secondary small fw-medium">
+                    Showing <strong class="text-dark">{{ registered_students|length }}</strong> registered user(s)
+                </span>
+            </div>
+        </div>
+
+        {% if student_query %}
+            <div class="alert alert-info py-2 px-3 small mb-3 d-flex justify-content-between align-items-center">
+                <span><i class="fa-solid fa-filter me-1"></i> Showing search results for: <strong>"{{ student_query }}"</strong> (Found {{ registered_students|length }} records)</span>
+                <a href="{% url 'dashboard:admin_student_list' %}?role={{ role_filter }}" class="text-decoration-none small fw-bold">Reset Search</a>
+            </div>
+        {% endif %}
+
+        <!-- Students Table -->
+        <div class="table-responsive">
+            <table class="table align-middle table-hover small">
+                <thead class="table-dark">
+                    <tr>
+                        <th>#</th>
+                        <th>Student Name &amp; Username</th>
+                        <th>Contact &amp; Phone</th>
+                        <th>Role</th>
+                        <th>Registered Date</th>
+                        <th>Status</th>
+                        <th>Course Access</th>
+                        <th>Enrolled</th>
+                        <th class="text-end">Admin Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for std in registered_students %}
+                        <tr>
+                            <td class="text-muted fw-bold">{{ forloop.counter }}</td>
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="rounded-circle bg-primary bg-opacity-10 text-primary d-flex align-items-center justify-content-center fw-bold shadow-sm" style="width: 42px; height: 42px; flex-shrink: 0;">
+                                        {% if std.profile_picture %}
+                                            <img src="{{ std.profile_picture.url }}" class="rounded-circle" style="width: 42px; height: 42px; object-fit: cover;" alt="{{ std.username }}">
+                                        {% else %}
+                                            {{ std.first_name|first|default:std.username|first|upper }}
+                                        {% endif %}
+                                    </div>
+                                    <div>
+                                        <strong class="text-dark d-block fs-6">{{ std.get_full_name|default:std.username }}</strong>
+                                        <small class="text-secondary">@{{ std.username }}</small>
+                                        {% if std.headline %}
+                                            <small class="text-muted d-block" style="font-size: 11px;">{{ std.headline|truncatechars:35 }}</small>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <div><i class="fa-solid fa-envelope text-muted me-1 small"></i>{{ std.email }}</div>
+                                {% if std.phone_number %}
+                                    <div class="text-secondary"><i class="fa-solid fa-phone text-muted me-1 small"></i>{{ std.phone_number }}</div>
+                                {% else %}
+                                    <small class="text-muted fst-italic">No phone</small>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if std.role == 'ADMIN' %}
+                                    <span class="badge bg-danger">Admin</span>
+                                {% elif std.role == 'INSTRUCTOR' %}
+                                    <span class="badge bg-info text-dark">Instructor</span>
+                                {% else %}
+                                    <span class="badge bg-primary">Student</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div>{{ std.date_joined|date:"M d, Y" }}</div>
+                                <small class="text-muted">{{ std.date_joined|date:"H:i" }}</small>
+                            </td>
+                            <td>
+                                {% if std.is_active %}
+                                    <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-2 py-1">
+                                        <i class="fa-solid fa-circle-check me-1"></i> Active
+                                    </span>
+                                {% else %}
+                                    <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 px-2 py-1">
+                                        <i class="fa-solid fa-circle-xmark me-1"></i> Suspended
+                                    </span>
+                                {% endif %}
+                                {% if std.email_verified %}
+                                    <span class="badge bg-info bg-opacity-10 text-info border border-info border-opacity-25 px-2 py-1 d-inline-block mt-1" style="font-size: 10px;">
+                                        <i class="fa-solid fa-shield me-1"></i> Verified
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if std.has_all_access %}
+                                    <span class="badge bg-warning text-dark py-1 px-2 fw-bold shadow-sm d-inline-block">
+                                        <i class="fa-solid fa-crown text-danger me-1"></i> All-Access VIP
+                                    </span>
+                                    {% if std.all_access_days_left is not None %}
+                                        <small class="d-block text-muted" style="font-size: 10px;">{{ std.all_access_days_left }} days left</small>
+                                    {% endif %}
+                                {% else %}
+                                    <span class="badge bg-light text-secondary border px-2 py-1">Standard</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="badge bg-primary bg-opacity-15 text-primary fw-bold px-2 py-1">
+                                    <i class="fa-solid fa-book-open me-1"></i> {{ std.enrollments_count }}
+                                </span>
+                            </td>
+                            <td class="text-end text-nowrap">
+                                <button type="button" class="btn btn-sm btn-outline-primary me-1 fw-semibold shadow-sm" data-bs-toggle="modal" data-bs-target="#editStudentModal{{ std.id }}" title="Edit Student Profile">
+                                    <i class="fa-solid fa-pen-to-square me-1"></i> Update
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-danger fw-semibold shadow-sm" data-bs-toggle="modal" data-bs-target="#deleteStudentModal{{ std.id }}" title="Delete Student Account">
+                                    <i class="fa-solid fa-trash me-1"></i> Delete
+                                </button>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="9" class="text-center text-muted py-5">
+                                <i class="fa-solid fa-user-graduate display-4 text-secondary opacity-50 mb-2"></i>
+                                <p class="mb-0 fw-semibold">No registered users found matching your criteria.</p>
+                                {% if student_query or student_status != 'ALL' %}
+                                    <a href="{% url 'dashboard:admin_student_list' %}?role={{ role_filter }}" class="btn btn-outline-primary btn-sm mt-2">
+                                        <i class="fa-solid fa-rotate-left me-1"></i> Clear Filters
+                                    </a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modals for Each Student (Edit & Delete) -->
+{% for std in registered_students %}
+    <!-- Edit Student Modal -->
+    <div class="modal fade" id="editStudentModal{{ std.id }}" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content text-start">
+                <div class="modal-header bg-dark text-white">
+                    <h5 class="modal-title fw-bold">
+                        <i class="fa-solid fa-user-pen text-primary me-2"></i> Update User: {{ std.username }}
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <form action="{% url 'dashboard:admin_edit_student' student_id=std.id %}" method="POST">
+                    {% csrf_token %}
+                    <input type="hidden" name="next_url" value="{% url 'dashboard:admin_student_list' %}?role={{ role_filter }}">
+                    <div class="modal-body p-4 text-dark">
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold">Username *</label>
+                            <input type="text" name="username" class="form-control" value="{{ std.username }}" required>
+                        </div>
+                        <div class="row g-2 mb-3">
+                            <div class="col-6">
+                                <label class="form-label small fw-bold">First Name</label>
+                                <input type="text" name="first_name" class="form-control" value="{{ std.first_name }}">
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label small fw-bold">Last Name</label>
+                                <input type="text" name="last_name" class="form-control" value="{{ std.last_name }}">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold">Email Address *</label>
+                            <input type="email" name="email" class="form-control" value="{{ std.email }}" required>
+                        </div>
+                        <div class="row g-2 mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold">Phone Number</label>
+                                <input type="text" name="phone_number" class="form-control" value="{{ std.phone_number|default:'' }}">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold">User Role</label>
+                                <select name="role" class="form-select">
+                                    <option value="STUDENT" {% if std.role == 'STUDENT' %}selected{% endif %}>Student</option>
+                                    <option value="INSTRUCTOR" {% if std.role == 'INSTRUCTOR' %}selected{% endif %}>Instructor</option>
+                                    <option value="ADMIN" {% if std.role == 'ADMIN' %}selected{% endif %}>Admin</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold">Headline / Education</label>
+                            <input type="text" name="headline" class="form-control" value="{{ std.headline|default:'' }}" placeholder="e.g. Computer Science Student">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold">Bio / Notes</label>
+                            <textarea name="bio" class="form-control" rows="2" placeholder="Bio or admin notes...">{{ std.bio|default:'' }}</textarea>
+                        </div>
+
+                        <div class="form-check form-switch bg-light p-3 rounded-3 border mb-2">
+                            <input class="form-check-input ms-0 me-2" type="checkbox" name="has_all_access" id="editStdAllAccessPage{{ std.id }}" {% if std.has_all_access %}checked{% endif %}>
+                            <label class="form-check-label small fw-bold text-dark" for="editStdAllAccessPage{{ std.id }}">
+                                <i class="fa-solid fa-crown text-warning me-1"></i> All-Access VIP Pass (Unlock All Courses)
+                            </label>
+                            <small class="text-muted d-block ms-4">When active, student can access all courses across the entire platform.</small>
+                        </div>
+
+                        <div class="row g-2 mb-3">
+                            <div class="col-6">
+                                <div class="form-check form-switch bg-light p-3 rounded-3 border h-100">
+                                    <input class="form-check-input ms-0 me-2" type="checkbox" name="is_active" id="editStdActivePage{{ std.id }}" {% if std.is_active %}checked{% endif %}>
+                                    <label class="form-check-label small fw-bold text-dark" for="editStdActivePage{{ std.id }}">
+                                        <i class="fa-solid fa-circle-check text-success me-1"></i> Account Active
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="form-check form-switch bg-light p-3 rounded-3 border h-100">
+                                    <input class="form-check-input ms-0 me-2" type="checkbox" name="email_verified" id="editStdEmailVerPage{{ std.id }}" {% if std.email_verified %}checked{% endif %}>
+                                    <label class="form-check-label small fw-bold text-dark" for="editStdEmailVerPage{{ std.id }}">
+                                        <i class="fa-solid fa-shield text-info me-1"></i> Email Verified
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Optional Reset Password -->
+                        <div class="border rounded-3 p-3 bg-warning bg-opacity-10">
+                            <label class="form-label small fw-bold text-dark mb-1">
+                                <i class="fa-solid fa-key text-warning me-1"></i> Reset Password (Optional)
+                            </label>
+                            <input type="password" name="new_password" class="form-control form-control-sm" placeholder="Leave empty to keep existing password" minlength="6">
+                            <small class="text-muted d-block mt-1">Only type here if you wish to override the student's password.</small>
+                        </div>
+                    </div>
+                    <div class="modal-footer bg-light">
+                        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary btn-sm fw-bold px-4">
+                            <i class="fa-solid fa-floppy-disk me-1"></i> Save Changes
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Student Modal -->
+    <div class="modal fade" id="deleteStudentModal{{ std.id }}" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content text-start">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title fw-bold">
+                        <i class="fa-solid fa-triangle-exclamation me-2"></i> Delete Student Account
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <form action="{% url 'dashboard:admin_delete_student' student_id=std.id %}" method="POST">
+                    {% csrf_token %}
+                    <input type="hidden" name="next_url" value="{% url 'dashboard:admin_student_list' %}?role={{ role_filter }}">
+                    <div class="modal-body p-4 text-dark">
+                        <div class="text-center mb-3">
+                            <div class="rounded-circle bg-danger bg-opacity-10 text-danger d-inline-flex align-items-center justify-content-center mb-2" style="width: 60px; height: 60px;">
+                                <i class="fa-solid fa-trash-can fs-3"></i>
+                            </div>
+                            <h5 class="fw-bold text-dark mb-1">{{ std.get_full_name|default:std.username }}</h5>
+                            <span class="badge bg-secondary">@{{ std.username }}</span>
+                        </div>
+                        <div class="alert alert-danger small mb-3">
+                            <strong>Warning:</strong> Are you sure you want to permanently delete registered account <strong>{{ std.username }}</strong> ({{ std.email }})?
+                        </div>
+                        <ul class="list-unstyled small text-secondary mb-0">
+                            <li><i class="fa-solid fa-circle-xmark text-danger me-2"></i> All course progress and quiz records will be removed.</li>
+                            <li><i class="fa-solid fa-circle-xmark text-danger me-2"></i> All certificates and submissions will be deleted.</li>
+                            <li><i class="fa-solid fa-circle-xmark text-danger me-2"></i> <strong>This action cannot be undone.</strong></li>
+                        </ul>
+                    </div>
+                    <div class="modal-footer bg-light">
+                        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-danger btn-sm fw-bold px-4">
+                            <i class="fa-solid fa-trash me-1"></i> Yes, Delete Account
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endfor %}
+{% endblock %}

@@ -213,10 +213,18 @@ def admin_dashboard(request):
     # Registered Students Management queries & search
     student_query = request.GET.get('student_query', '').strip()
     student_status = request.GET.get('student_status', 'ALL').strip()
+    role_filter = request.GET.get('role', 'STUDENT').strip()
 
-    students_qs = User.objects.filter(role=User.ROLE_STUDENT).annotate(
+    base_users_qs = User.objects.all().annotate(
         enrollments_count=Count('enrollments', distinct=True)
     ).order_by('-date_joined')
+
+    if role_filter == 'ALL':
+        students_qs = base_users_qs
+    elif role_filter in ['STUDENT', 'INSTRUCTOR', 'ADMIN']:
+        students_qs = base_users_qs.filter(role=role_filter)
+    else:
+        students_qs = base_users_qs.filter(role=User.ROLE_STUDENT)
 
     if student_query:
         students_qs = students_qs.filter(
@@ -235,6 +243,7 @@ def admin_dashboard(request):
         students_qs = students_qs.filter(has_all_access=True)
 
     registered_students = students_qs
+    total_all_users_count = User.objects.count()
     active_students_count = User.objects.filter(role=User.ROLE_STUDENT, is_active=True).count()
     inactive_students_count = User.objects.filter(role=User.ROLE_STUDENT, is_active=False).count()
     all_access_students_badge_count = User.objects.filter(role=User.ROLE_STUDENT, has_all_access=True).count()
@@ -275,6 +284,8 @@ def admin_dashboard(request):
         'registered_students': registered_students,
         'student_query': student_query,
         'student_status': student_status,
+        'role_filter': role_filter,
+        'total_all_users_count': total_all_users_count,
         'active_students_count': active_students_count,
         'inactive_students_count': inactive_students_count,
         'all_access_students_badge_count': all_access_students_badge_count,
@@ -884,11 +895,73 @@ def reject_instructor(request, instructor_id):
 
 
 @admin_required
+def admin_student_list(request):
+    """
+    Dedicated fullscreen page for viewing, searching, updating, and deleting registered students & users.
+    """
+    student_query = request.GET.get('student_query', '').strip()
+    student_status = request.GET.get('student_status', 'ALL').strip()
+    role_filter = request.GET.get('role', 'STUDENT').strip()
+
+    base_users_qs = User.objects.all().annotate(
+        enrollments_count=Count('enrollments', distinct=True)
+    ).order_by('-date_joined')
+
+    if role_filter == 'ALL':
+        students_qs = base_users_qs
+    elif role_filter in ['STUDENT', 'INSTRUCTOR', 'ADMIN']:
+        students_qs = base_users_qs.filter(role=role_filter)
+    else:
+        students_qs = base_users_qs.filter(role=User.ROLE_STUDENT)
+
+    if student_query:
+        students_qs = students_qs.filter(
+            Q(username__icontains=student_query) |
+            Q(first_name__icontains=student_query) |
+            Q(last_name__icontains=student_query) |
+            Q(email__icontains=student_query) |
+            Q(phone_number__icontains=student_query)
+        )
+
+    if student_status == 'ACTIVE':
+        students_qs = students_qs.filter(is_active=True)
+    elif student_status == 'INACTIVE':
+        students_qs = students_qs.filter(is_active=False)
+    elif student_status == 'ALL_ACCESS':
+        students_qs = students_qs.filter(has_all_access=True)
+
+    registered_students = students_qs
+    total_students = User.objects.filter(role=User.ROLE_STUDENT).count()
+    total_instructors = User.objects.filter(role=User.ROLE_INSTRUCTOR).count()
+    total_admins = User.objects.filter(role=User.ROLE_ADMIN).count()
+    total_all_users_count = User.objects.count()
+    active_students_count = User.objects.filter(role=User.ROLE_STUDENT, is_active=True).count()
+    inactive_students_count = User.objects.filter(role=User.ROLE_STUDENT, is_active=False).count()
+    all_access_students_badge_count = User.objects.filter(role=User.ROLE_STUDENT, has_all_access=True).count()
+
+    context = {
+        'registered_students': registered_students,
+        'student_query': student_query,
+        'student_status': student_status,
+        'role_filter': role_filter,
+        'total_students': total_students,
+        'total_instructors': total_instructors,
+        'total_admins': total_admins,
+        'total_all_users_count': total_all_users_count,
+        'active_students_count': active_students_count,
+        'inactive_students_count': inactive_students_count,
+        'all_access_students_badge_count': all_access_students_badge_count,
+    }
+    return render(request, 'dashboard/admin_student_list.html', context)
+
+
+@admin_required
 def admin_add_student(request):
     """
     Admin directly adds a new registered student with full profile details.
     """
     if request.method == 'POST':
+        next_url = request.POST.get('next_url')
         username = request.POST.get('username', '').strip()
         email = request.POST.get('email', '').strip()
         first_name = request.POST.get('first_name', '').strip()
@@ -902,7 +975,7 @@ def admin_add_student(request):
 
         if not username or not email or not password:
             messages.error(request, "Username, email, and password are required fields.")
-            return redirect('dashboard:admin_dashboard')
+            return redirect(next_url or 'dashboard:admin_dashboard')
 
         if User.objects.filter(username=username).exists():
             messages.error(request, f"Username '{username}' is already taken.")
@@ -928,6 +1001,7 @@ def admin_add_student(request):
                 student.save(update_fields=['all_access_valid_until'])
 
             messages.success(request, f"🎉 Student account '{student.username}' created successfully!")
+        return redirect(next_url or 'dashboard:admin_dashboard')
     return redirect('dashboard:admin_dashboard')
 
 
@@ -938,6 +1012,7 @@ def admin_edit_student(request, student_id):
     """
     student = get_object_or_404(User, id=student_id)
     if request.method == 'POST':
+        next_url = request.POST.get('next_url')
         first_name = request.POST.get('first_name', '').strip()
         last_name = request.POST.get('last_name', '').strip()
         email = request.POST.get('email', '').strip()
@@ -955,14 +1030,14 @@ def admin_edit_student(request, student_id):
         if username and username != student.username:
             if User.objects.filter(username=username).exclude(id=student.id).exists():
                 messages.error(request, f"Username '{username}' is already in use by another account.")
-                return redirect('dashboard:admin_dashboard')
+                return redirect(next_url or 'dashboard:admin_dashboard')
             student.username = username
 
         # Check email uniqueness if changed
         if email and email != student.email:
             if User.objects.filter(email=email).exclude(id=student.id).exists():
                 messages.error(request, f"Email '{email}' is already registered to another account.")
-                return redirect('dashboard:admin_dashboard')
+                return redirect(next_url or 'dashboard:admin_dashboard')
             student.email = email
 
         # Prevent admin from deactivating or demoting their own admin account
@@ -1000,6 +1075,7 @@ def admin_edit_student(request, student_id):
 
         student.save()
         messages.success(request, f"✅ Student '{student.username}' details updated successfully!")
+        return redirect(next_url or 'dashboard:admin_dashboard')
     return redirect('dashboard:admin_dashboard')
 
 
@@ -1009,12 +1085,13 @@ def admin_delete_student(request, student_id):
     Admin deletes a registered student account safely.
     """
     if request.method == 'POST':
+        next_url = request.POST.get('next_url')
         student = get_object_or_404(User, id=student_id)
         
         # Prevent self deletion
         if student.id == request.user.id:
             messages.error(request, "⚠️ You cannot delete your own admin account.")
-            return redirect('dashboard:admin_dashboard')
+            return redirect(next_url or 'dashboard:admin_dashboard')
 
         username = student.username
         
@@ -1026,6 +1103,7 @@ def admin_delete_student(request, student_id):
         if courses_reassigned > 0:
             msg += f" {courses_reassigned} authored course(s) were safely reassigned to your admin account."
         messages.success(request, msg)
+        return redirect(next_url or 'dashboard:admin_dashboard')
     return redirect('dashboard:admin_dashboard')
 
 

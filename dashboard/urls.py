@@ -29,6 +29,7 @@ urlpatterns = [
     path('admin-panel/certificate/<int:certificate_id>/edit/', views.admin_edit_certificate, name='admin_edit_certificate'),
     path('admin-panel/certificate/<int:certificate_id>/regenerate/', views.admin_regenerate_certificate, name='admin_regenerate_certificate'),
     path('admin-panel/create-coupon/', views.create_coupon, name='create_coupon'),
+    path('admin-panel/students/', views.admin_student_list, name='admin_student_list'),
     path('admin-panel/student/add/', views.admin_add_student, name='admin_add_student'),
     path('admin-panel/student/<int:student_id>/edit/', views.admin_edit_student, name='admin_edit_student'),
     path('admin-panel/student/<int:student_id>/delete/', views.admin_delete_student, name='admin_delete_student'),

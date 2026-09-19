@@ -289,7 +289,8 @@ def lesson_player(request, course_slug, lesson_id=None):
     if not enrollment and has_active_all_access:
         enrollment, _ = Enrollment.objects.get_or_create(student=request.user, course=course)
 
-    if not enrollment and not request.user.is_instructor():
+    is_course_instructor = (request.user == course.instructor) or request.user.is_instructor() or request.user.is_lms_admin()
+    if not enrollment and not is_course_instructor:
         # Check if requested lesson is free preview
         if lesson_id:
             lesson = get_object_or_404(Lesson, id=lesson_id, module__course=course)
@@ -332,6 +333,10 @@ def lesson_player(request, course_slug, lesson_id=None):
                 message=f"Congratulations! You have completed '{course.title}'. Your PDF certificate is now ready for download."
             )
             messages.success(request, "🎉 Congratulations! You completed 100% of this course. Your Certificate is unlocked!")
+
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            from django.http import JsonResponse
+            return JsonResponse({'status': 'ok', 'progress': enrollment.progress_percentage})
 
     # Completed lesson IDs for checkmarks
     completed_lesson_ids = []

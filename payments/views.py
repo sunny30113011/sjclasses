@@ -44,9 +44,16 @@ def add_to_cart(request, course_id):
 
 @login_required
 def remove_from_cart(request, item_id):
-    cart_item = get_object_or_404(Cart, id=item_id, user=request.user)
-    cart_item.delete()
-    messages.info(request, "Item removed from cart.")
+    # Try finding cart item by Cart id or Course id for this user
+    cart_item = Cart.objects.filter(id=item_id, user=request.user).first()
+    if not cart_item:
+        cart_item = Cart.objects.filter(course_id=item_id, user=request.user).first()
+
+    if cart_item:
+        cart_item.delete()
+        messages.info(request, "Item removed from cart.")
+    else:
+        messages.info(request, "Item is already removed from your cart.")
     return redirect('payments:cart_detail')
 
 

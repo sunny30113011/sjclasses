@@ -57,3 +57,10 @@ class User(AbstractUser):
 
     def __str__(self):
         return f"{self.get_full_name() or self.username} ({self.get_role_display()})"
+
+
+class RegisteredStudent(User):
+    class Meta:
+        proxy = True
+        verbose_name = 'Registered Student (Register List)'
+        verbose_name_plural = 'Registered Students (Register List)'

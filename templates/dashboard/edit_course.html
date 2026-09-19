@@ -66,6 +66,7 @@
                     <div class="mb-3">
                         <label class="form-label fw-bold">Preview Video URL (YouTube or Cloudinary)</label>
                         <input type="url" name="preview_video_url" class="form-control" value="{{ course.preview_video_url }}" placeholder="https://res.cloudinary.com/... or https://youtube.com/...">
+                        <small class="text-muted d-block mt-1" style="font-size: 12px;">Supported: YouTube (regular & shorts) or direct Cloudinary video link (e.g. <code>https://res.cloudinary.com/.../video.mp4</code>). Avoid pasting <code>console.cloudinary.com</code> console URLs.</small>
                     </div>
 
                     <div class="row g-3 mb-3">
